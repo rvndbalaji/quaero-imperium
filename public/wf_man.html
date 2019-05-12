@@ -1,0 +1,55 @@
+<!--Created on 12th May 2019-->
+<html lang="en">
+<head>
+    <!--jQUERY should always come first before Bootstrap-->
+    <base target="_blank">
+    <link rel="icon" href="images/q_logo.png">
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Aravind Balaji">
+    <meta name="name" content="QuaeroOps">
+
+
+    <title>Workflow Manager</title>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="frameworks/jquery-3.3.1.min.js"></script>
+    <!----------------BOOTSTRAP----------------------->
+
+    <link rel="stylesheet" href="frameworks/bootstrap.min.css">
+    <!----------------GOOGLE FONTS----------------------->
+    <link href="frameworks/fonts.css" rel="stylesheet">
+    <link rel="stylesheet" href="wf_man.css">
+    <link rel="stylesheet" href="frameworks/animate.css">
+</head>
+
+<body>
+
+    <div class="jumbotron container-fluid">
+        <div class="jumbo_text row">
+            <div class="col-lg-4 col-md-4 mt-3" align="left">                
+                <img src="images/q_logo_full.png" class="img-responsive" width="150rem" id="logo">
+            </div>                
+            <div class="animated fadeInDown col-lg-4 col-md-4">
+                <h1 id="title">Workflow Manager</h1>
+            </div>
+            </a>            
+        </div>
+    </div>
+
+    <div class="container-fluid" id="main_body" align="center">
+            <div class="body_content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <form action="get_wf" method="post" target="_self">
+                            <button name="get_wf" type="submit">Fetch Top 10 Workflows</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+</body>
+</html>

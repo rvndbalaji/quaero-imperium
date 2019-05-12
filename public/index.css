@@ -1,0 +1,116 @@
+@font-face {
+    font-family: futura_bold;
+    src: url('fonts/Futura_PT/FuturaPTBook.otf');
+}
+
+@font-face {
+    font-family: futura_light;
+    src: url('fonts/Futura_PT/FuturaPTLight.otf');
+}
+
+body {
+    overflow-x: hidden;
+    margin: 0;    
+    background-color: var(--text_light);
+}
+
+#title, #my_subtitle {
+    color: white;
+}
+#title{
+    margin-top: 1rem;
+}
+
+
+
+.jumbotron {
+    text-align: center;
+    background-color: transparent;        
+    max-height: 15rem !important;
+    margin-bottom: 1rem;
+    margin-top: -3rem;    
+    margin-left: 0;
+    margin-right: 0;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-image: url(images/bg.jpg);
+    background-color: rgba(0, 0, 0, 0.2);
+    background-blend-mode: multiply;
+    background-position: center;
+    border-radius: 0;    
+    font-family: 'futura_light', serif;
+    box-shadow: 0rem 0rem 1rem gray;
+}
+
+
+a:hover,
+a:active,
+a:focus,
+a:visited {
+    text-decoration: none;
+    color:white;
+}
+
+
+
+.hyperlink {
+    margin-top: 1rem;
+    padding: 1rem;
+    font-size: 1.25rem;
+    z-index: 4;
+    font-weight: none;
+    position: relative;
+    cursor: pointer;
+    cursor: hand;
+    border-bottom: 2px solid transparent;
+    -webkit-transition: all 400ms;
+    transition: all 400ms;
+    color: white;
+}
+
+.hyperlink:hover {
+    color: white;
+    text-decoration: none;
+    border-bottom: 2px solid white;
+}
+
+.main_box {    
+    background-size: cover;
+    background-color: rgba(0, 0, 0, 0.6);
+    background-blend-mode: multiply;
+    -webkit-transition: background 400ms;
+    padding: 1rem;
+    transition: background 400ms;        
+    text-shadow: 0px 0px 10px white;    
+    background-position: center;
+    color:white;
+    box-shadow: 0rem 0rem 1rem gray;
+    border-radius: 0.2rem;
+}
+
+.main_box:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+    cursor: pointer;
+}
+.box_title
+{
+    font-family: 'futura_bold', serif;
+    font-size: 2rem;
+    padding: 1rem;
+}
+
+#box_doc{
+    background-image: url(images/doc.jpg);    
+}
+#box_wfman{
+    background-image: url(images/monitor.jpg);    
+}
+
+#box_skill{
+    background-image: url(images/skill.jpg);    
+}
+#box_code{
+    background-image: url(images/code.jpg);    
+}
+
