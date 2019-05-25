@@ -12,17 +12,19 @@
     <meta name="name" content="QuaeroOps">
 
 
-    <title>Workflow Manager</title>
+   <title>Workflow Manager</title>
+   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+   
+   <!----------------BOOTSTRAP----------------------->
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="frameworks/jquery-3.3.1.min.js"></script>
-    <!----------------BOOTSTRAP----------------------->
-
-    <link rel="stylesheet" href="frameworks/bootstrap.min.css">
-    <!----------------GOOGLE FONTS----------------------->
-    <link href="frameworks/fonts.css" rel="stylesheet">
-    <link rel="stylesheet" href="wf_man.css">
-    <link rel="stylesheet" href="frameworks/animate.css">
+   <!----------------GOOGLE FONTS----------------------->
+   <link href="frameworks/fonts.css" rel="stylesheet">
+   <link rel="stylesheet" href="wf_man.css">
+   <link rel="stylesheet" href="frameworks/animate.css">
 </head>
 
 <body>
@@ -38,18 +40,55 @@
             </a>            
         </div>
     </div>
-
+    
     <div class="container-fluid" id="main_body" align="center">
             <div class="body_content">
                 <div class="container-fluid">
                     <div class="row">
-                        <form action="get_wf" method="post" target="_self">
-                            <button name="get_wf" type="submit">Fetch Top 10 Workflows</button>
-                        </form>
+                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
+                            <div class="btn-group" id="server_name">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Server
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="#" target="_self">HSVSQLESPN03T</a>
+                                    <a class="dropdown-item" href="#" target="_self">HSCSQLTRAINT</a>                              
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" target="_self">HSVSQLESPN01P</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
+                            <div class="btn-group" id="db_name">
+                                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Metastore
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="#" target="_self">HSVSQLESPN03T</a>
+                                        <a class="dropdown-item" href="#" target="_self">HSCSQLTRAINT</a>                              
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#" target="_self">HSVSQLESPN01P</a>
+                                    </div>
+                                </div>
+                        </div>    
+                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
+                                <form action="connectSQL" method="post" target="_self">
+                                        <input type="text" value="balajia" name="username" />
+                                        <input type="text" value="Rvndqr04" name="password" />                                        
+                                        <input type="text" value="HSVSQLESPN03T" name="server" />
+                                        <input type="text" value="Test_espnregr4_3128_metastore" name="db" />
+                                        <button id="get_wf" type="button" onclick="performConnect()">Fetch Top 10 Workflows</button>
+                                </form>
+                        </div>             
+
+                     
+                    </div>
+
                     </div>
                 </div>
             </div>
     </div>
 
 </body>
+<script src="jScript.js" type="text/javascript"></script>
 </html>

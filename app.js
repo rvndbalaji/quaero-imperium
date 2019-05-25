@@ -1,51 +1,129 @@
 //Declare server parameters
 var express = require('express');
-var port = '3000';
-var hostname = 'localhost';
+var events = require('events');
 var app = express();
 
-//Start Server and listen for requests
-var server  = app.listen(port,hostname,function(){
-    console.log(`Server running at http://${hostname}:${port}/`);
+// Create an eventEmitter object
+emitter = new events.EventEmitter();
+
+//To parse JSON fields
+app.use(express.json())
+
+//To parse url encoded params
+app.use(express.urlencoded({
+  extended: true
+}));
+
+
+var port = '3000';
+var hostname = 'localhost';
+
+//Execute SQL
+app.post('/connectSQL',function(req,res){
+  //Prepare connection            
+  connectSQL(req,res);
 });
 
+var connectSQL = function (req,res)
+{  
+  var Connection = require('tedious').Connection;
+  var Request = require('tedious').Request;
+  var TYPES = require('tedious').TYPES;
 
-app.post('/get_wf',function(req,res){
-  var sql =  require('mssql');
   var config = {
-      user: 'balajia',
-      password : 'Rvndqr04',
-      domain : 'QUAERO',
-      server : 'HSVSQLESPN03T',
-      database : 'Test_espnregr4_3128_metastore'
-  };
-  
-  sql.close();
-  sql.connect(config,function(err)
-  {
+      server : req.body.server,
+      authentication : {
+        type : 'ntlm',
+        options : {
+          userName : req.body.username,
+          password : req.body.password,
+          domain : 'QUAERO'
+        }
+      },
+      options : {
+        database : req.body.db        
+      }
+  };    
+  var connection = new Connection(config);
+
+  connection.on('connect',function(err) 
+  {    
     if(err) 
     {
-      res.send(err);      
+      res.send("FAILED : Try Again");   
+      //console.log("Connection failed : " + err);
     }
-    new sql.Request().query("select top 10 * from M_WORKFLOW",function(err, recordset)
+    else
     {
-      if(err) 
-      {
-        res.send(err);        
-      }
-      else
-      {
-        res.send(recordset);        
-      }        
-          
-    });
+      res.send("Connected");
+    }
   });
-  
+}
 
+app.post('/x',function(req,res){  
+  var Connection = require('tedious').Connection;
+  var Request = require('tedious').Request;
+  var TYPES = require('tedious').TYPES;
+
+  var config = {
+      server : req.body.server,
+      authentication : {
+        type : 'ntlm',
+        options : {
+          userName : req.body.username,
+          password : req.body.password,
+          domain : req.body.domain
+        }
+      },
+      options : {
+        database : req.body.db,        
+      }
+  };    
+  var connection = new Connection(config);
+
+  connection.on('connect',function(err) 
+  {    
+    if(err) 
+    {
+      res.send(err);   
+      console.log("Connection failed");            
+    }
+    else
+    {
+      request = new Request("select top 10 * from M_WORKFLOW",function(err, rowcount,rows)
+        {
+            if(err) 
+            {
+              res.send(err);        
+              console.log("Query failed");      
+              return;
+            }        
+            else
+            {
+                console.log("Fetched " + rowcount + " rows");          
+            }  
+        });
+      connection.execSql(request)    
+      request.on('row', function(columns) 
+        {         
+          res.send(columns);
+          console.log("Sent results");
+        });   
+    }
+    
+  });   
+    
+   
+
+  
 });
+
 
 //Serve the website
 app.use(express.static('public'))
 
-
+//Start Server and listen for requests
+var server  = app.listen(port,hostname,function(){
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
 
