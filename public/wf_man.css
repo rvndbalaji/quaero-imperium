@@ -53,4 +53,16 @@ a:visited {
     color: inherit;
 }
 
+.notif_bar{
+    padding: 0.3rem;    
+    margin:auto;    
+    margin-bottom: 1rem;
+    background-color: #2196F3;
+    color:white;
+    box-shadow: 0rem 0rem 1rem gray;       
+    z-index: -1;
+    position: relative;
+    width: 50%; 
+    border-radius: 3px;           
+}
 
