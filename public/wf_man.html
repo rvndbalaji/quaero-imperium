@@ -39,18 +39,24 @@
             </div>
             </a>            
         </div>
-    </div>
-    <div class="notif_bar" align="center">
-        Welcome
-    </div>
+    </div>        
     <div class="container-fluid" id="main_body" align="center">
             <div class="body_content">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
-                            <div class="btn-group" id="server_name">
-                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Server
+                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">                            
+                                <span>RUNNING : </span><span id="running_wf" class="green_text font-weight-bold">-</span>
+                        </div>
+                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">                            
+                                <span>FAILED : </span><span id="failed_wf"class="red_text font-weight-bold">-</span>
+                        </div>
+                    </div>                                       
+                    <div class="row justify-content-center">                        
+                        <div class="col-lg-auto col-md-auto col-sm-6 col-xs-12" align="left">
+                            <div><span class="gray_text">Server</span></div>                            
+                            <div class="btn-group">
+                                <button type="button" id="server_name" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                HSVSQLESPN03T
                                 </button>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item" href="#" target="_self">HSVSQLESPN03T</a>
@@ -60,30 +66,61 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
-                            <div class="btn-group" id="db_name">
-                                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Metastore
+                        <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto" align="left">
+                            <div><span class="gray_text">Metastore</span></div>                            
+                            <div class="btn-group" >
+                                    <button type="button" id="db_name" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Test_espnregr4_3128
                                     </button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="#" target="_self">HSVSQLESPN03T</a>
-                                        <a class="dropdown-item" href="#" target="_self">HSCSQLTRAINT</a>                              
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="#" target="_self">HSVSQLESPN01P</a>
+                                        <a class="dropdown-item" href="#" target="_self">Test_espnregr4_3128</a>                                         
                                     </div>
                                 </div>
                         </div>    
-                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
-                                <form action="connectSQL" method="post" target="_self">
-                                        <input type="text" value="balajia" name="username" />
-                                        <input type="text" value="Rvndqr04" name="password" />                                        
-                                        <input type="text" value="HSVSQLESPN03T" name="server" />
-                                        <input type="text" value="Test_espnregr4_3128_metastore" name="db" />
-                                        <button id="get_wf" type="button" onclick="performConnect()">Fetch Top 10 Workflows</button>
-                                </form>
-                        </div>             
-
-                     
+                        <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto" align="left">
+                                <div><span class="gray_text">Search column</span></div>                                
+                                <div class="btn-group">                                        
+                                        <button type="button" id="srch_col" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        WORKFLOW_NAME
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#" target="_self">WORKFLOW_NAME</a>                                         
+                                        </div>
+                                    </div>
+                        </div>   
+                        <div class="col-lg-3 col-md-3 col-sm-auto col-xs-auto" align="left">
+                                <div><span class="gray_text">Search</span></div>                                
+                                <div class="btn-group srch_box">
+                                        <input type="text" class="form-control" id="srch_box" placeholder="%Search String%" >
+                                </div>
+                        </div>
+                        <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto" align="left">
+                                <div><span class="gray_text">Order by column</span></div>                                
+                                <div class="btn-group">
+                                        <button type="button" id="order_col" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        WORKFLOW_NAME
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#" target="_self">WORKFLOW_NAME</a>                                         
+                                        </div>
+                                    </div>
+                        </div>
+                        <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto" align="left">                                
+                                <div><span class="gray_text">Asc/Desc</span></div>                                
+                                <div class="btn-group">
+                                    <button type="button" id="order_type" class="btn btn-primary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    ASC
+                                    </button>                                       
+                                </div>
+                                
+                        </div>
+                    </div>
+                    <div class="notif_bar" id="notif_bar">
+                            Welcome
+                        </div>
+                        <br>
+                    <div class="row">
+                        <span id="srch_result"></span>
                     </div>
 
                     </div>

@@ -54,15 +54,37 @@ a:visited {
 }
 
 .notif_bar{
+    display:  none;;
     padding: 0.3rem;    
-    margin:auto;    
-    margin-bottom: 1rem;
+    margin:1rem;    
     background-color: #2196F3;
     color:white;
     box-shadow: 0rem 0rem 1rem gray;       
-    z-index: -1;
+    z-index: 2;
     position: relative;
     width: 50%; 
     border-radius: 3px;           
 }
 
+.gray_text
+{
+    color: gray;
+}
+
+.red_text
+{
+    color : #F44336;
+}
+.green_text
+{
+    color : #4CAF50;
+}
+
+.options
+{
+    background-color: aqua;
+}
+.srch_box
+{
+    width:100%;
+}

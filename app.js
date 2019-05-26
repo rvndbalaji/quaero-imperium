@@ -1,6 +1,9 @@
 //Declare server parameters
 var express = require('express');
+var sql = require('mssql');
 var events = require('events');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
 var app = express();
 
 // Create an eventEmitter object
@@ -9,114 +12,23 @@ emitter = new events.EventEmitter();
 //To parse JSON fields
 app.use(express.json())
 
+app.use(cookieParser());
+app.use(session({
+                 key : 'user_sid',
+                 secret: "QuaeroSessionSecretCookieWHichMustBeHiddenBecauseIfItsNotTheWorldWillEndIn27474Years",
+                 saveUninitialized: true,                 
+                 resave: true,                 
+                }));
+
 //To parse url encoded params
 app.use(express.urlencoded({
   extended: true
 }));
 
+//app.use(express.cookieParser());
 
 var port = '3000';
 var hostname = 'localhost';
-
-//Execute SQL
-app.post('/connectSQL',function(req,res){
-  //Prepare connection            
-  connectSQL(req,res);
-});
-
-var connectSQL = function (req,res)
-{  
-  var Connection = require('tedious').Connection;
-  var Request = require('tedious').Request;
-  var TYPES = require('tedious').TYPES;
-
-  var config = {
-      server : req.body.server,
-      authentication : {
-        type : 'ntlm',
-        options : {
-          userName : req.body.username,
-          password : req.body.password,
-          domain : 'QUAERO'
-        }
-      },
-      options : {
-        database : req.body.db        
-      }
-  };    
-  var connection = new Connection(config);
-
-  connection.on('connect',function(err) 
-  {    
-    if(err) 
-    {
-      res.send("FAILED : Try Again");   
-      //console.log("Connection failed : " + err);
-    }
-    else
-    {
-      res.send("Connected");
-    }
-  });
-}
-
-app.post('/x',function(req,res){  
-  var Connection = require('tedious').Connection;
-  var Request = require('tedious').Request;
-  var TYPES = require('tedious').TYPES;
-
-  var config = {
-      server : req.body.server,
-      authentication : {
-        type : 'ntlm',
-        options : {
-          userName : req.body.username,
-          password : req.body.password,
-          domain : req.body.domain
-        }
-      },
-      options : {
-        database : req.body.db,        
-      }
-  };    
-  var connection = new Connection(config);
-
-  connection.on('connect',function(err) 
-  {    
-    if(err) 
-    {
-      res.send(err);   
-      console.log("Connection failed");            
-    }
-    else
-    {
-      request = new Request("select top 10 * from M_WORKFLOW",function(err, rowcount,rows)
-        {
-            if(err) 
-            {
-              res.send(err);        
-              console.log("Query failed");      
-              return;
-            }        
-            else
-            {
-                console.log("Fetched " + rowcount + " rows");          
-            }  
-        });
-      connection.execSql(request)    
-      request.on('row', function(columns) 
-        {         
-          res.send(columns);
-          console.log("Sent results");
-        });   
-    }
-    
-  });   
-    
-   
-
-  
-});
 
 
 //Serve the website
@@ -126,4 +38,135 @@ app.use(express.static('public'))
 var server  = app.listen(port,hostname,function(){
   console.log(`Server running at http://${hostname}:${port}/`);
 });
+
+global_conn_pool = null;
+
+//=======================================================================================================
+//==========================================BEGIN API===================================================
+
+
+//Connect to SQL
+app.get('/connectSQL',function(req,res)
+{    
+  var result = {
+    err : 1,
+    data : {}
+  };  
+  connectSQL(req,res,result);    
+});
+
+//Get the count of any workflows give the type.
+//Example : when type = "failed", returns the number of failed workflows in the environment
+app.get('/wf/count',function(req,res)
+{
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  getWorkflowCount(req,res,result);  
+});
+
+//Perform a search of workflows by using filters
+app.get('/search/wf',function(req,res){
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  fetchWF(req,res,result);
+});
+
+//=======================================================================================================
+
+var connectSQL = function (req,res,res_data)
+{  
+  //Fetch the connection string parameters
+  var config = {
+    user : req.query.username,
+    password : req.query.password,
+    server : req.query.server,
+    database : req.query.db,
+    domain : 'QUAERO'
+    }
+   
+    //Prepare a connection pool
+  new sql.ConnectionPool(config).connect()
+  .then(pool => {      
+      //Save the global pool  
+      global_conn_pool = pool;
+      res_data.err = 0;      
+      res_data.data = {info : "connected"};             
+      res.send(res_data);
+
+  }).catch(err => {
+      global_conn_pool = null;
+      res_data.err = 1;
+      res_data.data = {info : err.message}; 
+      res.send(res_data);
+  });  
+}
+
+var getWorkflowCount = async function (req,res,res_data)
+{   
+    await global_conn_pool; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool.request();
+      if(req.query.type=='running')
+      {
+        sql_result = sql_request.query("with ONE (WORKFLOW_NAME,WORKFLOW_INSTANCE_ID) AS ( 	select WORKFLOW_NAME,WORKFLOW_INSTANCE_ID as WORKFLOW_INSTANCE_ID from VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_INSTANCE_STATUS not like 'FAILED%' and WORKFLOW_INSTANCE_STATUS not like 'COMPLETE%' ), final (WORKFLOW_NAME,WID) as (select A.WORKFLOW_NAME,max(A.WORKFLOW_INSTANCE_ID) as WID from ONE A join vw_WORKFLOW_EXECUTION_STATUS B on A.WORKFLOW_INSTANCE_ID = B.WORKFLOW_INSTANCE_ID group by A.WORKFLOW_NAME) select count(WID) as COUNT from final");
+      }
+      else if(req.query.type=='failed')
+      {
+        sql_result = sql_request.query("with ONE (WORKFLOW_NAME,WORKFLOW_INSTANCE_ID) AS ( 	select WORKFLOW_NAME,WORKFLOW_INSTANCE_ID as WORKFLOW_INSTANCE_ID from VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_INSTANCE_STATUS like 'FAILED%'), final (WORKFLOW_NAME,WID) as (select A.WORKFLOW_NAME,max(A.WORKFLOW_INSTANCE_ID) as WID from ONE A join vw_WORKFLOW_EXECUTION_STATUS B on A.WORKFLOW_INSTANCE_ID = B.WORKFLOW_INSTANCE_ID group by A.WORKFLOW_NAME) select count(WID) as COUNT from final");
+      }
+      else{
+        throw "Invalid workflow type. Available types are 'running', 'failed'";        
+      }      
+      
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {
+        res_data.err = 0; 
+        //Get the result and set it
+        count_num = result.recordset[0].COUNT;                
+        res_data.data = {count : count_num};
+        res.send(res_data);
+      });
+    }
+    catch (err)
+    {      
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}  
+
+var fetchWF = async function (req,res,res_data)
+{   
+    
+    await global_conn_pool; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool.request();
+      //sql_result = sql_request.query("select WORKFLOW_ID, WORKFLOW_NAME,WORKFLOW_DESC,ACTIVE_FLG,UPDATE_USER,UPDATE_DT from M_WORKFLOW where " + req.query.where_key + " like '%" + req.query.where_val + "%' order by " + req.query.order_by + " " + req.query.order_type);      
+      sql_result = sql_request.query("with ONE (WF_ID,WFI_ID) as ( select mw.WORKFLOW_ID as WF_ID,es.WORKFLOW_INSTANCE_ID as WFI_ID from M_WORKFLOW mw join VW_WORKFLOW_EXECUTION_STATUS es on es.WORKFLOW_ID= mw.WORKFLOW_ID where mw." + req.query.where_key + " like '%" + req.query.where_val + "%' ), TWO(WORKFLOW_ID,WORKFLOW_INSTANCE_ID) as( select WF_ID as WORKFLOW_ID,max(WFI_ID) as WORKFLOW_INSTANCE_ID from ONE group by WF_ID ) select TWO.WORKFLOW_ID, mw.WORKFLOW_NAME,WORKFLOW_DESC,ACTIVE_FLG,UPDATE_USER,UPDATE_DT, TWO.WORKFLOW_INSTANCE_ID,WORKFLOW_TYPE,START_DT,END_DT,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,EVENT_GROUP_ID from TWO join M_WORKFLOW mw on mw.WORKFLOW_ID = TWO.WORKFLOW_ID join VW_WORKFLOW_EXECUTION_STATUS vw on (vw.WORKFLOW_INSTANCE_ID = TWO.WORKFLOW_INSTANCE_ID and vw.WORKFLOW_ID = TWO.WORKFLOW_ID) order by mw." + req.query.order_by + " " + req.query.order_type); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.send(res_data);
+      });
+    }
+    catch (err)
+    {      
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
 
