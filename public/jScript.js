@@ -31,8 +31,7 @@ function performConnect()
         server_name = $('#server_name').html().trim();
         db_name = $('#db_name').html().trim();
         
-        req_data = {username:'balajia',password:'Rvndqr04',server : server_name, db:db_name + "_metastore"};        
-        console.log(req_data);
+        req_data = {username:'balajia',password:'Rvndqr06',server : server_name, db:db_name + "_metastore"};                
         $.ajax({
             url: '/connectSQL',
             data : req_data,
@@ -143,24 +142,89 @@ function performSearch()
            $('#notif_bar').hide();
             if(response.err==1)
             {
-                $('#srch_result').text("Something went wrong : " + response.data.info);
+                $('#srch_result_div').text("Something went wrong : " + response.data.info);
             }
             else{                
                 result  = response.data.info;
                 if(!Object.keys(result).length){
 
-                    $('#srch_result').text("No workflows found where '" + srch_col + "' = " + srch_val);
+                    $('#srch_result_div').text("No workflows found where '" + srch_col + "' = " + srch_val);
                 }
                 else{
-                    $('#srch_result').text(JSON.stringify(response.data.info));
+                    prettifyAndDisplayResult(result);                    
                 }               
             }
         },
             fail : function(xhr,textStatus,error)
         {            
             $('#notif_bar').hide();
-            $('#srch_result').text(error);
+            $('#srch_result_div').text(error);
         }
         });    
 }
 
+function prettifyAndDisplayResult(result)
+{
+    var bodyStyles = window.getComputedStyle(document.body);
+    var p_light = bodyStyles.getPropertyValue('--primary_light');
+    var d_light = bodyStyles.getPropertyValue('--danger_light');
+    var s_light = bodyStyles.getPropertyValue('--success_light');
+    
+    var p_dark = bodyStyles.getPropertyValue('--primary_dark');
+    var d_dark = bodyStyles.getPropertyValue('--danger_dark');
+    var s_dark = bodyStyles.getPropertyValue('--success_dark');
+
+    //$('#srch_result_div').text(JSON.stringify(result));    
+    var new_content = "";    
+    for (i = 0; i < result.length; i++) {         
+
+        sel_light = p_light;
+        sel_dark = p_dark;
+        if(['FAILED','FAILED-CLEANUPFAILED'].indexOf(result[i].WORKFLOW_INSTANCE_STATUS) >=0)        
+        {
+            sel_light = d_light;
+            sel_dark = d_dark;
+        }
+        else if(['COMPLETE','COMPLETE-CLEANUPFAILED','COMPLETE-PENDINGCLEANUP'].indexOf(result[i].WORKFLOW_INSTANCE_STATUS) >=0)
+         {
+            sel_light = s_light;
+            sel_dark = s_dark;
+         }
+        
+        new_content +=`
+        <div class='container-fluid res_item' id='res_item_` + i +`' style='background-color:` + sel_light +`;border-left:`+ sel_dark +` solid 4px'>
+            <div class='row'>
+                <div class='col-lg-auto col-md-auto justify-content-left'>`
+                 + result[i].WORKFLOW_ID +   
+                `</div>
+                <div class='col-lg-auto col-md-auto  justify-content-left'><b>`
+                 + result[i].WORKFLOW_NAME +   
+                `</div></b>
+                <div class='col-lg-auto col-md-auto  justify-content-left'>`
+                 + result[i].WORKFLOW_INSTANCE_STATUS +   
+                `</div>
+            </div>
+            <br>
+            <div class='row'>
+                <div class='col-lg-auto col-md-auto justify-content-left'><span class='gray_text'>DURATION </span><b>`
+                 + result[i].RUN_TIME_IN_MINS +  ` mins` +
+                `</div></b>
+                <div class='col-lg-auto col-md-auto  justify-content-left'><span class='gray_text'>STARTED </span><b>`
+                 + result[i].START_DT +   
+                `</div></b>
+                <div class='col-lg-auto col-md-auto  justify-content-left'><span class='gray_text'>ENDED </span><b>`
+                 + result[i].END_DT +   
+                `</div></b>
+                <div class='col-lg-auto col-md-auto  justify-content-left'><span class='gray_text'>UPDATED BY </span><b>`
+                 + result[i].UPDATE_USER +   
+                `</div></b>
+                <div class='col-lg-auto col-md-auto  justify-content-left'><span class='gray_text'>UPDATED ON </span><b>`
+                 + result[i].UPDATE_DT +   
+                `</div></b>
+            </div>
+        </div>`;
+        
+      } 
+              
+    $('#srch_result_div').html(new_content);
+}

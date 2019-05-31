@@ -12,14 +12,6 @@ emitter = new events.EventEmitter();
 //To parse JSON fields
 app.use(express.json())
 
-app.use(cookieParser());
-app.use(session({
-                 key : 'user_sid',
-                 secret: "QuaeroSessionSecretCookieWHichMustBeHiddenBecauseIfItsNotTheWorldWillEndIn27474Years",
-                 saveUninitialized: true,                 
-                 resave: true,                 
-                }));
-
 //To parse url encoded params
 app.use(express.urlencoded({
   extended: true
@@ -76,6 +68,17 @@ app.get('/search/wf',function(req,res){
   
   fetchWF(req,res,result);
 });
+
+//Get all running jobs
+app.get('/jobs',function(req,res){
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  getJobs(req,res,result);
+});
+
 
 //=======================================================================================================
 
@@ -170,3 +173,48 @@ var fetchWF = async function (req,res,res_data)
     }
 }
 
+var getJobs = async function (req,res,res_data)
+{   
+    
+    /*
+    SELECT    
+    j.name AS job_name,        
+    Js.step_name
+FROM msdb.dbo.sysjobactivity ja 
+LEFT JOIN msdb.dbo.sysjobhistory jh ON ja.job_history_id = jh.instance_id
+JOIN msdb.dbo.sysjobs j ON ja.job_id = j.job_id
+JOIN msdb.dbo.sysjobsteps js
+    ON ja.job_id = js.job_id
+    AND ISNULL(ja.last_executed_step_id,0)+1 = js.step_id
+WHERE
+  ja.session_id = (
+    SELECT TOP 1 session_id FROM msdb.dbo.syssessions ORDER BY agent_start_date DESC
+  )
+AND start_execution_date is not null
+AND stop_execution_date is null;
+*/
+    
+
+    await global_conn_pool; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool.request();
+      //sql_result = sql_request.query("select WORKFLOW_ID, WORKFLOW_NAME,WORKFLOW_DESC,ACTIVE_FLG,UPDATE_USER,UPDATE_DT from M_WORKFLOW where " + req.query.where_key + " like '%" + req.query.where_val + "%' order by " + req.query.order_by + " " + req.query.order_type);      
+      sql_result = sql_request.query(); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.send(res_data);
+      });
+    }
+    catch (err)
+    {      
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
