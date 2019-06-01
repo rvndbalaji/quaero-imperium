@@ -38,7 +38,7 @@ global_conn_pool = null;
 
 
 //Connect to SQL
-app.get('/connectSQL',function(req,res)
+app.post('/connectSQL',function(req,res)
 {    
   var result = {
     err : 1,
@@ -86,10 +86,10 @@ var connectSQL = function (req,res,res_data)
 {  
   //Fetch the connection string parameters
   var config = {
-    user : req.query.username,
-    password : req.query.password,
-    server : req.query.server,
-    database : req.query.db,
+    user : req.body.username,
+    password : req.body.password,
+    server : req.body.server,
+    database : req.body.db,
     domain : 'QUAERO'
     }
    

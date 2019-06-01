@@ -1,41 +1,19 @@
-$(document).ready(function(){
-
-    $(".dropdown-item").click(function(){
-        var button = $(this).parents(".btn-group").find('.btn')
-        button.html($(this).text());
-        button.val($(this).data('value')); 
-      });    
-
-      //setup before functions
-        var typingTimer;                //timer identifier
-        var doneTypingInterval = 1000;  //time in ms, 5 second for example
-        var $input = $('#srch_box');
-
-        //on keyup, start the countdown
-        $input.on('keyup', function () {
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(performSearch, doneTypingInterval);
-        });
-
-        //on keydown, clear the countdown 
-        $input.on('keydown', function () {
-        clearTimeout(typingTimer);
-        });
-
-        performConnect();
-      
+$(document).ready(function(){    
+    performConnect();          
 });
+
+var current_div;
 
 function performConnect()
     {           
         server_name = $('#server_name').html().trim();
         db_name = $('#db_name').html().trim();
         
-        req_data = {username:'balajia',password:'Rvndqr06',server : server_name, db:db_name + "_metastore"};                
+        req_data = {username:'balajia',password:'Rvndqr06',server : server_name, db:db_name + "_metastore"};                        
         $.ajax({
             url: '/connectSQL',
             data : req_data,
-            type: 'GET',
+            type: 'POST',
             beforeSend : function(xhr){
                 $('#notif_bar').show();
                 $('#notif_bar').text("Connecting to sever...");    
@@ -53,18 +31,10 @@ function performConnect()
                     $('#notif_bar').text("Connected");
                     setTimeout(function(){
                         $('#notif_bar').hide();
-                     }, 1000);
+                    //Do other stuff after immediately connecting
+                    showSearch();
 
-                     //Run once
-                     updateWorkflowCount("failed");
-                     updateWorkflowCount("running");
-
-                     //Set timer to refresh all data every 1 min
-                     setInterval(function(){
-                        updateWorkflowCount("failed");
-                        updateWorkflowCount("running");
-                     }, 2 * 60 * 1000);
-                     
+                    }, 1000);                                        
                 }
                     
             },
@@ -76,7 +46,7 @@ function performConnect()
             });
     }
 
-function updateWorkflowCount(wf_type)
+function updateDashboardStats(wf_type)
 {
     prev_value = $('#' + wf_type + '_wf').text();    
     req_data = {type : wf_type};
@@ -106,6 +76,7 @@ function updateWorkflowCount(wf_type)
 }
 
 prev_searchterm = "";
+var cur_request;
 function performSearch()
 {
     //Search string
@@ -116,19 +87,26 @@ function performSearch()
     order_col = $('#order_col').html().trim();    
     //Order asc/desc
     order_ad = $('#order_type').html().trim();
-    
+    //Ignore if search term is the same
+    if(prev_searchterm==srch_val)            
+            return;        
+    //check for existing ajax request    
+
+    if(cur_request)        
+    {
+            cur_request.abort();                    
+    }
     if(srch_val=='')    
     {
-        $('#srch_result').text("Search for workflows and filter them from above");
+        $('#srch_result_div').html("<br><br>Search for workflows and filter them from above");
         prev_searchterm= "";
         return;
     }
-    if(prev_searchterm==srch_val)            
-            return;        
+
     prev_searchterm = srch_val;     
 
-    req_data = {where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad};    
-    $.ajax({
+    req_data = {where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad};        
+    cur_request =  $.ajax({
         url: '/search/wf',
         data : req_data,
         type: 'GET',
@@ -142,13 +120,13 @@ function performSearch()
            $('#notif_bar').hide();
             if(response.err==1)
             {
-                $('#srch_result_div').text("Something went wrong : " + response.data.info);
+                $('#srch_result_div').text("Something went wrong : " + response);
             }
             else{                
                 result  = response.data.info;
                 if(!Object.keys(result).length){
 
-                    $('#srch_result_div').text("No workflows found where '" + srch_col + "' = " + srch_val);
+                    $('#srch_result_div').html("<br><br>No workflows found where '" + srch_col + "' = " + srch_val);
                 }
                 else{
                     prettifyAndDisplayResult(result);                    
@@ -194,15 +172,19 @@ function prettifyAndDisplayResult(result)
         new_content +=`
         <div class='container-fluid res_item' id='res_item_` + i +`' style='background-color:` + sel_light +`;border-left:`+ sel_dark +` solid 4px'>
             <div class='row'>
-                <div class='col-lg-auto col-md-auto justify-content-left'>`
+                <div class='col-lg-auto col-md-auto'>`
                  + result[i].WORKFLOW_ID +   
                 `</div>
-                <div class='col-lg-auto col-md-auto  justify-content-left'><b>`
+                <div class='col-lg-auto col-md-auto'><b>`
                  + result[i].WORKFLOW_NAME +   
                 `</div></b>
-                <div class='col-lg-auto col-md-auto  justify-content-left'>`
+                <div class='col-lg-auto col-md-auto'>`
                  + result[i].WORKFLOW_INSTANCE_STATUS +   
                 `</div>
+                <div class='col-lg-auto col-md-auto offset-md-4'>
+                    <input type="checkbox" id="mon_toggle_`+i+`" name="set-name" class="switch-input">
+                    <label for="mon_toggle_`+i+`" class="switch-label"><span class="toggle--on">Monitoring</span><span class="toggle--off">Monitor</span></label>
+                </div>
             </div>
             <br>
             <div class='row'>
@@ -226,5 +208,59 @@ function prettifyAndDisplayResult(result)
         
       } 
               
-    $('#srch_result_div').html(new_content);
+    $('#srch_result_div').html(new_content);    
+}
+
+var typingTimer;                //timer identifier
+var showSearch = function()
+{
+    $('#dash_body').hide();
+
+    $(".dropdown-item").click(function(){
+        var button = $(this).parents(".btn-group").find('.btn')
+        button.html($(this).text());
+        button.val($(this).data('value')); 
+      });       
+
+    //setup before functions
+    clearTimeout(typingTimer);  
+    clearInterval(dashStatsTimer);
+
+    var doneTypingInterval = 1000;  //time in ms, 5 second for example
+    var $input = $('#srch_box');
+
+    //on keyup, start the countdown
+    $input.on('keyup', function () {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(performSearch, doneTypingInterval);
+    });
+
+    //on keydown, clear the countdown 
+    $input.on('keydown', function () {
+    clearTimeout(typingTimer);
+    });
+
+    $('#srch_body').show();    
+}
+
+var dashStatsTimer; 
+var showDashboard = function()
+{
+    //clearSearchTimer
+    clearTimeout(typingTimer);    
+    clearInterval(dashStatsTimer);
+
+    $('#srch_body').hide();
+    $('#dash_body').show();
+
+    //Run once
+    updateDashboardStats("failed");
+    updateDashboardStats("running");
+
+    //Set timer to refresh all data every 1 min
+    dashStatsTimer = setInterval(function(){
+    updateDashboardStats("failed");
+    updateDashboardStats("running");
+    }, 0.5 * 60 * 1000);    
+    
 }

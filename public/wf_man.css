@@ -29,18 +29,19 @@ body {
     color: white;
 }
 #title{
-    margin-top: 1rem;    
+    font-size: 2rem;
+    margin-top: 0.3rem;
 }
 
 
 
 .jumbotron {
     text-align: center;
-    background-color: transparent;    
-    margin-bottom: 1rem;
+    background-color: transparent;        
     margin-top: -4rem;    
     margin-left: 0;     
     margin-right: 0;
+    height: 7rem;
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
@@ -49,11 +50,18 @@ body {
     background-blend-mode: multiply;
     background-position: center;
     border-radius: 0;    
-    font-family: 'futura_light', serif;
-    box-shadow: 0rem 0rem 1rem gray;    
+    font-family: 'futura_light', serif;    
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     padding-bottom: 0;
+    position: relative;
+    z-index: 2;
+    
+}
+
+#srch_body,#dash_body
+{
+    display: none;
 }
 
 a:hover,
@@ -65,7 +73,7 @@ a:visited {
 }
 
 .notif_bar{
-    display:  none;;
+    display:  inline-block;
     padding: 0.3rem;    
     margin:1rem;    
     background-color: #2196F3;
@@ -73,8 +81,8 @@ a:visited {
     box-shadow: 0rem 0rem 1rem gray;       
     z-index: 2;
     position: relative;
-    width: 50%; 
-    border-radius: 3px;           
+    width: 50%;     
+    border-radius: 3px;               
 }
 
 .gray_text
@@ -95,6 +103,19 @@ a:visited {
 {
     width:100%;
 }
+.menu_bar
+{
+    background-color: var(--primary_light);
+    box-shadow: 0rem 0rem 0.5rem var(--primary_dark);    
+    padding: 0.2rem;    
+    margin-top: -0.2rem;    
+    font-weight: bold;        
+}
+
+.menu_item:hover
+{
+    cursor: hand;        
+}
 
 .res_item
 {    
@@ -102,6 +123,74 @@ a:visited {
     margin: 1rem;
     padding: 0.5rem;        
     font-family: futura_bold;
-    border-radius: 4px;    
-    cursor: hand;
+    border-radius: 4px;        
+}
+
+label
+{    
+    height:1px;            
+}
+.switch-input {
+  display: none;
+}
+.switch-label {
+	
+  position: relative;
+  display: inline-block;
+  min-width: 112px;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: left;  
+  padding: 0px 0 22px 44px;
+	
+}
+.switch-label:before, .switch-label:after {
+  content: "";
+  position: absolute;
+  margin: 0;
+  outline: 0;
+  top: 50%;
+  -ms-transform: translate(0, -50%);
+  -webkit-transform: translate(0, -50%);
+  transform: translate(0, -50%);
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.switch-label:before {
+  left: 1px;
+  width: 34px;
+  height: 14px;
+  background-color: #9E9E9E;
+  border-radius: 8px;
+}
+.switch-label:after {
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background-color: #FAFAFA;
+  border-radius: 50%;
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.14), 0 2px 2px 0 rgba(0, 0, 0, 0.098), 0 1px 5px 0 rgba(0, 0, 0, 0.084);
+}
+.switch-label .toggle--on {
+  display: none;
+}
+.switch-label .toggle--off {
+  display: inline-block;
+}
+.switch-input:checked + .switch-label:before {
+  background-color: #A5D6A7;
+  
+}
+.switch-input:checked + .switch-label:after {
+  background-color: #4CAF50;
+  
+  -ms-transform: translate(80%, -50%);
+  -webkit-transform: translate(80%, -50%);
+  transform: translate(80%, -50%);
+}
+.switch-input:checked + .switch-label .toggle--on {
+  display: inline-block;
+}
+.switch-input:checked + .switch-label .toggle--off {
+  display: none;
 }

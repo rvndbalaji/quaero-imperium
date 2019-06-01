@@ -19,38 +19,63 @@
    
    <!----------------BOOTSTRAP----------------------->
    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>      
 
-   <!----------------GOOGLE FONTS----------------------->
+      <!----------------GOOGLE FONTS----------------------->
    <link href="frameworks/fonts.css" rel="stylesheet">
    <link rel="stylesheet" href="wf_man.css">
    <link rel="stylesheet" href="frameworks/animate.css">
+
+   
 </head>
 
 <body>
 
     <div class="jumbotron container-fluid">
         <div class="jumbo_text row">
-            <div class="col-lg-4 col-md-4 mt-3" align="left">                
-                <img src="images/q_logo_full.png" class="img-responsive" width="150rem" id="logo">
+            <div class="col-lg-4 col-md-4 mt-2" align="left">                
+                <img src="images/q_logo_full.png" class="img-responsive" width="120rem" id="logo">
             </div>                
             <div class="animated fadeInDown col-lg-4 col-md-4">
                 <h1 id="title">Workflow Manager</h1>
             </div>
             </a>            
+        </div>        
+        <div class="row menu_bar">
+            <div class="col-lg-auto col-md-auto menu_item" onclick="showDashboard()">                           
+                Dashboard            
+            </div>                
+            <div class="col-lg-auto col-md-auto menu_item" onclick="showSearch()">                           
+                Search
+            </div>
+            <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
+                Monitor
+            </div>
         </div>
-    </div>        
-    <div class="container-fluid" id="main_body" align="center">
+    </div>   
+    <br>
+    <div style="text-align:center">        
+        <div class="notif_bar" id="notif_bar">
+            Welcome
+        </div>
+    </div>    
+    <div class="container-fluid" id="dash_body" align="center">
             <div class="body_content">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">                            
-                                <span>RUNNING : </span><span id="running_wf" class="green_text font-weight-bold">-</span>
-                        </div>
-                        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">                            
-                                <span>FAILED : </span><span id="failed_wf"class="red_text font-weight-bold">-</span>
-                        </div>
-                    </div>                                       
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">                            
+                                    <span>RUNNING : </span><span id="running_wf" class="green_text font-weight-bold">-</span>
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">                            
+                                    <span>FAILED : </span><span id="failed_wf"class="red_text font-weight-bold">-</span>
+                            </div>
+                        </div>    
+                    </div>    
+            </div>
+    </div>    
+    <div class="container-fluid" id="srch_body" align="center">
+            <div class="body_content">
+                <div class="container-fluid">                                             
                     <div class="row justify-content-center"  style='zoom:0.9'>                        
                         <div class="col-lg-auto col-md-auto col-sm-6 col-xs-12" align="left">
                             <div><span class="gray_text">Server</span></div>                            
@@ -114,12 +139,9 @@
                                 </div>
                                 
                         </div>
-                    </div>
-                    <div class="notif_bar" id="notif_bar">
-                            Welcome
-                    </div>
-                    <br>
-                    <div id="srch_result_div">                        
+                    </div>                    
+                    <div id="srch_result_div"> 
+                            <br><br>Search for workflows and filter them from above                                                                                                                                    
                     </div>
 
                 </div>
