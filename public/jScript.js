@@ -126,7 +126,7 @@ function performSearch()
                 result  = response.data.info;
                 if(!Object.keys(result).length){
 
-                    $('#srch_result_div').html("<br><br>No workflows found where '" + srch_col + "' = " + srch_val);
+                    $('#srch_result_div').html("<br><br>No workflows found where " + srch_col + " like " + srch_val);
                 }
                 else{
                     prettifyAndDisplayResult(result);                    
