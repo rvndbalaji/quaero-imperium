@@ -7,11 +7,10 @@ var current_div;
 function performConnect()
     {           
         server_name = $('#server_name').html().trim();
-        db_name = $('#db_name').html().trim();
-        
+        db_name = $('#db_name').html().trim();        
         req_data = {username:'balajia',password:'Rvndqr06',server : server_name, db:db_name + "_metastore"};                        
         $.ajax({
-            url: '/connectSQL',
+            url: '/wf_man/connectSQL',
             data : req_data,
             type: 'POST',
             beforeSend : function(xhr){
@@ -52,7 +51,7 @@ function updateDashboardStats(wf_type)
     req_data = {type : wf_type};
     
     $.ajax({
-        url: '/wf/count',
+        url: '/wf_man/wf/count',
         data : req_data,
         type: 'GET',
         beforeSend : function(xhr){            
@@ -107,7 +106,7 @@ function performSearch()
 
     req_data = {where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad};        
     cur_request =  $.ajax({
-        url: '/search/wf',
+        url: '/wf_man/search/wf',
         data : req_data,
         type: 'GET',
         beforeSend : function(xhr){            
