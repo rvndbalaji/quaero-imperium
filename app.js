@@ -8,6 +8,7 @@ session = require('express-session');
 validator = require('express-validator');
 exphbs = require('express-handlebars');
 dotenv = require('dotenv').config();
+//flash = require('connect-flash');
 admin = require("firebase-admin");
 serviceAccount = require("./quaero_operations_serviceAccountKey.json");
 app = express();

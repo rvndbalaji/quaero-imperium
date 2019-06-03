@@ -1,1 +1,38 @@
-LOGIN
+ <div class="jumbotron container-fluid col-lg-12 col-md-12 col-sm-12 col-xs-12"  style="max-height:11.5rem !important">
+
+        <div class="jumbo_text section">
+            <a href="/" target='_self'>
+                <div class="animated fadeInDown">
+                    <img src="../images/q_logo_full.png" class="img-responsive" width="150rem">                    
+                    <h1 id="title">Quaero Ops</h1>
+                </div>
+            </a>            
+        </div>
+
+</div>
+
+
+<div class="row  justify-content-center">
+    <div class="col-lg-4 col-md-4 col-sm-4">        
+        {{#if errors}}            
+            <div class="alert alert-danger">{{{errors}}}</div>            
+        {{/if}}        
+        <div class="row justify-content-center"><h4>Login</h4></div>
+        <br>
+        <form action="/users/login" method="post" target="_self">      
+        <div class="form-group">            
+            <input type="text" class="form-control" name="username" aria-describedby="textHelp" placeholder="Quaero username">
+            <small class="form-text text-muted">Eg. balajia, nigama</small>
+        </div>
+        <div class="form-group">            
+            <input type="password" class="form-control" name="password" placeholder="Password">
+        </div>
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="dontforget">
+            <label class="form-check-label" for="exampleCheck1">Remember password</label>
+        </div>
+        <br>
+        <button type="submit" class="btn btn-primary">Login</button>        
+        </form>
+    </div>
+</div>
