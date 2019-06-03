@@ -5,8 +5,11 @@ path = require('path');
 events = require('events');
 cookieParser = require('cookie-parser');
 session = require('express-session');
+validator = require('express-validator');
 exphbs = require('express-handlebars');
 dotenv = require('dotenv').config();
+admin = require("firebase-admin");
+serviceAccount = require("./quaero_operations_serviceAccountKey.json");
 app = express();
 
 var routes = require('./routes/index');
@@ -31,6 +34,7 @@ app.use(express.urlencoded({
   extended: true
 }));
 
+
 //app.use(express.cookieParser());
 
 var port = process.env.PORT;
@@ -53,5 +57,15 @@ var server  = app.listen(port,hostname,function(){
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
+
+
 global_conn_pool = null;
 
+//Initialize Firebase App
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://quaero-operations.firebaseio.com"
+});
+
+//Get the current firebase database instance
+firebase = admin.database();

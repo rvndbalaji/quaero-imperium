@@ -5,7 +5,8 @@ var router = express.Router();
 router.get('/',function(req,res){
     res.render('index',{        
         title: 'Quaero Ops',
-        cssfilename : 'index.css'        
+        cssfile : 'css/index.css',
+        cssanimate : 'frameworks/animate.css'
     });
 });
 

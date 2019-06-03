@@ -5,7 +5,8 @@ var router = express.Router();
 router.get('/',function(req,res){
     res.render('wf_man',{
         title: 'Workflow Manager',
-        cssfilename : 'wf_man.css'        
+        cssfile : 'css/wf_man.css',
+        cssanimate : 'frameworks/animate.css'
     });
 });
 
