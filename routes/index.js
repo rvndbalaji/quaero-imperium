@@ -13,13 +13,11 @@ router.get('/',function(req,res){
                 title: 'Quaero Ops',
                 cssfile : 'css/index.css',
                 cssanimate : 'frameworks/animate.css'
-            });            
-            console.log("6. Home Loaded");     
+            });                        
         }).catch(function(error) 
         {        
             //Otherwise, send him to login page
-            res.redirect('/users/login');      
-            console.log("1. Fresh Login");
+            res.redirect('/users/login');                  
         });       
 });
 
@@ -37,8 +35,7 @@ router.post('/',function(req,res)
        result.err = 0;
        result.data = {info : "Logging in..."};
        res.cookie('authToken', req.body.token, { httpOnly: true, secure: false });
-       res.send(result);    
-       console.log("5. User verified");     
+       res.send(result);          
 
     }).catch(function(error) 
     {        

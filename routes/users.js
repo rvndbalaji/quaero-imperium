@@ -1,9 +1,6 @@
 var express = require('express');
 var router = express.Router();
 const { check, validationResult } = require('express-validator/check');
-//argon2 = require('argon2');
-const NodeRSA = require('node-rsa');
-
 
 //Register
 router.get('/register',function(req,res){        
@@ -40,8 +37,7 @@ admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
             title: 'Login',
             cssfile : '../css/index.css',
             cssanimate : '../frameworks/animate.css'
-        });     
-        console.log("2. Login page displayed");
+        });             
     });      
 });
 
@@ -64,22 +60,11 @@ router.post('/register',[
             errors : errors.array()
         });                
     }
-    else{
-        //Hash and salt the password using argon2id
-        var pass_hash;
-        try {
-            pass_hash = await argon2.hash(password,{
-                type: argon2.argon2id
-            });
-          } catch (err) {
-            res.send("Hashing error");
-            return;
-          }
-
+    else{       
             firebase.ref('users').child(username).set({
                 fullname : fullname,
                 email : email,
-                password : pass_hash
+                password : encrypt(password)
             });
         
         //Suucessfully created new user
@@ -92,8 +77,7 @@ router.post('/register',[
 //Logout
 router.post('/logout',function(req,res){    
     res.clearCookie('authToken');    
-    res.send('Session Ended');
-    console.log("Logged out");
+    res.send('Session Ended');    
 });
 
 
@@ -123,8 +107,21 @@ router.post('/login',[
                 res.send(result);
             }
             else
-            {                              
-                hash_pass = user_data.password;                    
+            {   
+                if(decrypt(user_data.password)===(req.body.password))
+                {
+                    //User has been verified, now send token to authenticate
+                    result.err = 0;                                                        
+                    result.data = {token : customToken};
+                    res.send(result);                                                                            
+                }
+                else{
+                    result.data = {info : "Invalid password"}
+                    res.clearCookie('authToken');
+                    res.send(result);
+                }
+
+                /*                
                 argon2.verify(hash_pass, req.body.password).then((verified) =>
                 { 
                     if(verified)
@@ -144,7 +141,8 @@ router.post('/login',[
                     result.data = {info : "Authentication failed : " + err}
                     res.clearCookie('authToken');
                     res.send(result);                 
-                });                             
+                });   
+                */                          
                 
             }
        

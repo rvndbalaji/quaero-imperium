@@ -14,7 +14,6 @@ if(window.location.pathname=='/')
       });
       
 }
-console.log(document.cookie);
 
 $(document).ready(function(){        
     //Check if user has logged in, otherwise, send him back to log in
@@ -28,7 +27,7 @@ function performConnect()
     {           
         server_name = $('#server_name').html().trim();
         db_name = $('#db_name').html().trim();        
-        req_data = {username:'balajia',password:'Rvndqr06',server : server_name, db:db_name + "_metastore"};                        
+        req_data = {server : server_name, db:db_name + "_metastore"};                                
         $.ajax({
             url: '/wf_man/connectSQL',
             data : req_data,
@@ -139,7 +138,7 @@ function performSearch()
            $('#notif_bar').hide();
             if(response.err==1)
             {
-                $('#srch_result_div').text("Something went wrong : " + response);
+                $('#srch_result_div').text("Something went wrong : " + response.data.info);
             }
             else{                
                 result  = response.data.info;
@@ -314,9 +313,8 @@ var requestLogin = function()
             {                        
                 
                 firebase.auth().signInWithCustomToken(response.data.token)
-                .then(function()
-                {               
-                        console.log("4. Token recieved");     
+                .then(function()                {               
+                        
                         //Authentication successful. User recieves the token 
                         //Send the Token ID back to the server                        
                         firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) 
