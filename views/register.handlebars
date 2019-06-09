@@ -13,10 +13,10 @@
 
 <div class="row  justify-content-center">
     <div class="col-lg-4 col-md-4 col-sm-4">        
-        {{#if errors}}
+        {{#if errors}}        
             {{#each errors}}
-               <div class="alert alert-danger">{{msg}}</div>
-            {{/each}}
+               <div class="alert alert-danger">{{msg}}</div>                              
+            {{/each}}            
         {{/if}}
         <form action="/users/register" method="post" target="_self">
         <div class="form-group">            

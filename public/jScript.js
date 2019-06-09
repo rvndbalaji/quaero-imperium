@@ -1,5 +1,25 @@
-$(document).ready(function(){    
-    performConnect();          
+
+if(window.location.pathname=='/')
+{
+    //Check if user has logged in 
+    //Set a listener to keep currentUser upto date    
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          currentUser = user;                                       
+        } else {
+            currentUser = null;                                
+            document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";         
+            window.location.replace('users/login');            
+        }        
+      });
+      
+}
+console.log(document.cookie);
+
+$(document).ready(function(){        
+    //Check if user has logged in, otherwise, send him back to log in
+    if(window.location.pathname=='/wf_man')
+        performConnect();     
 });
 
 var current_div;
@@ -48,7 +68,7 @@ function performConnect()
 function updateDashboardStats(wf_type)
 {
     prev_value = $('#' + wf_type + '_wf').text();    
-    req_data = {type : wf_type};
+    req_data = { type : wf_type};
     
     $.ajax({
         url: '/wf_man/wf/count',
@@ -104,7 +124,7 @@ function performSearch()
 
     prev_searchterm = srch_val;     
 
-    req_data = {where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad};        
+    req_data = { where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad};        
     cur_request =  $.ajax({
         url: '/wf_man/search/wf',
         data : req_data,
@@ -263,3 +283,119 @@ var showDashboard = function()
     }, 0.5 * 60 * 1000);    
     
 }
+
+currentUser = null;
+var requestLogin = function()
+{   
+    var currentUser = null; 
+    un = $('#username_box').val()    
+    pw = $('#password_box').val()        
+    req_data = {username:un,password:pw};                        
+    $.ajax({
+        url: '/users/login',
+        data : req_data,
+        type: 'POST',
+        beforeSend : function(xhr){
+           $('#alert').removeClass('alert-danger');
+           $('#alert').removeClass('alert-success');
+           $('#alert').addClass('alert-warning');
+           $('#alert').text('Authenticating...');
+        },           
+        success: function (response) 
+        {    
+            if(response.err==1)
+            {
+                
+                $('#alert').removeClass('alert-warning');
+                $('#alert').addClass('alert-danger');                
+                $('#alert').html(response.data.info);               
+            }
+            else
+            {                        
+                
+                firebase.auth().signInWithCustomToken(response.data.token)
+                .then(function()
+                {               
+                        console.log("4. Token recieved");     
+                        //Authentication successful. User recieves the token 
+                        //Send the Token ID back to the server                        
+                        firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) 
+                        {                               
+                            $.ajax(
+                            {
+                                url: '/',                                
+                                data : {token:idToken},
+                                type: 'POST',
+                                beforeSend : function(xhr){
+                                   $('#alert').addClass('alert-warning');                               
+                                   $('#alert').html("Letting you in...");                                     
+                                },
+                                success: function (response) 
+                                {
+                                    if(response.err==1)
+                                    {
+                                        $('#alert').removeClass('alert-warning');                                    
+                                        $('#alert').removeClass('alert-danger');                                    
+                                        $('#alert').html(response.data.info);               
+                                    }
+                                    else
+                                    {                                                       
+                                        //User will be redirected
+                                        $('#alert').removeClass('alert-warning');
+                                        $('#alert').addClass('alert-success');
+                                        $('#alert').html(response.data.info);  
+                                        
+                                        window.location.replace('/');                                        
+                                    } 
+                                }
+    
+                            }).catch(function(error) 
+                            {
+                                $('#alert').removeClass('alert-warning');
+                                $('#alert').addClass('alert-danger');
+                                $('#alert').html(error.message);           
+                            });
+                        })                    
+                        .catch(function(error) 
+                        {                    
+                            var errorCode = error.code;
+                            var errorMessage = error.message;                    
+                            $('#alert').removeClass('alert-warning');
+                            $('#alert').addClass('alert-danger');
+                            $('#alert').html(error.message);               
+                        }); 
+                });     
+            }
+        },            
+        fail : function(xhr,textStatus,error)
+        {
+            $('#alert').removeClass('alert-warning');                
+            $('#alert').addClass('alert-danger');
+            $('#alert').html(error);               
+        }        
+    });
+
+}
+
+var LogOut = function()
+{   
+    //Destory cookies immediately
+    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+    firebase.auth().signOut().then(function() {                
+        //Send a log out request to server,
+        //This will destroy the cookies
+        $.ajax({
+            url: '/users/logout',            
+            type: 'POST',
+            beforeSend : function(xhr){
+                $('#notif_bar').show();
+                $('#notif_bar').text("Logging out...");    
+                $('#notif_bar').css('background-color','#F44336');
+            }
+        });
+        
+      }).catch(function(error) {        
+      });
+}
+

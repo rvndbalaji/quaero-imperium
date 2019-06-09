@@ -13,26 +13,22 @@
 
 
 <div class="row  justify-content-center">
-    <div class="col-lg-4 col-md-4 col-sm-4">        
-        {{#if errors}}            
-            <div class="alert alert-danger">{{{errors}}}</div>            
-        {{/if}}        
+    <div class="col-lg-4 col-md-4 col-sm-4">                
+        <div id='alert' class="alert"></div>                    
         <div class="row justify-content-center"><h4>Login</h4></div>
-        <br>
-        <form action="/users/login" method="post" target="_self">      
+        <br>        
         <div class="form-group">            
-            <input type="text" class="form-control" name="username" aria-describedby="textHelp" placeholder="Quaero username">
+            <input type="text" class="form-control" id="username_box" aria-describedby="textHelp" placeholder="Quaero username">
             <small class="form-text text-muted">Eg. balajia, nigama</small>
         </div>
         <div class="form-group">            
-            <input type="password" class="form-control" name="password" placeholder="Password">
+            <input type="password" class="form-control" id="password_box" placeholder="Password">
         </div>
         <div class="form-check">
-            <input type="checkbox" class="form-check-input" name="dontforget">
+            <input type="checkbox" class="form-check-input" id="dontforget">
             <label class="form-check-label" for="exampleCheck1">Remember password</label>
         </div>
         <br>
-        <button type="submit" class="btn btn-primary">Login</button>        
-        </form>
+        <button type="button" class="btn btn-primary" onclick="requestLogin()">Login</button>                
     </div>
 </div>

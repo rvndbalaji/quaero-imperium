@@ -4,14 +4,20 @@ sql = require('mssql');
 path = require('path');
 events = require('events');
 cookieParser = require('cookie-parser');
-session = require('express-session');
+//session = require('express-session');
 validator = require('express-validator');
 exphbs = require('express-handlebars');
 dotenv = require('dotenv').config();
 //flash = require('connect-flash');
 admin = require("firebase-admin");
+NodeRSA = require('node-rsa');
 serviceAccount = require("./quaero_operations_serviceAccountKey.json");
 app = express();
+/*app.use(session({
+  secret:'ThisIsAnExtremelySecretSessionKeyThatMustBeStoreSafely',
+  resave: true,
+  saveUninitialized: true
+}));*/
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -36,7 +42,7 @@ app.use(express.urlencoded({
 }));
 
 
-//app.use(express.cookieParser());
+app.use(cookieParser());
 
 var port = process.env.PORT;
 var hostname = process.env.HOSTNAME;
@@ -59,9 +65,6 @@ var server  = app.listen(port,hostname,function(){
 });
 
 
-
-global_conn_pool = null;
-
 //Initialize Firebase App
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -70,3 +73,10 @@ admin.initializeApp({
 
 //Get the current firebase database instance
 firebase = admin.database();
+
+acquireTokenAsString = function(token)
+{    
+    if(!token)
+        token = "none";
+    return token;
+}
