@@ -61,7 +61,7 @@ router.get('/wf/count',function(req,res)
           getWorkflowCount(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login'}
           res.send(result);
         }
     });
@@ -87,7 +87,7 @@ router.get('/search/wf',function(req,res){
           fetchWF(config,req,res,result);
         }
         else{
-          result.data = {info:'Server connection does not exist'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login'}
           res.send(result);
         }
     });
@@ -115,7 +115,7 @@ router.get('/jobs',function(req,res){
           getJobs(req,res,result);
         }
         else{
-          result.data = {info:'Server connection does not exist'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login'}
           res.send(result);
         }
     });
@@ -273,7 +273,7 @@ var connectSQL = async function (decodedToken,req,res,res_data)
     generateConfig(req,decodedToken).then(config=>{
     
      //Once we prepare the config, we check to see if global conn pool exists
-        //Check if conn pool exists
+        //Check if conn pool exists        
         if(config in global_conn_pool)
         {                       
           res_data.err = 0;      

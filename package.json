@@ -1,7 +1,7 @@
 {
-  "name": "operations",
+  "name": "imperium",
   "version": "1.0.0",
-  "description": "Quaero Workflow Operations",
+  "description": "Quaero Imperium",
   "main": "app.js",
   "dependencies": {
     "argon2": "^0.23.0",

@@ -10,7 +10,7 @@ router.get('/',function(req,res){
         .then(function(decodedToken) 
         {
             res.render('index',{        
-                title: 'Quaero Ops',
+                title: 'Quaero Imperium',
                 cssfile : 'css/index.css',
                 cssanimate : 'frameworks/animate.css'
             });                        
@@ -21,7 +21,7 @@ router.get('/',function(req,res){
         });       
 });
 
-//Get HomePage
+//Post HomePage
 router.post('/',function(req,res)
 {    
     var result = {
@@ -40,8 +40,9 @@ router.post('/',function(req,res)
     }).catch(function(error) 
     {        
         result.data = {info : error};
-        res.send(result);     
         res.clearCookie('authToken');   
+        res.send(result);     
+        
     });      
 });
 

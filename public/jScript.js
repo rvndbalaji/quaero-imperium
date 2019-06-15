@@ -113,6 +113,7 @@ function performSearch()
     if(cur_request)        
     {
             cur_request.abort();                    
+            $('#notif_bar').hide();
     }
     if(srch_val=='')    
     {
@@ -138,13 +139,13 @@ function performSearch()
            $('#notif_bar').hide();
             if(response.err==1)
             {
-                $('#srch_result_div').text("Something went wrong : " + response.data.info);
+                $('#srch_result_div').html("<br><br>Something went wrong : " + response.data.info);
             }
             else{                
-                result  = response.data.info;
+                result  = response.data.info;                
                 if(!Object.keys(result).length){
 
-                    $('#srch_result_div').html("<br><br>No workflows found where " + srch_col + " like " + srch_val);
+                    $('#srch_result_div').html("<br><br>No workflows found where " + srch_col + " like '" + srch_val + "'");
                 }
                 else{
                     prettifyAndDisplayResult(result);                    
@@ -316,9 +317,9 @@ var requestLogin = function()
                 .then(function()                {               
                         
                         //Authentication successful. User recieves the token 
-                        //Send the Token ID back to the server                        
+                        //Send the Token ID back to the server in exchange for cookie                 
                         firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) 
-                        {                               
+                        {   
                             $.ajax(
                             {
                                 url: '/',                                
@@ -353,6 +354,7 @@ var requestLogin = function()
                                 $('#alert').addClass('alert-danger');
                                 $('#alert').html(error.message);           
                             });
+                        
                         })                    
                         .catch(function(error) 
                         {                    
