@@ -17,7 +17,7 @@ router.get('/register',function(req,res){
         res.render('register',{
             title: 'Register',
             cssfile : '../css/index.css',
-            cssanimate : '../frameworks/animate.css'
+            cssanimate : '../frameworks/animate.css'            
         });   
     });       
 });
@@ -36,7 +36,7 @@ admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
         res.render('login',{
             title: 'Login',
             cssfile : '../css/index.css',
-            cssanimate : '../frameworks/animate.css'
+            cssanimate : '../frameworks/animate.css'            
         });             
     });      
 });
@@ -56,7 +56,7 @@ router.post('/register',[
         res.render('register',{
             title: 'Register',
             cssfile : '../css/index.css',
-            cssanimate : '../frameworks/animate.css',
+            cssanimate : '../frameworks/animate.css',            
             errors : errors.array()
         });                
     }
@@ -107,8 +107,17 @@ router.post('/login',[
                 res.send(result);
             }
             else
-            {   
-                if(decrypt(user_data.password)===(req.body.password))
+            {                
+                var dec_pass;
+                try {
+                    dec_pass = decrypt(user_data.password);
+                } catch (error) {
+                    result.data = {info : "FATAL DECRYPT ERROR : Please report to admin!"};                                        
+                    res.clearCookie('authToken');
+                    res.send(result);
+                    return;
+                }
+                if(dec_pass===(req.body.password))
                 {
                     //User has been verified, now send token to authenticate
                     result.err = 0;                                                        
@@ -120,29 +129,6 @@ router.post('/login',[
                     res.clearCookie('authToken');
                     res.send(result);
                 }
-
-                /*                
-                argon2.verify(hash_pass, req.body.password).then((verified) =>
-                { 
-                    if(verified)
-                        {                            
-                            //User has been verified, now send token to authenticate
-                            result.err = 0;                                                        
-                            result.data = {token : customToken};
-                            res.send(result);                                                        
-                            console.log("3. Token sent");                            
-                        }
-                    else{
-                        result.data = {info : "Invalid password"}
-                        res.clearCookie('authToken');
-                        res.send(result);
-                    }
-                }).catch((err) => {                    
-                    result.data = {info : "Authentication failed : " + err}
-                    res.clearCookie('authToken');
-                    res.send(result);                 
-                });   
-                */                          
                 
             }
        

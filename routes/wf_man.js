@@ -15,7 +15,7 @@ router.get('/', async function(req,res){
       res.render('wf_man',{
           title: 'Workflow Manager',
           cssfile : 'css/wf_man.css',
-          cssanimate : 'frameworks/animate.css'
+          cssanimate : 'frameworks/animate.css'          
       });        
     }).catch(function(error) 
     {   
@@ -273,12 +273,14 @@ var connectSQL = async function (decodedToken,req,res,res_data)
     generateConfig(req,decodedToken).then(config=>{
     
      //Once we prepare the config, we check to see if global conn pool exists
-        //Check if conn pool exists        
+        //Check if conn pool exists  
+        
         if(config in global_conn_pool)
         {                       
           res_data.err = 0;      
           res_data.data = {info : "connected"};             
           res.send(res_data);
+        
         }
         else
         {          

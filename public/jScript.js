@@ -280,6 +280,7 @@ var showDashboard = function()
     dashStatsTimer = setInterval(function(){
     updateDashboardStats("failed");
     updateDashboardStats("running");
+    //0.5 minutes
     }, 0.5 * 60 * 1000);    
     
 }

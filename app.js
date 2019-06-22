@@ -11,8 +11,6 @@ dotenv = require('dotenv').config();
 //flash = require('connect-flash');
 admin = require("firebase-admin");
 crypto = require('crypto',);
-
-serviceAccount = require("./quaero_operations_serviceAccountKey.json");
 app = express();
 /*app.use(session({
   secret:'ThisIsAnExtremelySecretSessionKeyThatMustBeStoreSafely',
@@ -24,12 +22,6 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var wf_man = require('./routes/wf_man');
 
-//Configure Helpers
-var hbs = exphbs.create({
-  helpers : {
-    
-  }
-});
 
 // Create an eventEmitter object
 emitter = new events.EventEmitter();
@@ -47,6 +39,35 @@ app.use(cookieParser());
 
 var port = process.env.PORT;
 var hostname = process.env.HOSTNAME;
+
+//Fetch the Firebase ServiceAccountJSON values
+var serviceAccount = {
+  "type": process.env.type,
+  "project_id": process.env.project_id,
+  "private_key_id": process.env.private_key_id,
+  "private_key": process.env.private_key.replace(/\\n/g, '\n'),
+  "client_email": process.env.client_email,
+  "client_id": process.env.client_id,
+  "auth_uri": process.env.auth_uri,
+  "token_uri": process.env.token_uri,
+  "auth_provider_x509_cert_url": process.env.auth_provider_x509_cert_url,
+  "client_x509_cert_url": process.env.client_x509_cert_url
+}
+
+//Fetch Firebase Web Credentials and store it in a handler 
+//which is returned to the JavaScript
+//Configure Helpers
+var hbs = exphbs.create({
+  helpers : {        
+      apiKey: process.env.apiKey,
+      authDomain: process.env.authDomain,
+      databaseURL: process.env.databaseURL,
+      projectId: process.env.projectId,
+      storageBucket: process.env.storageBucket,
+      messagingSenderId: process.env.messagingSenderId,
+      appId: process.env.appId   
+  }
+});
 
 //View Engine
 app.set('views',path.join(__dirname,'views'));
@@ -70,7 +91,7 @@ var server  = app.listen(port,hostname,function(){
 //Initialize Firebase App
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://quaero-operations.firebaseio.com"
+  databaseURL: process.env.databaseURL
 });
 
 //Get the current firebase database instance
