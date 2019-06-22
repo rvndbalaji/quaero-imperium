@@ -12,11 +12,6 @@ dotenv = require('dotenv').config();
 admin = require("firebase-admin");
 crypto = require('crypto',);
 app = express();
-/*app.use(session({
-  secret:'ThisIsAnExtremelySecretSessionKeyThatMustBeStoreSafely',
-  resave: true,
-  saveUninitialized: true
-}));*/
 
 var routes = require('./routes/index');
 var users = require('./routes/users');

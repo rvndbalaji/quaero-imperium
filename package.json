@@ -25,12 +25,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rvndbalaji/operations.git"
+    "url": "git+https://github.com/rvndbalaji/quaero-imperium.git"
   },
   "author": "Aravind Balaji",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/rvndbalaji/operations/issues"
+    "url": "https://github.com/rvndbalaji/quaero-imperium/issues"
   },
-  "homepage": "https://github.com/rvndbalaji/operations#readme"
+  "homepage": "https://github.com/rvndbalaji/quaero-imperium#readme"
 }
