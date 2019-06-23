@@ -7,7 +7,7 @@ var global_conn_pool = {};
 
 //Get HomePage
 router.get('/', async function(req,res){
-
+  
     //Verify user
     admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
     .then(function(decodedToken) 
@@ -18,7 +18,8 @@ router.get('/', async function(req,res){
           cssanimate : 'frameworks/animate.css'          
       });        
     }).catch(function(error) 
-    {   
+    { 
+      res.clearCookie('authToken');  
       res.redirect('/users/login');    
     });
 });
@@ -26,7 +27,7 @@ router.get('/', async function(req,res){
 
 //Connect to SQL
 router.post('/connectSQL',function(req,res)
-{       
+{ 
   var result = {
     err : 1,
     data : {}
@@ -46,7 +47,7 @@ router.post('/connectSQL',function(req,res)
 //Get the count of any workflows give the type.
 //Example : when type = "failed", returns the number of failed workflows in the environment
 router.get('/wf/count',function(req,res)
-{
+{  
   var result = {
     err: 1,
     data : {}
@@ -73,11 +74,11 @@ router.get('/wf/count',function(req,res)
 
 //Perform a search of workflows by using filters
 router.get('/search/wf',function(req,res){
+  
   var result = {
     err: 1,
     data : {}
-  }; 
-  
+  };   
   admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
   .then(function(decodedToken) 
   {    
@@ -101,6 +102,7 @@ router.get('/search/wf',function(req,res){
 
 //Get all running jobs
 router.get('/jobs',function(req,res){
+  
   var result = {
     err: 1,
     data : {}
@@ -179,6 +181,11 @@ var fetchWF = async function (config,req,res,res_data)
         //Get the result and set it                
         res_data.data = {info : result.recordset};
         res.send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : err};
+        res.send(res_data);        
       });
     }
     catch (err)
@@ -240,26 +247,23 @@ var generateConfig = function(req,decodedToken)
 {
   return new Promise((resolve,reject) => {
     
-    firebase.ref('users').child(decodedToken.uid).once('value',  function(snapshot)
+    firebase.doc('users').collection(decodedToken.uid).doc('profile').get().then( user_data =>
     {   
-      user_data = snapshot.val();
-      if(user_data==null)        
+      if(!user_data.exists)        
       {   
-          result.data = {info : "User does not exist. Please <a href='/users/register' target='_self'>register</a>"}
-          reject(result);
-      }
-      else
-      {
-        //Prepare a connection config
-        var config = {
-          user : decodedToken.uid,
-          password : decrypt(user_data.password),
-          server : req.body.server,
-          database : req.body.db,
-          domain : 'QUAERO'
-          }
-        resolve(config);
-      }
+        result.data = {info : "User does not exist. Please <a href='/users/register' target='_self'>register</a>"}
+        reject(result);
+      }  
+      user_data = user_data.data();       
+      //Prepare a connection config
+      var config = {
+        user : decodedToken.uid,
+        password : decrypt(user_data.password),
+        server : req.body.server,
+        database : req.body.db,
+        domain : 'QUAERO'
+        }
+      resolve(config);      
     })
     .catch(function(error) {
       result.data = {info : error};          

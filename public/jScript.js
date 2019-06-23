@@ -4,21 +4,46 @@ if(window.location.pathname=='/')
     //Check if user has logged in 
     //Set a listener to keep currentUser upto date    
     firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-          currentUser = user;                                       
-        } else {
-            currentUser = null;                                
+        if (!user) {                      
             document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";         
-            window.location.replace('users/login');            
+            window.location.replace('users/login');                           
         }        
       });
-      
 }
 
+
+var declareListeners = function()
+{
+    $('#editServer').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var title = button.data('title')         
+        
+        // Extract info from data-* attributes
+        // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+        // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+        var modal = $(this)
+        modal.find('.modal-title').text(title)        
+    });
+
+    $('#editServer').on('hide.bs.modal', function (event) {
+        //When dialog is closed, hide errors
+        $("#host_name").val('');
+        $("#server_config_alert").hide();
+    });
+
+    //Hide all config dialog at first    
+    $("#server_config_alert").hide();
+}
+
+var fire;
 $(document).ready(function(){        
+
+    declareListeners();   
+    fire = firebase.firestore().collection('root');
+
     //Check if user has logged in, otherwise, send him back to log in
     if(window.location.pathname=='/wf_man')
-        performConnect();     
+        performConnect();      
 });
 
 var current_div;
@@ -47,11 +72,11 @@ function performConnect()
                 else{
                     $('#notif_bar').css('background-color','#4CAF50');
                     $('#notif_bar').text("Connected");
-                    setTimeout(function(){
+                    setTimeout(function()
+                    {
                         $('#notif_bar').hide();
-                    //Do other stuff after immediately connecting
-                    showSearch();
-
+                        //Default Landing Page
+                        showSettings();
                     }, 1000);                                        
                 }
                     
@@ -234,6 +259,7 @@ var typingTimer;                //timer identifier
 var showSearch = function()
 {
     $('#dash_body').hide();
+    $('#sett_body').hide();
 
     $(".dropdown-item").click(function(){
         var button = $(this).parents(".btn-group").find('.btn')
@@ -269,6 +295,7 @@ var showDashboard = function()
     clearTimeout(typingTimer);    
     clearInterval(dashStatsTimer);
 
+    $('#sett_body').hide();
     $('#srch_body').hide();
     $('#dash_body').show();
 
@@ -284,11 +311,16 @@ var showDashboard = function()
     }, 0.5 * 60 * 1000);    
     
 }
+var showSettings = function()
+{    
+    $('#srch_body').hide();
+    $('#dash_body').hide();
+    $('#sett_body').show();
+}
 
-currentUser = null;
+
 var requestLogin = function()
-{   
-    var currentUser = null; 
+{       
     un = $('#username_box').val()    
     pw = $('#password_box').val()        
     req_data = {username:un,password:pw};                        
@@ -315,7 +347,8 @@ var requestLogin = function()
             {                        
                 
                 firebase.auth().signInWithCustomToken(response.data.token)
-                .then(function()                {               
+                .then(function()                
+                {               
                         
                         //Authentication successful. User recieves the token 
                         //Send the Token ID back to the server in exchange for cookie                 
@@ -336,7 +369,7 @@ var requestLogin = function()
                                     {
                                         $('#alert').removeClass('alert-warning');                                    
                                         $('#alert').removeClass('alert-danger');                                    
-                                        $('#alert').html(response.data.info);               
+                                        $('#alert').html(response.data.info);                                              
                                     }
                                     else
                                     {                                                       
@@ -365,7 +398,15 @@ var requestLogin = function()
                             $('#alert').addClass('alert-danger');
                             $('#alert').html(error.message);               
                         }); 
-                });     
+                })
+                .catch(function(error){
+                    var errorCode = error.code;
+                    var errorMessage = error.message;                    
+                    $('#alert').removeClass('alert-warning');
+                    $('#alert').addClass('alert-danger');
+                    $('#alert').html(error.message);  
+                });
+                
             }
         },            
         fail : function(xhr,textStatus,error)
@@ -388,7 +429,7 @@ var LogOut = function()
         //This will destroy the cookies
         $.ajax({
             url: '/users/logout',            
-            type: 'POST',
+            type: 'POST',            
             beforeSend : function(xhr){
                 $('#notif_bar').show();
                 $('#notif_bar').text("Logging out...");    
@@ -399,4 +440,44 @@ var LogOut = function()
       }).catch(function(error) {        
       });
 }
+
+var saveServerDetails = function()
+{    
+    var title = $("#host_name").val().trim();
+    var server_type = ($("input[name='server_type']:checked").val()=='prod')?1:0;
+    var auth_type = ($("input[name='auth_type']:checked").val()=='sql')?1:0;    
+    var username = firebase.auth().currentUser.uid;    
+    if(title=='')
+    {       
+       $('#server_config_alert').removeClass('alert-success');
+       $('#server_config_alert').addClass('alert-danger');
+       $("#server_config_alert").text("Please enter a server name");
+       $("#server_config_alert").show();
+       return;
+    }    
+    $('#server_config_alert').removeClass('alert-danger');
+    $('#server_config_alert').addClass('alert-success');    
+    $("#server_config_alert").text("Saving...");
+    $("#server_config_alert").show();
+    //Prepare server configuration            
+    fire.doc("users").collection(username).doc('hosts').set({  
+            [title] : 
+            {     
+                host: title,
+                server_type: server_type,
+                auth_type: auth_type        
+            }
+        },{merge : true})
+    .then(function() {       
+       $('#editServer').modal('toggle');                  
+    })
+    .catch(function(error) {
+        $('#server_config_alert').removeClass('alert-success');
+        $('#server_config_alert').addClass('alert-danger');
+        $("#server_config_alert").text("Oops " + error);
+        $("#server_config_alert").show();
+    });
+
+}
+
 

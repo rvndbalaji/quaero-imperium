@@ -9,21 +9,35 @@
             </a>            
         </div>        
         <div class="row menu_bar">
-            <div class="col-lg-auto col-md-auto menu_item" onclick="showDashboard()">                           
-                Dashboard            
-            </div>                
-            <div class="col-lg-auto col-md-auto menu_item" onclick="showSearch()">                           
-                Search
-            </div>
-            <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
-                Monitor
-            </div>
-            <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
-                Reporting
-            </div>
-            <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
-                Queries
-            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="row">
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="showDashboard()">                           
+                        Dashboard            
+                    </div>                
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="showSearch()">                           
+                        Search
+                    </div>
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
+                        Monitor
+                    </div>
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
+                        Reporting
+                    </div>
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
+                        Queries
+                    </div>            
+                </div>             
+            </div>  
+            <div class="col-lg-6 col-md-6">
+                <div class="row justify-content-end">
+                    <div class="col-lg-auto col-md-auto menu_item m" onclick="showMonitor()">                           
+                        Profile
+                    </div>  
+                    <div class="col-lg-auto col-md-auto menu_item m" onclick="showSettings()">                           
+                        Settings
+                    </div>  
+                </div>
+            </div> 
         </div>
     </div>   
     <br>   
@@ -119,6 +133,87 @@
 
                 </div>
                 </div>
-            </div>
+    </div>
+    <div class="container-fluid" id="sett_body" align="center">
+        <div class="body_content">
+            <div class="container-fluid">
+                <div class="row justify-content-center">                    
+                    <div class="col-lg-3 col-md-3 col-sm-auto col-xs-auto">                                
+                        <div class="btn-group srch_box">
+                            <input type="text" class="form-control" id="srch_sett" placeholder="Search Settings" >
+                        </div>
+                    </div>
+                </div>                    
+                <br>
+                <div class="row">
+                    <div class="sett_item col-lg-12 col-md-12 col-sm-12 col-xs-12" id="sett_configserver" align="left">
+                        <b>Configure Servers</b><br>
+                        Server configurations to access metastores
+                        <br><br>
+                        <div class="expanded_sett">
+                            <button type="button" class="btn btn-success"  data-toggle="modal" data-target="#editServer" data-title="Add a server">
+                                Add a new server
+                            </button>
+                            <div class="modal fade" data-backdrop="static" id="editServer" tabindex="-1" role="dialog" aria-labelledby="editServerLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="editServerLabel"></h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">                                            
+                                            <form>              
+                                                <div id='server_config_alert' class="alert alert-danger"></div>                                                                              
+                                                <div class="form-group">  
+                                                    <span><b>Server/Hostname</b></span><br>                                      
+                                                    <input type="text" class="form-control" id="host_name" placeholder="Eg. HSVSQLESPN03T">
+                                                </div>
+                                                <div class="form-group">  
+                                                    <span><b>Server Type</b></span><br>
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="radio" name="server_type" id="test_option" value="test" checked>
+                                                        <label class="form-check-label" for="test_option">Test/Developer</label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="radio" name="server_type" id="prod_option" value="prod">
+                                                        <label class="form-check-label" for="prod_option">Production</label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">  
+                                                    <span><b>Authentication Type</b></span><br>
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="radio" name="auth_type" id="win_option" value="windows" checked>
+                                                        <label class="form-check-label" for="win_option">Windows</label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="radio" name="auth_type" id="sql_option" value="sql">
+                                                        <label class="form-check-label" for="sql_option">SQL</label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="" id="qcred" checked disabled>
+                                                    <label class="form-check-label" for="qcred">
+                                                        Use Quaero username/password
+                                                    </label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                            <button type="button" id="saveServerDetails" class="btn btn-success" onclick="saveServerDetails()">Test &amp; Save changes</button>                                    
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>    
+        </div>
+    </div> 
+
     </div>
 

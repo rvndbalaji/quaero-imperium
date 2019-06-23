@@ -26,7 +26,7 @@ body {
 }
 
 #title, #my_subtitle {
-    color: white;
+    color: white;    
 }
 #title{
     font-size: 2rem;
@@ -59,7 +59,7 @@ body {
     
 }
 
-#srch_body,#dash_body
+#srch_body,#dash_body,#sett_body
 {
     display: none;
 }
@@ -105,16 +105,28 @@ a:visited {
 }
 .menu_bar
 {
-    background-color: var(--primary_light);
-    box-shadow: 0rem 0rem 0.5rem var(--primary_dark);    
-    padding: 0.2rem;    
+    background-color: var(--primary_light);    
+    box-shadow: 0rem 0rem 0.5rem var(--primary_dark);        
     margin-top: -0.2rem;    
+    padding-right:0.45rem;    
+    padding-left:0.45rem;    
     font-weight: bold;        
 }
 
+.menu_item
+{
+  background-color: transparent;
+  padding: 0.25rem;    
+  padding-right:1.2rem;    
+  padding-left:1.2rem; 
+  color: black;
+  transition: all 300ms;
+}
 .menu_item:hover
 {
     cursor: hand;        
+    background-color: #29B6F6;
+    color:white;
 }
 
 .res_item
@@ -126,9 +138,27 @@ a:visited {
     border-radius: 4px;        
 }
 
-label
-{    
-    height:1px;            
+.sett_item
+{
+  background-color: rgb(180, 231, 255);
+  border-radius: 0.2rem;    
+  transition: all 300ms;
+  padding: 0.5rem;
+}
+
+.sett_item:hover{
+  /*background-color: rgb(89, 203, 255);*/
+}
+
+.expanded_sett
+{
+  display:  inline-block;
+}
+
+/*-----------------------SWITCH CSS-------------------*/
+.switch-label
+{   
+    height: 1px;    
 }
 .switch-input {
   display: none;

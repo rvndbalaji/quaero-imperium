@@ -16,7 +16,8 @@ router.get('/',function(req,res){
             });                        
         }).catch(function(error) 
         {        
-            //Otherwise, send him to login page
+            //Otherwise, send him to login page            
+            res.clearCookie('authToken');  
             res.redirect('/users/login');                  
         });       
 });
@@ -24,6 +25,7 @@ router.get('/',function(req,res){
 //Post HomePage
 router.post('/',function(req,res)
 {    
+    
     var result = {
         err: 1,
         data : {}

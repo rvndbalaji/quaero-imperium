@@ -90,7 +90,7 @@ admin.initializeApp({
 });
 
 //Get the current firebase database instance
-firebase = admin.database();
+firebase = admin.firestore().collection('root');
 
 acquireTokenAsString = function(token)
 {    
