@@ -1,28 +1,81 @@
-
-if(window.location.pathname=='/')
+let userLoaded = false;
+var currentUser;
+var visScreen;
+var unsAuth;
+var unsHost;
+function getCurrentUser(auth) {    
+  return new Promise((resolve, reject) => {
+     if (userLoaded) {         
+          resolve(firebase.auth().currentUser);             
+     }     
+     else
+    {   
+        if (unsAuth) unsAuth();
+        unsAuth = auth.onAuthStateChanged(user => 
+        {   
+            if (!user) {                                   
+                clearSession();
+            }         
+            else{                
+                userLoaded = true; 
+                currentUser = user;
+                resolve(user);
+            }
+        }, reject);
+    }
+    
+  });
+}
+var clearSession = function()
 {
-    //Check if user has logged in 
-    //Set a listener to keep currentUser upto date    
-    firebase.auth().onAuthStateChanged(function(user) {
-        if (!user) {                      
-            document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";         
-            window.location.replace('users/login');                           
-        }        
-      });
+    unsAuth();
+    currentUser = undefined;               
+    userLoaded = false;
+    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";                                         
+    window.location.replace('users/login');                                             
 }
 
 
+var fire;
+$(document).ready(function(){        
+    
+    if(window.location.pathname=='/' || window.location.pathname=='/wf_man')
+    {
+        getCurrentUser(firebase.auth()).then(user=>{            
+            currentUser = user;                
+            fire = firebase.firestore().collection('root');          
+                if(window.location.pathname=='/wf_man')
+                { 
+                    visScreen = $('#srch_body');
+                    declareListeners();                      
+                }
+        }).catch(err=>{
+            clearSession();
+        });
+    }
+    
+});
+
+var configured_hosts;
 var declareListeners = function()
-{
+{    
     $('#editServer').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget) // Button that triggered the modal
-        var title = button.data('title')         
-        
-        // Extract info from data-* attributes
-        // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
-        // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+        var type = button.data('type')         
+        var title = button.data('title')    
+        var host_name = button.html();                     
         var modal = $(this)
         modal.find('.modal-title').text(title)        
+        $('#deleteServerDetails').fadeIn(); 
+        $('#host_name').attr('disabled','disabled');       
+        if(type=='add')
+        {
+            host_name = "";            
+            $('#deleteServerDetails').hide();
+            $('#host_name').removeAttr('disabled');
+        }      
+        $('#host_name').val(host_name);
+        $('#host_name').focus();
     });
 
     $('#editServer').on('hide.bs.modal', function (event) {
@@ -33,32 +86,110 @@ var declareListeners = function()
 
     //Hide all config dialog at first    
     $("#server_config_alert").hide();
+    $('#srch_box').attr('disabled','disabled');
+    $("#metastore_name").attr('disabled','disabled');
+    $('#notif_bar').hide();
+    //Listener to get hosts and set them as drop down menus in search section
+    //Remove any previous listeners 
+   if (unsHost) unsHost();   
+   unsHost =  fire.doc('users').collection(currentUser.uid).doc('hosts').onSnapshot(function(hosts)
+    {      
+        
+        var empty = true;
+        if (hosts.exists) {            
+            configured_hosts = hosts.data();
+            configured_host_names = Object.keys(configured_hosts);                        
+            if(configured_host_names.length!=0)
+            {
+                var sett_content = "";
+                var srch_content = "";
+                configured_host_names.forEach(myFunction);            
+                function myFunction(item, index) 
+                {
+                    sett_content += "<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'><button type='button' class='btn btn-light'  data-toggle='modal' data-target='#editServer' data-type='edit' data-title='Edit server'>" + item + "</button></div>"; 
+                    srch_content += "<a class='dropdown-item server_item' href='#' target='_self'>" + item + "</a>"
+                }               
+                
+                $('#server_list').html(sett_content);                                            
+                $('#server_drop').html(srch_content);                                                            
+                $('#server_name').removeAttr('disabled');                
+                $('#server_name').html("Select server");                                                                            
+                
+                empty =false;
+            }
+        }
+        if(empty)
+        {
+            $('#server_list').html("<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'>You haven't configured any servers</div>");            
+            $('#server_name').html("Not configured");                                            
+            $('#server_name').attr('disabled','disabled');            
+        }
+        
+        //If current screen is search section, display the search screen
+        if(visScreen.prop('id')=='srch_body')
+        {
+            //Set the listener for selecting server
+            $(".server_item").unbind().click(function()
+            {
+                var button = $(this).parents(".btn-group").find('.btn')        
+                host_name = $(this).text();
+                button.html(host_name);                
+                //Now that the server is selected, we need to fetch the list of metastores
+                //and establish connection
+                performConnect();
+                
+            });    
+            //Display search section
+            showSearch();
+        }  
+        
+
+    });
+
+    
 }
 
-var fire;
-$(document).ready(function(){        
 
-    declareListeners();   
-    fire = firebase.firestore().collection('root');
+var typingTimer;                //timer identifier
+var showSearch = function()
+{    
+    visScreen.hide();          
 
-    //Check if user has logged in, otherwise, send him back to log in
-    if(window.location.pathname=='/wf_man')
-        performConnect();      
-});
+    //setup before functions
+    clearTimeout(typingTimer);  
+    clearInterval(dashStatsTimer);
+
+    var doneTypingInterval = 1000;  //time in ms, 1 second for example
+    var $input = $('#srch_box');
+
+    //on keyup, start the countdown
+    $input.on('keyup', function () {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(performSearch, doneTypingInterval);
+    });
+
+    //on keydown, clear the countdown 
+    $input.on('keydown', function () {
+    clearTimeout(typingTimer);
+    });
+
+    visScreen = $('#srch_body');
+    $('#srch_body').fadeIn();    
+}
 
 var current_div;
 
 function performConnect()
-    {           
-        server_name = $('#server_name').html().trim();
-        db_name = $('#db_name').html().trim();        
-        req_data = {server : server_name, db:db_name + "_metastore"};                                
+    {          
+        
+        server_name = $('#server_name').html().trim();        
+        req_data = {server : server_name,auth_type: configured_hosts[server_name].auth_type};                                
         $.ajax({
             url: '/wf_man/connectSQL',
             data : req_data,
             type: 'POST',
-            beforeSend : function(xhr){
-                $('#notif_bar').show();
+            beforeSend : function(xhr){                
+                $('#notif_bar').fadeIn();
                 $('#notif_bar').text("Connecting to sever...");    
                 $('#notif_bar').css('background-color','#2196F3');
             },           
@@ -71,13 +202,79 @@ function performConnect()
                 }
                 else{
                     $('#notif_bar').css('background-color','#4CAF50');
-                    $('#notif_bar').text("Connected");
-                    setTimeout(function()
-                    {
-                        $('#notif_bar').hide();
-                        //Default Landing Page
-                        showSettings();
-                    }, 1000);                                        
+                    $('#notif_bar').text("Connected");                    
+                   
+                        //Connected, now let's fetch metastores
+                                    server_name = $('#server_name').html().trim();        
+                                    req_data = {server : server_name,auth_type: configured_hosts[server_name].auth_type};                                
+                                    $.ajax({
+                                        url: '/wf_man/getMetastores',
+                                        data : req_data,
+                                        type: 'GET',
+                                        beforeSend : function(xhr){    
+                                            empty = true;                                                        
+                                            $('#notif_bar').text("Fetching metastores...");    
+                                            $('#notif_bar').css('background-color','#1ABC9C');
+                                        },           
+                                        success: function (response) 
+                                        {                
+                                            if(response.err==1)
+                                            {
+                                                $('#notif_bar').text(response.data.info);
+                                                $('#notif_bar').css('background-color','#F44336');
+                                            }
+                                            else{
+
+                                                //We have the metastores, let's update them                                                
+                                                metastore_list = Object.values(response.data.info);                        
+                                                if(metastore_list.length!=0)
+                                                {
+                                                    var meta_content = "";
+                                                    metastore_list.forEach(myFunction);            
+                                                    function myFunction(item, index) 
+                                                    {
+                                                        meta_content += "<a class='dropdown-item meta_item' href='#' target='_self'>" + item['NAME'].replace('_metastore','') + "</a>"
+                                                    }                                                                                                            
+                                                    $('#meta_drop').html(meta_content);                                                            
+                                                    $('#metastore_name').removeAttr('disabled');                
+                                                    $('#metastore_name').html("Select metastore");                                                                            
+                                                    
+                                                    empty =false;
+                                                }
+                                                if(empty)
+                                                {
+                                                    $('#server_list').html("<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'>You haven't configured any servers</div>");            
+                                                    $('#server_name').html("No metastores");                                            
+                                                    $('#server_name').attr('disabled','disabled');            
+                                                    $('#notif_bar').css('background-color','#F44336');
+                                                    $('#notif_bar').text("No metastores found in this server (format : *_metastore)"); 
+                                                }
+                                                else
+                                                {
+                                                    $(".meta_item").unbind().click(function()
+                                                    {
+                                                        var button = $(this).parents(".btn-group").find('.btn')        
+                                                        host_name = $(this).text();
+                                                        button.html(host_name);                
+                                                    });
+
+                                                    $('#notif_bar').css('background-color','#4CAF50');                                                
+                                                    $('#notif_bar').text("Ready");
+                                                    $('#srch_box').removeAttr('disabled');                                                     
+                                                }
+                                                setTimeout(function()
+                                                    {
+                                                        $('#notif_bar').hide();                                                        
+                                                    }, 1000);
+                                            }
+                                                
+                                        },
+                                        fail : function(xhr,textStatus,error)
+                                        {
+                                            $('#notif_bar').css('background-color','#F44336');
+                                            $('#notif_bar').text(error);                
+                                        }
+                                        });
                 }
                     
             },
@@ -92,7 +289,8 @@ function performConnect()
 function updateDashboardStats(wf_type)
 {
     prev_value = $('#' + wf_type + '_wf').text();    
-    req_data = { type : wf_type};
+    metastore_name = $('#metastore_name').html().trim();        
+    req_data = { type : wf_type, db:metastore_name + "_metastore",schema:'dbo'};
     
     $.ajax({
         url: '/wf_man/wf/count',
@@ -121,7 +319,7 @@ function updateDashboardStats(wf_type)
 prev_searchterm = "";
 var cur_request;
 function performSearch()
-{
+{    
     //Search string
     srch_val = $('#srch_box').val().trim();
     //Search col
@@ -146,24 +344,27 @@ function performSearch()
         prev_searchterm= "";
         return;
     }
-
+    //Clear the results
+    $('#srch_result_div').html("");
+    
     prev_searchterm = srch_val;     
-
-    req_data = { where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad};        
+    metastore_name = $('#metastore_name').html().trim();            
+    req_data = { where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad, db:metastore_name + "_metastore", schema:'dbo'};        
     cur_request =  $.ajax({
         url: '/wf_man/search/wf',
         data : req_data,
         type: 'GET',
         beforeSend : function(xhr){            
             $('#notif_bar').text("Fetching workflows...");    
-            $('#notif_bar').show();            
+            $('#notif_bar').fadeIn();            
             $('#notif_bar').css('background-color','#2196F3');            
+            $('#srch_result_div').hide();
         },           
         success: function (response) 
         {
            $('#notif_bar').hide();
             if(response.err==1)
-            {
+            {                
                 $('#srch_result_div').html("<br><br>Something went wrong : " + response.data.info);
             }
             else{                
@@ -176,11 +377,13 @@ function performSearch()
                     prettifyAndDisplayResult(result);                    
                 }               
             }
+            $('#srch_result_div').fadeIn();
         },
             fail : function(xhr,textStatus,error)
         {            
             $('#notif_bar').hide();
             $('#srch_result_div').text(error);
+            $('#srch_result_div').fadeIn();
         }
         });    
 }
@@ -255,39 +458,6 @@ function prettifyAndDisplayResult(result)
     $('#srch_result_div').html(new_content);    
 }
 
-var typingTimer;                //timer identifier
-var showSearch = function()
-{
-    $('#dash_body').hide();
-    $('#sett_body').hide();
-
-    $(".dropdown-item").click(function(){
-        var button = $(this).parents(".btn-group").find('.btn')
-        button.html($(this).text());
-        button.val($(this).data('value')); 
-      });       
-
-    //setup before functions
-    clearTimeout(typingTimer);  
-    clearInterval(dashStatsTimer);
-
-    var doneTypingInterval = 1000;  //time in ms, 5 second for example
-    var $input = $('#srch_box');
-
-    //on keyup, start the countdown
-    $input.on('keyup', function () {
-    clearTimeout(typingTimer);
-    typingTimer = setTimeout(performSearch, doneTypingInterval);
-    });
-
-    //on keydown, clear the countdown 
-    $input.on('keydown', function () {
-    clearTimeout(typingTimer);
-    });
-
-    $('#srch_body').show();    
-}
-
 var dashStatsTimer; 
 var showDashboard = function()
 {
@@ -295,9 +465,9 @@ var showDashboard = function()
     clearTimeout(typingTimer);    
     clearInterval(dashStatsTimer);
 
-    $('#sett_body').hide();
-    $('#srch_body').hide();
-    $('#dash_body').show();
+    visScreen.hide();
+    visScreen = $('#dash_body');
+    $('#dash_body').fadeIn();
 
     //Run once
     updateDashboardStats("failed");
@@ -311,11 +481,12 @@ var showDashboard = function()
     }, 0.5 * 60 * 1000);    
     
 }
+
 var showSettings = function()
-{    
-    $('#srch_body').hide();
-    $('#dash_body').hide();
-    $('#sett_body').show();
+{       
+    visScreen.hide();
+    visScreen = $('#sett_body');
+    $('#sett_body').fadeIn();    
 }
 
 
@@ -431,7 +602,7 @@ var LogOut = function()
             url: '/users/logout',            
             type: 'POST',            
             beforeSend : function(xhr){
-                $('#notif_bar').show();
+                $('#notif_bar').fadeIn();
                 $('#notif_bar').text("Logging out...");    
                 $('#notif_bar').css('background-color','#F44336');
             }
@@ -443,24 +614,24 @@ var LogOut = function()
 
 var saveServerDetails = function()
 {    
-    var title = $("#host_name").val().trim();
+    var title = $("#host_name").val().trim().toUpperCase();
     var server_type = ($("input[name='server_type']:checked").val()=='prod')?1:0;
     var auth_type = ($("input[name='auth_type']:checked").val()=='sql')?1:0;    
-    var username = firebase.auth().currentUser.uid;    
+    
     if(title=='')
     {       
        $('#server_config_alert').removeClass('alert-success');
        $('#server_config_alert').addClass('alert-danger');
        $("#server_config_alert").text("Please enter a server name");
-       $("#server_config_alert").show();
+       $("#server_config_alert").fadeIn();
        return;
     }    
     $('#server_config_alert').removeClass('alert-danger');
     $('#server_config_alert').addClass('alert-success');    
     $("#server_config_alert").text("Saving...");
-    $("#server_config_alert").show();
+    $("#server_config_alert").fadeIn();
     //Prepare server configuration            
-    fire.doc("users").collection(username).doc('hosts').set({  
+    fire.doc("users").collection(currentUser.uid).doc('hosts').set({  
             [title] : 
             {     
                 host: title,
@@ -475,9 +646,34 @@ var saveServerDetails = function()
         $('#server_config_alert').removeClass('alert-success');
         $('#server_config_alert').addClass('alert-danger');
         $("#server_config_alert").text("Oops " + error);
-        $("#server_config_alert").show();
+        $("#server_config_alert").fadeIn();
     });
 
+}
+
+
+var deleteServerDetails = function()
+{    
+    $('#saveServerDetails').attr('disabled','disabled');                  
+    var title = $("#host_name").val().trim().toUpperCase();
+    $('#server_config_alert').addClass('alert-danger');    
+    $("#server_config_alert").text("Deleting...");
+    $("#server_config_alert").fadeIn();
+    //Prepare server configuration            
+    fire.doc("users").collection(currentUser.uid).doc('hosts').update({  
+            [title] : firebase.firestore.FieldValue.delete()
+    })
+    .then(function() {       
+       $('#editServer').modal('toggle');    
+       $('#saveServerDetails').removeAttr('disabled');                                
+    })
+    .catch(function(error) {
+        $('#server_config_alert').removeClass('alert-success');
+        $('#server_config_alert').addClass('alert-danger');
+        $("#server_config_alert").text("Oops " + error);
+        $("#server_config_alert").fadeIn();
+        $('#saveServerDetails').removeAttr('disabled');                                
+    });
 }
 
 
