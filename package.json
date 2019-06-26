@@ -15,7 +15,8 @@
     "express-validator": "^5.3.1",
     "firebase-admin": "^8.2.0",
     "mssql": "^5.1.0",
-    "multer": "^1.4.1"
+    "multer": "^1.4.1",
+    "pm2": "^3.5.1"
   },
   "devDependencies": {},
   "scripts": {

@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "C:\\Users\\balajia\\AppData\\Local\\Continuum\\anaconda3\\python.exe"
+    "python.pythonPath": "C:\\Users\\balajia\\AppData\\Local\\Continuum\\anaconda3\\python.exe",
+    "git.ignoreLimitWarning": true
 }
