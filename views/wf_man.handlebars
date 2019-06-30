@@ -20,17 +20,17 @@
                     <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
                         Monitor
                     </div>
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="">                           
                         Reporting
                     </div>
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
+                    <div class="col-lg-auto col-md-auto menu_item" onclick=")">                           
                         Queries
                     </div>            
                 </div>             
             </div>  
             <div class="col-lg-6 col-md-6">
                 <div class="row justify-content-end">
-                    <div class="col-lg-auto col-md-auto menu_item m" onclick="showMonitor()">                           
+                    <div class="col-lg-auto col-md-auto menu_item m" onclick="">                           
                         Profile
                     </div>  
                     <div class="col-lg-auto col-md-auto menu_item m" onclick="showSettings()">                           
@@ -39,8 +39,13 @@
                 </div>
             </div> 
         </div>
-    </div>   
-    <br>   
+    </div><br>
+    <div  id="load_img" class="row justify-content-center">                        
+        <div style="color:#007BFF" class="la-square-jelly-box mr-3">
+            <div></div><div></div>            
+        </div>                                    
+        Just rollin' 
+    </div>
     <div class="container-fluid" id="dash_body" align="center">
             <div class="body_content">
                     <div class="container-fluid">
@@ -60,7 +65,7 @@
                 <div class="container-fluid">                                             
                     <div class="row justify-content-center"  style='zoom:0.9'>                        
                         <div class="col-lg-auto col-md-auto col-sm-6 col-xs-12" align="left">
-                            <div><span class="gray_text">Server</span></div>                            
+                            <div><span class="gray_text">Select</span></div>                            
                             <div class="btn-group">
                                 <button type="button" id="server_name" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Server
@@ -71,10 +76,10 @@
                             </div>
                         </div>
                         <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto" align="left">
-                            <div><span class="gray_text">Metastore</span></div>                            
+                            <div><span class="gray_text">using</span></div>                            
                             <div class="btn-group" >
                                     <button type="button" id="metastore_name" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Metastore
+                                    Select metastore
                                     </button>
                                     <div class="dropdown-menu" id="meta_drop">
                                         
@@ -82,37 +87,37 @@
                                 </div>
                         </div>    
                         <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto" align="left">
-                                <div><span class="gray_text">Search column</span></div>                                
+                                <div><span class="gray_text">where column</span></div>                                
                                 <div class="btn-group">                                        
                                         <button type="button" id="srch_col" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         WORKFLOW_NAME
                                         </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#" target="_self">WORKFLOW_NAME</a>                                         
+                                         <div class="dropdown-menu" id="wf_drop">
+                                        
                                         </div>
                                     </div>
                         </div>   
                         <div class="col-lg-3 col-md-3 col-sm-auto col-xs-auto" align="left">
-                                <div><span class="gray_text">Search</span></div>                                
+                                <div><span class="gray_text">like %%</span></div>                                
                                 <div class="btn-group srch_box">
                                         <input type="text" class="form-control" id="srch_box">
                                 </div>
                         </div>
                         <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto" align="left">
-                                <div><span class="gray_text">Order by column</span></div>                                
+                                <div><span class="gray_text">order by column</span></div>                                
                                 <div class="btn-group">
                                         <button type="button" id="order_col" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        WORKFLOW_NAME
+                                        WORKFLOW_ID
                                         </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#" target="_self">WORKFLOW_NAME</a>                                         
+                                        <div class="dropdown-menu" id="order_drop">
+                                        
                                         </div>
                                     </div>
                         </div>
                         <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto" align="left">                                
-                                <div><span class="gray_text">Asc/Desc</span></div>                                
+                                <div><span class="gray_text">asc/desc</span></div>                                
                                 <div class="btn-group">
-                                    <button type="button" id="order_type" class="btn btn-primary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button type="button" id="order_type" class="btn btn-primary" onclick="toggleOrder()" aria-haspopup="true" aria-expanded="false">
                                     ASC
                                     </button>                                       
                                 </div>
@@ -131,6 +136,20 @@
                 </div>
                 </div>
     </div>
+    <div class="container-fluid" id="mon_body" align="center">
+            <div class="body_content">
+                    <div class="container-fluid">
+                        <h5>Monitor your workflows</h5>
+                        <div class="row justify-content-center">                               
+                            <div class="col-lg-auto col-md-auto col-sm-6 col-xs-12" align="left">                                     
+                                <div id="monitor_div"> 
+
+                                </div>
+                            </div>
+                        </div>    
+                    </div>    
+            </div>
+    </div>   
     <div class="container-fluid" id="sett_body" align="center">
         <div class="body_content">
             <div class="container-fluid">
@@ -162,6 +181,10 @@
                                                 <div class="form-group">  
                                                     <span><b>Server/Hostname</b></span><br>                                      
                                                     <input type="text" class="form-control" id="host_name">
+                                                </div>
+                                                <div class="form-group">  
+                                                    <span><b>Nickname</b></span><br>                                      
+                                                    <input type="text" class="form-control" id="nick_name">
                                                 </div>
                                                 <div class="form-group">  
                                                     <span><b>Server Type</b></span><br>
@@ -203,7 +226,13 @@
                             </div>
                         </div>
                     </div>
-
+                    <div class="sett_item col-lg-12 col-md-12 col-sm-12 col-xs-12 mt-3" id="sett_prefetch_mwf" align="left">
+                        <b>Prefetch Metadata</b><br>
+                        Frequently queried metastore details which do not change often, can be pre-fetched to allow a faster experience 
+                        <i>(NOTE : Please perform a prefetch once in a while, so you do not have stale metadata)</i>
+                        <br><br>
+                    <div class="expanded_sett">
+                    </div>
                 </div>
             </div>    
         </div>

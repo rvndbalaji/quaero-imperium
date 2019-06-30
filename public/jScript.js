@@ -3,6 +3,8 @@ var currentUser;
 var visScreen;
 var unsAuth;
 var unsHost;
+var unsMon;
+var manualToggle=false;
 function getCurrentUser(auth) {    
   return new Promise((resolve, reject) => {
      if (userLoaded) {         
@@ -35,7 +37,6 @@ var clearSession = function()
     window.location.replace('users/login');                                             
 }
 
-
 var fire;
 $(document).ready(function(){        
     
@@ -43,27 +44,29 @@ $(document).ready(function(){
     {
         getCurrentUser(firebase.auth()).then(user=>{            
             currentUser = user;                
-            fire = firebase.firestore().collection('root');          
+                fire = firebase.firestore().collection('root');          
                 if(window.location.pathname=='/wf_man')
-                { 
+                {   
                     visScreen = $('#srch_body');
                     declareListeners();                      
                 }
         }).catch(err=>{
-            clearSession();
+            console.log(err);          
         });
     }
     
 });
 
 var configured_hosts;
+var monitored_hosts;
 var declareListeners = function()
-{    
+{   
     $('#editServer').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget) // Button that triggered the modal
         var type = button.data('type')         
-        var title = button.data('title')    
-        var host_name = button.html();                     
+        var title = button.data('title')            
+        var host_name = button.html();       
+
         var modal = $(this)
         modal.find('.modal-title').text(title)        
         $('#deleteServerDetails').fadeIn(); 
@@ -73,24 +76,57 @@ var declareListeners = function()
             host_name = "";            
             $('#deleteServerDetails').hide();
             $('#host_name').removeAttr('disabled');
-        }      
+        }
+        else
+        {   
+            //Get and Set the server type
+            server_type  = configured_hosts[host_name].server_type;
+            auth_type  = configured_hosts[host_name].auth_type;            
+            nick_name  = configured_hosts[host_name].nickname;                                    
+            (server_type==1)?($('#prod_option').prop('checked',true)):$('#test_option').prop('checked',true);
+            (auth_type==1)?($('#sql_option').prop('checked',true)):$('#win_option').prop('checked',true);
+            $('#nick_name').val(nick_name);
+            
+        }
+        //Set the host name        
         $('#host_name').val(host_name);
         $('#host_name').focus();
+
     });
 
     $('#editServer').on('hide.bs.modal', function (event) {
         //When dialog is closed, hide errors
         $("#host_name").val('');
+        $("#nick_name").val('');
         $("#server_config_alert").hide();
     });
 
     //Hide all config dialog at first    
     $("#server_config_alert").hide();
-    $('#srch_box').attr('disabled','disabled');
-    $("#metastore_name").attr('disabled','disabled');
     $('#notif_bar').hide();
+
+    //Listener to get the monitors and update any workflow results
+   //Remove any previous listeners            
+   if (unsMon) unsMon();   
+   unsMon =  fire.doc('users').collection(currentUser.uid).doc('monitors').onSnapshot(function(monitors)
+    {
+        monitored_hosts = undefined;                    
+        if (monitors.exists) {            
+            monitored_hosts = monitors.data();                             
+        }
+        if(!manualToggle){
+            prev_searchterm="";
+            performSearch();                  
+            return;          
+        }
+        
+        manualToggle = false;
+
+        
+    });
+
     //Listener to get hosts and set them as drop down menus in search section
-    //Remove any previous listeners 
+    //Remove any previous listeners     
    if (unsHost) unsHost();   
    unsHost =  fire.doc('users').collection(currentUser.uid).doc('hosts').onSnapshot(function(hosts)
     {      
@@ -107,13 +143,14 @@ var declareListeners = function()
                 function myFunction(item, index) 
                 {
                     sett_content += "<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'><button type='button' class='btn btn-light'  data-toggle='modal' data-target='#editServer' data-type='edit' data-title='Edit server'>" + item + "</button></div>"; 
-                    srch_content += "<a class='dropdown-item server_item' href='#' target='_self'>" + item + "</a>"
+                    srch_content += "<a class='dropdown-item server_item' href='#' target='_self'>" +  item + " - " + configured_hosts[item].nickname +  "</a>"
                 }               
                 
                 $('#server_list').html(sett_content);                                            
                 $('#server_drop').html(srch_content);                                                            
-                $('#server_name').removeAttr('disabled');                
-                $('#server_name').html("Select server");                                                                            
+                $('#server_name').removeAttr('disabled');        
+                $('#server_name').html("Select server");                                                                                            
+                disableSearch();
                 
                 empty =false;
             }
@@ -122,37 +159,52 @@ var declareListeners = function()
         {
             $('#server_list').html("<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'>You haven't configured any servers</div>");            
             $('#server_name').html("Not configured");                                            
-            $('#server_name').attr('disabled','disabled');            
-        }
+            $('#server_name').attr('disabled','disabled');    
+            disableSearch();      
+             
+        }        
         
         //If current screen is search section, display the search screen
         if(visScreen.prop('id')=='srch_body')
         {
-            //Set the listener for selecting server
-            $(".server_item").unbind().click(function()
-            {
-                var button = $(this).parents(".btn-group").find('.btn')        
-                host_name = $(this).text();
-                button.html(host_name);                
-                //Now that the server is selected, we need to fetch the list of metastores
-                //and establish connection
-                performConnect();
-                
-            });    
             //Display search section
-            showSearch();
-        }  
-        
-
-    });
-
-    
+            showSearch();           
+        }                
+    });    
+}
+var disableSearch = function()
+{
+    $('#srch_box').attr('disabled','disabled');
+    $("#metastore_name").attr('disabled','disabled');
+    $('#srch_col').attr('disabled','disabled');
+    $('#order_col').attr('disabled','disabled');
+    $('#order_type').attr('disabled','disabled'); 
 }
 
 
 var typingTimer;                //timer identifier
 var showSearch = function()
 {    
+    //Set the listener for selecting server
+    $(".server_item").unbind().click(function()
+    {
+        var button = $(this).parents(".btn-group").find('.btn')        
+        host_name = $(this).text();        
+        button.html(host_name.substr(0, host_name.indexOf('-')).trim());                
+        //Now that the server is selected, we need to fetch the list of metastores
+        //and establish connection
+        disableSearch();
+
+        prev_searchterm="";
+        $('#srch_box').val('');
+        $('#srch_result_div').html("<br><br>Search for workflows and filter them from above");                        
+        $('#notif_bar').fadeIn();
+        $('#notif_bar').text("Connecting to sever...");    
+        $('#notif_bar').css('background-color','#2196F3');
+        performConnect(req_data = undefined,ok_srchConnect,err_srchConnect);
+        
+    });    
+
     visScreen.hide();          
 
     //setup before functions
@@ -174,117 +226,350 @@ var showSearch = function()
     });
 
     visScreen = $('#srch_body');
-    $('#srch_body').fadeIn();    
+    //Remove the loading text 
+    $('#load_img').hide();
+    $('#srch_body').fadeIn();            
+    $('.menu_item').fadeIn();
+}
+
+var monTimer;
+
+var refreshMonitors = function()
+{
+ //setup before functions
+ clearTimeout(typingTimer);  
+ clearInterval(dashStatsTimer);
+ showMonitor();
+}
+var showMonitor = function()
+{       
+    visScreen.hide();
+    visScreen = $('#mon_body');
+    for(server_name in monitored_hosts)
+    {        
+        for(metastore_name in monitored_hosts[server_name])
+        {            
+             wf_list = monitored_hosts[server_name][metastore_name];
+             if(wf_list)
+             {                 
+                 for(i=0; i< wf_list.wf_id.length; i++)                 
+                 {
+                    //We have the workflow ID, lets fetch the details       
+                    req_data = {server : server_name,db:metastore_name,wf : wf_list.wf_id[i]};                                
+                    performConnect(req_data,ok_monConnect,err_monConnect);                                      
+                 }
+             }
+           
+        }
+    }   
+
+    $('#mon_body').fadeIn();    
 }
 
 var current_div;
 
-function performConnect()
-    {          
-        
-        server_name = $('#server_name').html().trim();        
-        req_data = {server : server_name,auth_type: configured_hosts[server_name].auth_type};                                
+function performConnect(req_data,exec_function,err_function)
+    {   
+        //Check if payload has been passed, if not, fetch it.        
+        if(!req_data)
+        {
+            server_name = $('#server_name').html().trim();        
+            req_data = {server : server_name,auth_type: configured_hosts[server_name].auth_type};                                
+        }        
         $.ajax({
             url: '/wf_man/connectSQL',
             data : req_data,
-            type: 'POST',
-            beforeSend : function(xhr){                
-                $('#notif_bar').fadeIn();
-                $('#notif_bar').text("Connecting to sever...");    
-                $('#notif_bar').css('background-color','#2196F3');
-            },           
+            type: 'POST',                   
             success: function (response) 
-            {                
-                if(response.err==1)
-                {
-                    $('#notif_bar').text(response.data.info);
-                    $('#notif_bar').css('background-color','#F44336');
+            {         
+                if(response.err==1)   
+                {     
+                    err_function(response);
                 }
                 else{
-                    $('#notif_bar').css('background-color','#4CAF50');
-                    $('#notif_bar').text("Connected");                    
-                   
-                        //Connected, now let's fetch metastores
-                                    server_name = $('#server_name').html().trim();        
-                                    req_data = {server : server_name,auth_type: configured_hosts[server_name].auth_type};                                
-                                    $.ajax({
-                                        url: '/wf_man/getMetastores',
-                                        data : req_data,
-                                        type: 'GET',
-                                        beforeSend : function(xhr){    
-                                            empty = true;                                                        
-                                            $('#notif_bar').text("Fetching metastores...");    
-                                            $('#notif_bar').css('background-color','#1ABC9C');
-                                        },           
-                                        success: function (response) 
-                                        {                
-                                            if(response.err==1)
-                                            {
-                                                $('#notif_bar').text(response.data.info);
-                                                $('#notif_bar').css('background-color','#F44336');
-                                            }
-                                            else{
-
-                                                //We have the metastores, let's update them                                                
-                                                metastore_list = Object.values(response.data.info);                        
-                                                if(metastore_list.length!=0)
-                                                {
-                                                    var meta_content = "";
-                                                    metastore_list.forEach(myFunction);            
-                                                    function myFunction(item, index) 
-                                                    {
-                                                        meta_content += "<a class='dropdown-item meta_item' href='#' target='_self'>" + item['NAME'].replace('_metastore','') + "</a>"
-                                                    }                                                                                                            
-                                                    $('#meta_drop').html(meta_content);                                                            
-                                                    $('#metastore_name').removeAttr('disabled');                
-                                                    $('#metastore_name').html("Select metastore");                                                                            
-                                                    
-                                                    empty =false;
-                                                }
-                                                if(empty)
-                                                {
-                                                    $('#server_list').html("<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'>You haven't configured any servers</div>");            
-                                                    $('#server_name').html("No metastores");                                            
-                                                    $('#server_name').attr('disabled','disabled');            
-                                                    $('#notif_bar').css('background-color','#F44336');
-                                                    $('#notif_bar').text("No metastores found in this server (format : *_metastore)"); 
-                                                }
-                                                else
-                                                {
-                                                    $(".meta_item").unbind().click(function()
-                                                    {
-                                                        var button = $(this).parents(".btn-group").find('.btn')        
-                                                        host_name = $(this).text();
-                                                        button.html(host_name);                
-                                                    });
-
-                                                    $('#notif_bar').css('background-color','#4CAF50');                                                
-                                                    $('#notif_bar').text("Ready");
-                                                    $('#srch_box').removeAttr('disabled');                                                     
-                                                }
-                                                setTimeout(function()
-                                                    {
-                                                        $('#notif_bar').hide();                                                        
-                                                    }, 1000);
-                                            }
-                                                
-                                        },
-                                        fail : function(xhr,textStatus,error)
-                                        {
-                                            $('#notif_bar').css('background-color','#F44336');
-                                            $('#notif_bar').text(error);                
-                                        }
-                                        });
+                    exec_function(req_data);                    
                 }
-                    
+                
             },
             fail : function(xhr,textStatus,error)
             {
-                $('#notif_bar').css('background-color','#F44336');
-                $('#notif_bar').text(error);                
+               err_function(error);               
             }
             });
     }
+
+
+var err_monConnect = function(error)
+{
+    
+}
+
+var ok_monConnect = function(req_data)
+{   
+    fetchWorkflow(req_data.server,req_data.db,req_data.wf,'WORKFLOW_ID','WORKFLOW_ID','asc');
+}    
+
+
+var err_serverConfig = function(error)
+{
+    $('#server_config_alert').removeClass('alert-danger');
+    $('#server_config_alert').addClass('alert-warning');    
+    $("#server_config_alert").text(error.data.info);
+    $("#server_config_alert").fadeIn();
+    $("#host_name").removeAttr('disabled');
+    $("input[name='auth_type']").removeAttr('disabled');
+    $("input[name='server_type']").removeAttr('disabled');
+    $("#saveServerDetails").removeAttr('disabled');
+}
+
+var ok_serverConfig = function(req_data)
+{                                   
+    writeHostDetailsToFirebase(req_data);
+}
+
+
+var err_srchConnect = function(error)
+{
+    $('#notif_bar').text(error.data.info);
+    $('#notif_bar').css('background-color','#F44336');
+}
+
+var ok_srchConnect = function(req_data)
+{
+    $('#notif_bar').css('background-color','#4CAF50');
+    $('#notif_bar').text("Connected");      
+    fetchMetastores();                      
+}
+
+
+function fetchWorkflow(server_name,metastore_name,srch_val,srch_col,order_col,order_ad)
+{   
+    //Clear the results
+    $('#monitor_div').html("");    
+    
+    req_data = { server : server_name,auth_type: configured_hosts[server_name].auth_type,where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad, db:metastore_name , schema:'dbo'};        
+    cur_request =  $.ajax({
+        url: '/wf_man/search/wf',
+        data : req_data,
+        type: 'GET',
+        beforeSend : function(xhr){                               
+            $('#monitor_div').hide();
+        },           
+        success: function (response) 
+        {           
+            if(response.err==1)
+            {                
+                $('#monitor_div').html("<br><br>Something went wrong : " + response.data.info);
+            }
+            else
+            {                
+                result  = response.data.info;          
+                      
+                if(!Object.keys(result).length){
+
+                    $('#monitor_div').html("<br><br>No workflows found where " + srch_col + " like '" + srch_val + "'");
+                    $('#monitor_div').fadeIn();
+                }
+                else
+                {
+                    if(monitored_hosts)                    
+                    {
+                        filtered_wfs = monitored_hosts[server_name][metastore_name];                                                        
+                        if(filtered_wfs)
+                        {
+                            prettifyAndDisplayResult(result,filtered_wfs.wf_id,"#monitor_div");                                                  
+                            return;
+                        }
+                    }
+                    prettifyAndDisplayResult(result,mode = '#monitor_div');
+                }                                            
+            }            
+        },
+            fail : function(xhr,textStatus,error)
+        {                        
+            $('#monitor_div').text(error);
+            $('#monitor_div').fadeIn();
+        }
+        });    
+}
+function fetchMetastores()
+{
+     server_name = $('#server_name').html().trim();         
+     req_data = {server : server_name,auth_type: configured_hosts[server_name].auth_type};                                                                    
+     $.ajax({
+         url: '/wf_man/getMetastores',
+         data : req_data,
+         type: 'POST',
+         beforeSend : function(xhr){    
+             empty = true;                                                        
+             $('#notif_bar').text("Fetching metastores...");    
+             $('#notif_bar').css('background-color','#1ABC9C');
+         },           
+         success: function (response) 
+         {                
+             if(response.err==1)
+             {
+                 $('#notif_bar').text(response.data.info);
+                 $('#notif_bar').css('background-color','#F44336');
+             }
+             else{
+
+                 //We have the metastores, let's update them                                                
+                 metastore_list = Object.values(response.data.info);                                                    
+                 if(metastore_list.length!=0)
+                 {
+                     var meta_content = "";
+                     metastore_list.forEach(myFunction);            
+                     function myFunction(item, index) 
+                     {
+                         meta_content += "<a class='dropdown-item meta_item' href='#' target='_self'>" + item['NAME'].replace('_metastore','') + "</a>"
+                     }                                                                                                            
+                     $('#meta_drop').html(meta_content);                                                            
+                     $('#metastore_name').removeAttr('disabled');         
+                     $('#metastore_name').html("Select metastore");                                                  
+                     empty =false;
+                 }
+                 if(empty)
+                 {
+                     $('#server_list').html("<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'>You haven't configured any servers</div>");            
+                     $('#server_name').html("No metastores");                                            
+                     $('#server_name').attr('disabled','disabled');            
+                     $('#notif_bar').css('background-color','#F44336');
+                     $('#notif_bar').text("No metastores found in this server (format : *_metastore)"); 
+                 }
+                 else
+                 {
+                     $(".meta_item").unbind().click(function()
+                     {
+                         var button = $(this).parents(".btn-group").find('.btn')        
+                         metastore_name = $(this).text();
+                         button.html(metastore_name);             
+
+                         $('#srch_box').attr('disabled','disabled');
+                         $('#srch_col').attr('disabled','disabled');
+                         $('#order_col').attr('disabled','disabled');
+                         $('#order_type').attr('disabled','disabled');
+                        //When the metastore has been selected, we need to immediately fetch the M_WORKFLOW table columns
+                        //This is because each metastore may have different columns and may not be uniform.
+
+                        fetchMWorkflowColumns(req_data,metastore_name);
+                     });                         
+
+                     $('#notif_bar').hide();            
+                     if(metastore_list.length==1)
+                     {                         
+                        $(".meta_item:first").click();
+                     }
+                     else
+                     {
+                        $('#metastore_name').click();
+                     }
+                 }                 
+             }
+                 
+         },
+         fail : function(xhr,textStatus,error)
+         {
+             $('#notif_bar').css('background-color','#F44336');
+             $('#notif_bar').text(error);                
+         }
+         });
+}
+
+function fetchMWorkflowColumns(req_data,metastore_name)
+{    
+    req_data = {server : req_data.server,auth_type: req_data.auth_type,db: metastore_name +"_metastore", table_name : 'M_WORKFLOW'};                                                                    
+    $.ajax({
+        url: '/wf_man/getColumns',
+        data : req_data,
+        type: 'POST',
+        beforeSend : function(xhr){    
+            empty = true;        
+            $('#notif_bar').text("Fetching M_WORKFLOW columns...");    
+            $('#notif_bar').css('background-color','#1ABC9C');
+            $('#notif_bar').fadeIn();
+
+        },           
+        success: function (response) 
+        {                
+            if(response.err==1)
+            {                
+                $('#notif_bar').text(response.data.info);
+                $('#notif_bar').css('background-color','#F44336');                
+            }
+            else{
+
+                //We have the metastores, let's update them                                                
+                m_columns = Object.values(response.data.info);                                                                    
+                if(m_columns.length!=0)
+                {
+                    var wf_content = "";
+                    var order_content = "";
+                    m_columns.forEach(myFunction);            
+                    function myFunction(item, index) 
+                    {
+                        wf_content += "<a class='dropdown-item wf_item' href='#' target='_self'>" + item['COLUMN_NAME'] + "</a>"
+                        order_content += "<a class='dropdown-item order_item' href='#' target='_self'>" + item['COLUMN_NAME'] + "</a>"
+                    }                                                                                                            
+                    $('#wf_drop').html(wf_content);                                                                                
+                    $('#order_drop').html(order_content);                                                                                
+                    empty =false;
+                }
+                if(empty)
+                {                    
+                    $('#srch_col').html("No columns");                                            
+                    $('#srch_col').attr('disabled','disabled');            
+                    $('#notif_bar').css('background-color','#F44336');
+                    $('#notif_bar').text("No M_WORKFLOW columns found in this metastore"); 
+                }
+                else
+                {
+                    $(".wf_item").unbind().click(function()
+                    {
+                        var button = $(this).parents(".btn-group").find('.btn')        
+                        col_name = $(this).text();
+                        button.html(col_name);    
+                        $('#srch_box').removeAttr('disabled');       
+                        $('#srch_col').removeAttr('disabled');       
+                        $('#order_col').removeAttr('disabled');       
+                        $('#order_type').removeAttr('disabled');                
+                        prev_searchterm="";
+                        $('#srch_box').val('');
+                        $('#srch_result_div').html("<br><br>Search for workflows and filter them from above");        
+                    });     
+                    $(".order_item").unbind().click(function()
+                    {
+                        var button = $(this).parents(".btn-group").find('.btn')        
+                        col_name = $(this).text();
+                        button.html(col_name);                            
+                        prev_searchterm="";
+                        performSearch();
+                    });    
+                    
+                    $('#notif_bar').css('background-color','#4CAF50');                                                
+                    $('#notif_bar').text("Ready");                    
+                    $('#notif_bar').fadeOut();
+                    
+                    
+                    $('.wf_item').filter(function() {
+                        return $(this).text() == 'WORKFLOW_NAME';
+                     }).click();
+                     $('.order_item').filter(function() {
+                        return $(this).text() == 'WORKFLOW_ID';
+                     }).click();
+                    
+                }                 
+            }
+                
+        },
+        fail : function(xhr,textStatus,error)
+        {
+            $('#notif_bar').css('background-color','#F44336');
+            $('#notif_bar').text(error);                
+        }
+        });
+}
+
 
 function updateDashboardStats(wf_type)
 {
@@ -319,7 +604,8 @@ function updateDashboardStats(wf_type)
 prev_searchterm = "";
 var cur_request;
 function performSearch()
-{    
+{   
+    server_name = $('#server_name').html().trim();         
     //Search string
     srch_val = $('#srch_box').val().trim();
     //Search col
@@ -348,8 +634,9 @@ function performSearch()
     $('#srch_result_div').html("");
     
     prev_searchterm = srch_val;     
-    metastore_name = $('#metastore_name').html().trim();            
-    req_data = { where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad, db:metastore_name + "_metastore", schema:'dbo'};        
+    metastore_name = $('#metastore_name').html().trim();               
+
+    req_data = { server : server_name,auth_type: configured_hosts[server_name].auth_type,where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad, db:metastore_name + "_metastore", schema:'dbo'};        
     cur_request =  $.ajax({
         url: '/wf_man/search/wf',
         data : req_data,
@@ -367,17 +654,28 @@ function performSearch()
             {                
                 $('#srch_result_div').html("<br><br>Something went wrong : " + response.data.info);
             }
-            else{                
-                result  = response.data.info;                
+            else
+            {                
+                result  = response.data.info;          
                 if(!Object.keys(result).length){
 
                     $('#srch_result_div').html("<br><br>No workflows found where " + srch_col + " like '" + srch_val + "'");
+                    $('#srch_result_div').fadeIn();
                 }
-                else{
-                    prettifyAndDisplayResult(result);                    
-                }               
-            }
-            $('#srch_result_div').fadeIn();
+                else
+                {
+                    if(monitored_hosts)                    
+                    {
+                        filtered_wfs = monitored_hosts[server_name][metastore_name + '_metastore'];                                                        
+                        if(filtered_wfs)
+                        {
+                            prettifyAndDisplayResult(result,filtered_wfs.wf_id,'#srch_result_div');                                                  
+                            return;
+                        }
+                    }
+                    prettifyAndDisplayResult(result,mode = '#srch_result_div');
+                }                                            
+            }            
         },
             fail : function(xhr,textStatus,error)
         {            
@@ -388,8 +686,8 @@ function performSearch()
         });    
 }
 
-function prettifyAndDisplayResult(result)
-{
+function prettifyAndDisplayResult(result,filtered_wfs,displayDiv)
+{    
     var bodyStyles = window.getComputedStyle(document.body);
     var p_light = bodyStyles.getPropertyValue('--primary_light');
     var d_light = bodyStyles.getPropertyValue('--danger_light');
@@ -398,11 +696,15 @@ function prettifyAndDisplayResult(result)
     var p_dark = bodyStyles.getPropertyValue('--primary_dark');
     var d_dark = bodyStyles.getPropertyValue('--danger_dark');
     var s_dark = bodyStyles.getPropertyValue('--success_dark');
-
-    //$('#srch_result_div').text(JSON.stringify(result));    
+    
     var new_content = "";    
-    for (i = 0; i < result.length; i++) {         
+    for (i = 0; i < result.length; i++) {                 
 
+        if(filtered_wfs && $.inArray(Number(result[i].WORKFLOW_ID), filtered_wfs) != -1)
+            isChecked = "checked";            
+        else
+            isChecked = "";
+                
         sel_light = p_light;
         sel_dark = p_dark;
         if(['FAILED','FAILED-CLEANUPFAILED'].indexOf(result[i].WORKFLOW_INSTANCE_STATUS) >=0)        
@@ -415,7 +717,7 @@ function prettifyAndDisplayResult(result)
             sel_light = s_light;
             sel_dark = s_dark;
          }
-        
+         
         new_content +=`
         <div class='container-fluid res_item' id='res_item_` + i +`' style='background-color:` + sel_light +`;border-left:`+ sel_dark +` solid 4px'>
             <div class='row'>
@@ -428,9 +730,9 @@ function prettifyAndDisplayResult(result)
                 <div class='col-lg-auto col-md-auto'>`
                  + result[i].WORKFLOW_INSTANCE_STATUS +   
                 `</div>
-                <div class='col-lg-auto col-md-auto offset-md-4'>
-                    <input type="checkbox" id="mon_toggle_`+i+`" name="set-name" class="switch-input">
-                    <label for="mon_toggle_`+i+`" class="switch-label"><span class="toggle--on">Monitoring</span><span class="toggle--off">Monitor</span></label>
+                <div class='col-lg-auto col-md-auto'>
+                    <input type="checkbox" id="mon_toggle_`+result[i].WORKFLOW_ID+`" name="set-name" class="switch-input" onClick="toggleMonitor(`+result[i].WORKFLOW_ID+`)" ` + isChecked + `>
+                    <label for="mon_toggle_`+result[i].WORKFLOW_ID+`" class="switch-label"><span class="toggle--on">Monitoring</span><span class="toggle--off">Monitor</span></label>
                 </div>
             </div>
             <br>
@@ -453,11 +755,66 @@ function prettifyAndDisplayResult(result)
             </div>
         </div>`;
         
-      } 
-              
-    $('#srch_result_div').html(new_content);    
+      }           
+    
+    $(displayDiv).html(new_content);    
+    $(displayDiv).fadeIn();
+    
 }
 
+
+var toggleMonitor = function(wfid)
+{   
+    manualToggle = true;
+    server_name = $('#server_name').html().trim();   
+    db_name = $('#metastore_name').html().trim();
+    a_type = configured_hosts[server_name].auth_type;          
+    item = $('#mon_toggle_' + wfid).prop('checked');
+    if(item)
+    {        
+        fire.doc("users").collection(currentUser.uid).doc('monitors').set({  
+            [server_name] : 
+            {     
+                [db_name + '_metastore']: 
+                {
+                    wf_id : firebase.firestore.FieldValue.arrayUnion(wfid)
+                },
+                auth_type : a_type             
+            }
+        },{merge : true})
+        .then(function() {       
+             
+        })
+        .catch(function(error) {
+            $('#mon_toggle_' + btn).prop('checked',!item);
+            $('#notif_bar').css('background-color','#F44336');
+            $('#notif_bar').text("Oops! Unable to monitor this workflow");    
+            $('#notif_bar').fadeIn();                        
+            setTimeout(function(){
+                $('#notif_bar').fadeOut();                                    
+            },1000);          
+        });
+    }
+    else
+    {
+        fire.doc("users").collection(currentUser.uid).doc('monitors').set({  
+            [server_name] : 
+            {     
+                [db_name + '_metastore']: 
+                {
+                    wf_id : firebase.firestore.FieldValue.arrayRemove(wfid)
+                },
+                auth_type : a_type             
+            }
+        },{merge : true})
+        .then(function() {       
+             
+        })
+        .catch(function(error) {
+            
+        });
+    }
+}
 var dashStatsTimer; 
 var showDashboard = function()
 {
@@ -613,11 +970,11 @@ var LogOut = function()
 }
 
 var saveServerDetails = function()
-{    
-    var title = $("#host_name").val().trim().toUpperCase();
-    var server_type = ($("input[name='server_type']:checked").val()=='prod')?1:0;
-    var auth_type = ($("input[name='auth_type']:checked").val()=='sql')?1:0;    
-    
+{   
+    var title = $("#host_name").val().trim().toUpperCase();    
+    var nickname = $("#nick_name").val().trim();
+    var auth = ($("input[name='auth_type']:checked").val()=='sql')?1:0;    
+
     if(title=='')
     {       
        $('#server_config_alert').removeClass('alert-success');
@@ -626,31 +983,77 @@ var saveServerDetails = function()
        $("#server_config_alert").fadeIn();
        return;
     }    
+    if(nickname=='')
+    {       
+       $('#server_config_alert').removeClass('alert-success');
+       $('#server_config_alert').addClass('alert-danger');
+       $("#server_config_alert").text("Nicknames make it easier to remember server names!");
+       $("#server_config_alert").fadeIn();
+       return;
+    }
+
+    //Disable the inputs     
+    $("#host_name").attr('disabled','disabled');
+    $("#nick_name").attr('disabled','disabled');
+    $("input[name='auth_type']").attr('disabled','disabled');
+    $("input[name='server_type']").attr('disabled','disabled');
+    $("#saveServerDetails").attr('disabled','disabled');
+
     $('#server_config_alert').removeClass('alert-danger');
+    $('#server_config_alert').addClass('alert-warning');    
+    $("#server_config_alert").text("Testing Connection...");
+    $("#server_config_alert").fadeIn();
+
+    //Check the connection and only then save the host    
+    req_data = {server : title, auth_type: auth};                                
+    performConnect(req_data,ok_serverConfig,err_serverConfig);    
+}
+var writeHostDetailsToFirebase = function()
+{    
+    $('#notif_bar').hide();     
+    var title = $("#host_name").val().trim().toUpperCase();
+    var server_type = ($("input[name='server_type']:checked").val()=='prod')?1:0;
+    var auth_type = ($("input[name='auth_type']:checked").val()=='sql')?1:0;    
+    var nickname = $("#nick_name").val().trim();
+
+    $('#server_config_alert').removeClass('alert-warning');
     $('#server_config_alert').addClass('alert-success');    
     $("#server_config_alert").text("Saving...");
     $("#server_config_alert").fadeIn();
+    
     //Prepare server configuration            
     fire.doc("users").collection(currentUser.uid).doc('hosts').set({  
-            [title] : 
-            {     
-                host: title,
-                server_type: server_type,
-                auth_type: auth_type        
-            }
-        },{merge : true})
+        [title] : 
+        {     
+            host: title,
+            nickname : nickname,
+            server_type: server_type,
+            auth_type: auth_type        
+        }
+    },{merge : true})
     .then(function() {       
-       $('#editServer').modal('toggle');                  
+            $('#editServer').modal('toggle');     
+            //Enable the inputs     
+            $("#host_name").removeAttr('disabled');
+            $("#nick_name").removeAttr('disabled');
+            $("input[name='auth_type']").removeAttr('disabled');
+            $("input[name='server_type']").removeAttr('disabled');
+            $("#saveServerDetails").removeAttr('disabled');
     })
     .catch(function(error) {
         $('#server_config_alert').removeClass('alert-success');
         $('#server_config_alert').addClass('alert-danger');
         $("#server_config_alert").text("Oops " + error);
         $("#server_config_alert").fadeIn();
+        $('#editServer').modal('toggle');     
+        //Enable the inputs     
+        $("nick_name").removeAttr('disabled');
+        $("host_name").removeAttr('disabled');
+        $("#input[name='auth_type']").removeAttr('disabled');
+        $("#input[name='server_type']").removeAttr('disabled');
+        $("#saveServerDetails").removeAttr('disabled');
     });
-
 }
-
 
 var deleteServerDetails = function()
 {    
@@ -672,8 +1075,23 @@ var deleteServerDetails = function()
         $('#server_config_alert').addClass('alert-danger');
         $("#server_config_alert").text("Oops " + error);
         $("#server_config_alert").fadeIn();
-        $('#saveServerDetails').removeAttr('disabled');                                
+        $('#saveServerDetails').removeAttr('disabled');                                        
     });
 }
 
 
+var toggleOrder = function()
+{    
+    text =  $('#order_type').html().trim();
+    if(text=='ASC')
+    {
+        text = 'DESC';
+    }
+    else
+    {
+        text = 'ASC';
+    }
+    $('#order_type').html(text);
+    prev_searchterm=""
+    performSearch();
+}

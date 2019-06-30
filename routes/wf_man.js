@@ -57,12 +57,12 @@ router.get('/wf/count',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(config in global_conn_pool)        
+        if(JSON.stringify(config) in global_conn_pool)        
         {
           getWorkflowCount(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETWFCNT)'}
           res.send(result);
         }
     });
@@ -82,13 +82,13 @@ router.get('/search/wf',function(req,res){
   admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
   .then(function(decodedToken) 
   {    
-    generateConfig(req,decodedToken).then(config=>{           
-        if(config in global_conn_pool)        
+    generateConfig(req,decodedToken).then(config=>{                   
+        if(JSON.stringify(config) in global_conn_pool)        
         {
           fetchWF(config,req,res,result);
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (FETWF)'}
           res.send(result);
         }
     });
@@ -101,7 +101,7 @@ router.get('/search/wf',function(req,res){
 });
 
 //Get metastores for a given server
-router.get('/getMetastores',function(req,res){
+router.post('/getMetastores',function(req,res){
   
   var result = {
     err: 1,
@@ -112,12 +112,12 @@ router.get('/getMetastores',function(req,res){
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(config in global_conn_pool)        
-        {
+        if(JSON.stringify(config) in global_conn_pool)        
+        {                
           getMetastores(config,res,result);
         }
-        else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login'}
+        else{          
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETMS)'}
           res.send(result);
         }
     });
@@ -128,12 +128,39 @@ router.get('/getMetastores',function(req,res){
 });
 
 
+//Get columns for a given table name
+router.post('/getColumns',function(req,res){
+  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {                
+          getColumns(config,req,res,result);
+        }
+        else{          
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETMS)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  }); 
+});
+
 var getWorkflowCount = async function (config,req,res,res_data)
 {   
-  await global_conn_pool[config]; //Ensure a global sql connection exists
+  await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[config].request();
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
       //Set Database and Schema
       current_db_schema = req.query.db + "." + req.query.schema + "."
 
@@ -174,10 +201,10 @@ var getWorkflowCount = async function (config,req,res,res_data)
 var fetchWF = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[config]; //Ensure a global sql connection exists
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[config].request();
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
 
       //Set Database and Schema
       current_db_schema = req.query.db + "." + req.query.schema + "."
@@ -194,7 +221,7 @@ var fetchWF = async function (config,req,res,res_data)
       })
       .catch(err=>{
         res_data.err = 1; 
-        res_data.data = {info : err.originalError.info.message};
+        res_data.data = {info : JSON.stringify(err)};
         res.send(res_data);               
       });
     }
@@ -227,11 +254,11 @@ AND stop_execution_date is null;
 
 
 var getMetastores = async function (config,res,res_data)
-{   
-    await global_conn_pool[config]; //Ensure a global sql connection exists
+{     
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
           //Prepare an SQL request
-          const sql_request = global_conn_pool[config].request();          
+          const sql_request = global_conn_pool[JSON.stringify(config)].request();          
           sql_result = sql_request.query("select NAME from sysdatabases where NAME like '%_metastore'");
 
           //Capture the result when the query completes
@@ -256,10 +283,58 @@ var getMetastores = async function (config,res,res_data)
 }
 
 
+var getColumns = async function (config,req,res,res_data)
+{     
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+          REQ_COL = "COLUMN_NAME";
+          DB_NAME  = req.body.db;
+          SCHEMA_NAME  = "INFORMATION_SCHEMA";
+          TBL_NAME  = "COLUMNS";
+
+          //Prepare an SQL request
+          const sql_request = global_conn_pool[JSON.stringify(config)].request();          
+          sql_result = sql_request.query("select " + REQ_COL + " from " + DB_NAME + "." + SCHEMA_NAME + "." + TBL_NAME + " where TABLE_NAME='" + req.body.table_name + "'");
+
+          //Capture the result when the query completes
+          sql_result.then(function(result)
+          {                    
+            res_data.err = 0;             
+            //Get the result and set it                
+            res_data.data = {info : result.recordset};
+            res.send(res_data);
+            
+          }).catch(err=>{                  
+            res_data.err = 1; 
+            res_data.data = {info : JSON.stringify(err)};
+            res.send(res_data);   
+            
+          });
+      }
+      catch (err)
+      {
+        res_data.err = 1; 
+        res_data.data = {info : err};
+        res.send(res_data);             
+      }
+}
+
+
 var generateConfig = function(req,decodedToken)
-{
-  return new Promise((resolve,reject) => {
-    
+{   
+  return new Promise((resolve,reject) => {    
+    if(req.method=='GET')
+        {
+          servername = req.query.server;
+          auth_type = req.query.auth_type;          
+        }
+        else if(req.method=='POST')
+        {
+          servername = req.body.server;
+          auth_type = req.body.auth_type;          
+        }
+        
+      
     firebase.doc('users').collection(decodedToken.uid).doc('profile').get().then( user_data =>
     {   
       if(!user_data.exists)        
@@ -272,13 +347,13 @@ var generateConfig = function(req,decodedToken)
       var config = {
         user : decodedToken.uid,
         password : decrypt(user_data.password),
-        server : req.body.server,        
+        server : servername,        
         domain : 'QUAERO',
         options: 
             {
-              trustedConnection: (req.body.auth_type==0)?true:false
+              trustedConnection: (auth_type==0)?true:false
             }
-        }
+        }                
       resolve(config);      
     })
     .catch(function(error) {
@@ -292,14 +367,13 @@ var connectSQL = async function (decodedToken,req,res,res_data)
 { 
     generateConfig(req,decodedToken).then(config=>{
     
-     //Once we prepare the config, we check to see if global conn pool exists
-        //Check if conn pool exists  
-        
-        if(config in global_conn_pool)
+        //Once we prepare the config, we check to see if global conn pool exists
+        //Check if conn pool exists               
+        if(JSON.stringify(config) in global_conn_pool)
         {                       
           res_data.err = 0;      
           res_data.data = {info : "connected"};             
-          res.send(res_data);                  
+          res.send(res_data);                
         }
         else
         {                    
@@ -307,18 +381,18 @@ var connectSQL = async function (decodedToken,req,res,res_data)
           new sql.ConnectionPool(config).connect()
           .then(pool => {      
               //Save the connection in global pool
-              global_conn_pool[config] = pool;
+              global_conn_pool[JSON.stringify(config)] = pool;
               res_data.err = 0;      
               res_data.data = {info : "connected"};             
-              res.send(res_data);
+              res.send(res_data);              
 
           }).catch(err => {
-              delete global_conn_pool[config];
+              delete global_conn_pool[JSON.stringify(config)];
               res_data.err = 1;
               res_data.data = {info : err.message}; 
               res.send(res_data);
           });  
-        }
+        }        
 
   });
 
