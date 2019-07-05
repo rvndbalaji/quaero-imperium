@@ -116,6 +116,7 @@ var declareListeners = function()
         }
         if(!manualToggle){
             prev_searchterm="";
+            //Refresh the search results on Search screen
             performSearch();                  
             return;          
         }
@@ -132,7 +133,8 @@ var declareListeners = function()
     {      
         
         var empty = true;
-        if (hosts.exists) {            
+        if (hosts.exists) 
+        {            
             configured_hosts = hosts.data();
             configured_host_names = Object.keys(configured_hosts);                        
             if(configured_host_names.length!=0)
@@ -144,8 +146,13 @@ var declareListeners = function()
                 {
                     sett_content += "<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'><button type='button' class='btn btn-light'  data-toggle='modal' data-target='#editServer' data-type='edit' data-title='Edit server'>" + item + "</button></div>"; 
                     srch_content += "<a class='dropdown-item server_item' href='#' target='_self'>" +  item + " - " + configured_hosts[item].nickname +  "</a>"
+
+                    //For every server, begin making connections to it
+                    $('#load_txt').text("Preparing workspace...");                                                            
+                    req_data = {server : item,auth_type: configured_hosts[item].auth_type};
+                    performConnect(req_data,ok_initConnect,err_initConnect);
                 }               
-                
+
                 $('#server_list').html(sett_content);                                            
                 $('#server_drop').html(srch_content);                                                            
                 $('#server_name').removeAttr('disabled');        
@@ -163,13 +170,6 @@ var declareListeners = function()
             disableSearch();      
              
         }        
-        
-        //If current screen is search section, display the search screen
-        if(visScreen.prop('id')=='srch_body')
-        {
-            //Display search section
-            showSearch();           
-        }                
     });    
 }
 var disableSearch = function()
@@ -200,9 +200,8 @@ var showSearch = function()
         $('#srch_result_div').html("<br><br>Search for workflows and filter them from above");                        
         $('#notif_bar').fadeIn();
         $('#notif_bar').text("Connecting to sever...");    
-        $('#notif_bar').css('background-color','#2196F3');
-        performConnect(req_data = undefined,ok_srchConnect,err_srchConnect);
-        
+        $('#notif_bar').css('background-color','#2196F3');        
+        performConnect(req_data = undefined,ok_srchConnect,err_srchConnect);        
     });    
 
     visScreen.hide();          
@@ -256,7 +255,7 @@ var showMonitor = function()
                  {
                     //We have the workflow ID, lets fetch the details       
                     req_data = {server : server_name,db:metastore_name,wf : wf_list.wf_id[i]};                                
-                    performConnect(req_data,ok_monConnect,err_monConnect);                                      
+                    fetchWorkflow(req_data.server,req_data.db,req_data.wf,'WORKFLOW_ID','WORKFLOW_ID','asc');
                  }
              }
            
@@ -274,7 +273,7 @@ function performConnect(req_data,exec_function,err_function)
         if(!req_data)
         {
             server_name = $('#server_name').html().trim();        
-            req_data = {server : server_name,auth_type: configured_hosts[server_name].auth_type};                                
+            req_data = {server : server_name,auth_type: configured_hosts[server_name].auth_type};
         }        
         $.ajax({
             url: '/wf_man/connectSQL',
@@ -298,15 +297,33 @@ function performConnect(req_data,exec_function,err_function)
             });
     }
 
-
-var err_monConnect = function(error)
+var err_initConnect = function(error)
 {
     
+    //When an initial connection to a server fails, we will just ignore it for now
+    //and increment attempts
+    host_connect_attempt_count++;
+    console.log("FAILED initConnect " + error);
 }
 
-var ok_monConnect = function(req_data)
-{   
-    fetchWorkflow(req_data.server,req_data.db,req_data.wf,'WORKFLOW_ID','WORKFLOW_ID','asc');
+host_connect_attempt_count = 0;
+var ok_initConnect = function(req_data)
+{       
+    //When an initial connection for a host is performed, we increment the connection attempt count
+    //because, if anything fails, we still want to be able to load the app
+    host_connect_attempt_count++;
+    
+    //Once initial connection attempt is done for all hosts, equal to total configured hosts, we'll show the search screen
+
+    if(host_connect_attempt_count==configured_host_names.length)    
+    {
+        //If current screen is search section, display the search screen
+        if(visScreen.prop('id')=='srch_body')
+        {
+            //Display search section
+            showSearch();           
+        }
+    }      
 }    
 
 
@@ -371,17 +388,8 @@ function fetchWorkflow(server_name,metastore_name,srch_val,srch_col,order_col,or
                     $('#monitor_div').fadeIn();
                 }
                 else
-                {
-                    if(monitored_hosts)                    
-                    {
-                        filtered_wfs = monitored_hosts[server_name][metastore_name];                                                        
-                        if(filtered_wfs)
-                        {
-                            prettifyAndDisplayResult(result,filtered_wfs.wf_id,"#monitor_div");                                                  
-                            return;
-                        }
-                    }
-                    prettifyAndDisplayResult(result,mode = '#monitor_div');
+                {                
+                    prettifyAndDisplayResult(result,server_name,metastore_name,displayDiv = '#monitor_div');
                 }                                            
             }            
         },
@@ -663,17 +671,8 @@ function performSearch()
                     $('#srch_result_div').fadeIn();
                 }
                 else
-                {
-                    if(monitored_hosts)                    
-                    {
-                        filtered_wfs = monitored_hosts[server_name][metastore_name + '_metastore'];                                                        
-                        if(filtered_wfs)
-                        {
-                            prettifyAndDisplayResult(result,filtered_wfs.wf_id,'#srch_result_div');                                                  
-                            return;
-                        }
-                    }
-                    prettifyAndDisplayResult(result,mode = '#srch_result_div');
+                {                    
+                    prettifyAndDisplayResult(result,server_name,metastore_name + '_metastore',displayDiv = '#srch_result_div');
                 }                                            
             }            
         },
@@ -686,7 +685,7 @@ function performSearch()
         });    
 }
 
-function prettifyAndDisplayResult(result,filtered_wfs,displayDiv)
+function prettifyAndDisplayResult(result,server_name,metastore_name,displayDiv)
 {    
     var bodyStyles = window.getComputedStyle(document.body);
     var p_light = bodyStyles.getPropertyValue('--primary_light');
@@ -696,7 +695,18 @@ function prettifyAndDisplayResult(result,filtered_wfs,displayDiv)
     var p_dark = bodyStyles.getPropertyValue('--primary_dark');
     var d_dark = bodyStyles.getPropertyValue('--danger_dark');
     var s_dark = bodyStyles.getPropertyValue('--success_dark');
-    
+    filtered_wfs = undefined;
+    if(monitored_hosts)                    
+    {                        
+        if(monitored_hosts[server_name])
+        {
+            if(monitored_hosts[server_name][metastore_name])
+            {
+                filtered_wfs  = monitored_hosts[server_name][metastore_name].wf_id;
+            }
+        }
+    }
+
     var new_content = "";    
     for (i = 0; i < result.length; i++) {                 
 
@@ -756,10 +766,8 @@ function prettifyAndDisplayResult(result,filtered_wfs,displayDiv)
         </div>`;
         
       }           
-    
-    $(displayDiv).html(new_content);    
-    $(displayDiv).fadeIn();
-    
+    $(displayDiv).html(new_content);        
+    $(displayDiv).fadeIn();        
 }
 
 
