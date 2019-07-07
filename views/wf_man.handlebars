@@ -1,4 +1,4 @@
-    <div class="jumbotron container-fluid">
+    <div class="jumbotron mb-1 container-fluid">
         <div class="jumbo_text row">
             <div class="col-lg-4 col-md-4 mt-2" align="left">                
                 <a href="/" target="_self"><img src="images/q_logo_full.png" class="img-responsive" width="120rem" id="logo"></a>
@@ -7,46 +7,40 @@
                 <h1 id="title">Workflow Manager</h1>
             </div>
             </a>            
-        </div>        
-        <div class="row menu_bar">
-            <div class="col-lg-6 col-md-6">
-                <div class="row">
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="showDashboard()" id="dash_menu">                           
-                        Dashboard            
-                    </div>                
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="showSearch()" id="srch_menu">                           
-                        Search
-                    </div>
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor();" id="mon_menu">                           
-                        Monitor
-                    </div>
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="" id="rep_menu">                           
-                        Reporting
-                    </div>
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="" id="query_menu">                           
-                        Queries
-                    </div>            
-                </div>             
-            </div>  
-            <div class="col-lg-6 col-md-6">
-                <div class="row justify-content-end">
-                    <div class="col-lg-auto col-md-auto menu_item m" onclick=""  id="prof_menu">                           
-                        Profile
-                    </div>  
-                    <div class="col-lg-auto col-md-auto menu_item m" onclick="showSettings()" id="sett_menu">                           
-                        Settings
-                    </div>  
-                </div>
-            </div> 
-        </div>
-    </div><br>
+        </div>                
+    </div>
     <div id="load_img" class="row justify-content-center">                        
         <div style="color:#007BFF" class="la-square-jelly-box mr-3">
             <div></div><div></div>            
         </div>                                    
-        <span id="load_txt">Just rollin'</span>
+        <span id="load_txt">Getting ready...</span>
     </div>
-    <div class="container-fluid sec_body " id="dash_body"  align="center">
+<ul class="nav nav-tabs" id="myTab" role="tablist">    
+    <li class="nav-item">
+        <a class="nav-link" id="dash_tab" data-toggle="tab" href="#dash_body" role="tab" aria-controls="dash_body" aria-selected="false">Dashboard</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="srch_tab" data-toggle="tab" href="#srch_body" role="tab" aria-controls="srch_body" aria-selected="false">Search</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="mon_tab" data-toggle="tab" href="#mon_body" role="tab" aria-controls="mon_body" aria-selected="false">Monitor</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link disabled" id="report_tab" data-toggle="tab" href="#report_body" role="tab" aria-controls="report_body" aria-selected="false">Reporting</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link disabled" id="query_tab" data-toggle="tab" href="#query_body" role="tab" aria-controls="query_body" aria-selected="false">Queries</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link disabled" id="prof_tab" data-toggle="tab" href="#prof_body" role="tab" aria-controls="prof_body" aria-selected="false">Profile</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="sett_tab" data-toggle="tab" href="#sett_body" role="tab" aria-controls="sett_body" aria-selected="false">Settings</a>
+    </li>
+</ul>
+
+<div class="tab-content" id="myTabContent">       
+    <div class="container-fluid sec_body tab-pane fade mt-2" role="tabpanel" id="dash_body"  align="center">
             <div class="body_content">
                     <div class="container-fluid">
                         <div class="row">
@@ -60,7 +54,7 @@
                     </div>    
             </div>
     </div>    
-    <div class="container-fluid sec_body " id="srch_body"  align="center">
+    <div class="container-fluid sec_body tab-pane fade active mt-2 " role="tabpanel"  id="srch_body"  align="center">
             <div class="body_content">
                 <div class="container-fluid">                                             
                     <div class="row justify-content-center"  style='zoom:0.9'>                        
@@ -136,7 +130,7 @@
                 </div>
                 </div>
     </div>
-    <div class="container-fluid sec_body " id="mon_body" align="center">
+    <div class="container-fluid sec_body tab-pane fade  mt-2" role="tabpanel"  id="mon_body" align="center">
             <div class="body_content">
                     <div class="container-fluid">                        
                        <div class="row ml-3" id="filter_menu">
@@ -181,7 +175,7 @@
                     </div>    
             </div>
     </div>   
-    <div class="container-fluid sec_body " id="sett_body"   align="center">
+    <div class="container-fluid sec_body  tab-pane fade  mt-2" role="tabpanel"  id="sett_body"   align="center">
         <div class="body_content">
             <div class="container-fluid">
                 <div class="row">
@@ -268,6 +262,8 @@
             </div>    
         </div>
     </div> 
+
+    </div>
 
     </div>
 

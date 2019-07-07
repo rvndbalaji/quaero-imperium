@@ -1,6 +1,6 @@
 let userLoaded = false;
 var currentUser;
-var visScreen;
+var visScreen ='srch_tab';
 var unsAuth;
 var unsHost;
 var unsMon;
@@ -41,13 +41,12 @@ var fire;
 $(document).ready(function(){        
     
     if(window.location.pathname=='/' || window.location.pathname=='/wf_man')
-    {
+    {        
         getCurrentUser(firebase.auth()).then(user=>{            
             currentUser = user;                
-                fire = firebase.firestore().collection('root');          
+                fire = firebase.firestore().collection('root');                          
                 if(window.location.pathname=='/wf_man')
-                {   
-                    visScreen = $('#srch_body');
+                {                       
                     declareListeners();                      
                 }
         }).catch(err=>{
@@ -63,6 +62,29 @@ var monRefreshTimer;
 var scrollTim;
 var declareListeners = function()
 {   
+
+    //Set tab listener
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        visScreen = $(e.target).prop('id');        
+        if(visScreen=='dash_tab')
+        {
+            showDashboard();
+        }
+        else if(visScreen=='srch_tab')
+        {
+            showSearch();            
+        }
+        else if(visScreen=='mon_tab')
+        {
+            showMonitor();
+        }
+        else if(visScreen=='sett_tab')
+        {
+            showSettings();
+        }
+    });     
+
+
     $('#editServer').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget) // Button that triggered the modal
         var type = button.data('type')         
@@ -98,18 +120,15 @@ var declareListeners = function()
 
     
     $('#ref_box').change(function() {
-        //This function is triggered when the refresh box value has changed                     
-        
-        if(visScreen.prop('id')=='mon_body')
+        //This function is triggered when the refresh box value has changed                             
+        if(visScreen=='mon_tab')
         {
             //Give a 1 second delay incase the user is "scrolling" through the numbers
             //provided the user has already been on this screen
             clearTimeout(scrollTim);            
             scrollTime = setTimeout(refreshMonitors,1000);            
         }
-        else{
-            visScreen = $('#mon_body');
-            $('#mon_body').show();     
+        else{            
             refreshMonitors();                        
         }
 
@@ -239,8 +258,7 @@ var showSearch = function()
         performConnect(req_data = undefined,ok_srchConnect,err_srchConnect);        
     });    
 
-    visScreen.hide();          
-
+    
     //setup before functions
     clearTimeout(typingTimer);  
     clearInterval(dashStatsTimer);
@@ -261,29 +279,13 @@ var showSearch = function()
     clearTimeout(typingTimer);
     });
 
-    visScreen = $('#srch_body');
-    $('.menu_item').removeClass('menu_selected');
-    $('#srch_menu').addClass('menu_selected');
-    //Remove the loading text 
-    $('#load_img').hide();
-    $('#srch_body').show();            
-    $('.menu_item').fadeIn();
 }
-
-var monTimer;
 
 
 var showMonitor = function()
 {    
     clearTimeout(typingTimer);  
     clearInterval(dashStatsTimer);    
-
-    if(visScreen.prop('id')!='mon_body')
-    {        
-        visScreen.hide();        
-    }     
-    $('.menu_item').removeClass('menu_selected');
-    $('#mon_menu').addClass('menu_selected');
     $('#ref_box').change();       
 }
 
@@ -292,9 +294,8 @@ remaining_monitors_to_be_loaded = 0;
 var performMonitorRefresh = function()
 {       
     var ref_sec = Number($('#ref_box').val());                    
-    totalMonitors = [];
-    $('#mon_status').fadeIn();
-
+    totalMonitors = [];    
+    $('#mon_status').fadeIn();     
     for(server_name in monitored_hosts)
     {        
         for(metastore_name in monitored_hosts[server_name])
@@ -311,9 +312,13 @@ var performMonitorRefresh = function()
              }
            
         }
-    }   
+    }
+    if(remaining_monitors_to_be_loaded==0)   
+    {
+        $('#monitor_div').html("<br><br>No workflows are being monitored. Monitor a workflow in the <u><a onclick=\"$('#srch_tab').tab('show')\" style=\"color:blue;cursor:hand;\">search section</a></u>");
+        $('#mon_status').hide();     
+    }
 
-    $('#mon_body').show();    
 }
 
 var current_div;
@@ -369,10 +374,15 @@ var ok_initConnect = function(req_data)
     if(host_connect_attempt_count==configured_host_names.length)    
     {
         //If current screen is search section, display the search screen
-        if(visScreen.prop('id')=='srch_body')
+        if(visScreen=='srch_tab')
         {
+            
+            //Remove the loading text 
+            $('#load_img').hide();    
+            
+            $('#myTab').css('display','inline-flex');
             //Display search section
-            showSearch();           
+            $('#srch_tab').tab('show');
         }
     }      
 }    
@@ -460,8 +470,7 @@ function fetchWorkflow(server_name,metastore_name,srch_val,srch_col,order_col,or
                 clearTimeout(monRefreshTimer);         
                 monRefreshTimer = setTimeout(function()
                 {                    
-                    refreshMonitors();     
-                    console.log('refresh');
+                    refreshMonitors();                         
                 }, ref_timeout * 1000);       
             }
         },
@@ -961,15 +970,8 @@ var showDashboard = function()
     clearTimeout(typingTimer);    
     clearInterval(dashStatsTimer);
     clearTimeout(scrollTim);
-    clearTimeout(monRefreshTimer);
-
-    visScreen.hide();
-    visScreen = $('#dash_body');
-    $('.menu_item').removeClass('menu_selected');
-    $('#dash_menu').addClass('menu_selected');
-
-    $('#dash_body').show();
-
+    clearTimeout(monRefreshTimer);   
+    
     //Run once
     updateDashboardStats("failed");
     updateDashboardStats("running");
@@ -986,13 +988,7 @@ var showDashboard = function()
 var showSettings = function()
 {       
     clearTimeout(scrollTim);
-    clearTimeout(monRefreshTimer);
-
-    visScreen.hide();
-    visScreen = $('#sett_body');    
-    $('.menu_item').removeClass('menu_selected');
-    $('#sett_menu').addClass('menu_selected');
-    $('#sett_body').show();    
+    clearTimeout(monRefreshTimer);    
 }
 
 
