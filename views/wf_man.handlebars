@@ -11,29 +11,29 @@
         <div class="row menu_bar">
             <div class="col-lg-6 col-md-6">
                 <div class="row">
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="showDashboard()">                           
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="showDashboard()" id="dash_menu">                           
                         Dashboard            
                     </div>                
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="showSearch()">                           
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="showSearch()" id="srch_menu">                           
                         Search
                     </div>
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor()">                           
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="showMonitor();" id="mon_menu">                           
                         Monitor
                     </div>
-                    <div class="col-lg-auto col-md-auto menu_item" onclick="">                           
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="" id="rep_menu">                           
                         Reporting
                     </div>
-                    <div class="col-lg-auto col-md-auto menu_item" onclick=")">                           
+                    <div class="col-lg-auto col-md-auto menu_item" onclick="" id="query_menu">                           
                         Queries
                     </div>            
                 </div>             
             </div>  
             <div class="col-lg-6 col-md-6">
                 <div class="row justify-content-end">
-                    <div class="col-lg-auto col-md-auto menu_item m" onclick="">                           
+                    <div class="col-lg-auto col-md-auto menu_item m" onclick=""  id="prof_menu">                           
                         Profile
                     </div>  
-                    <div class="col-lg-auto col-md-auto menu_item m" onclick="showSettings()">                           
+                    <div class="col-lg-auto col-md-auto menu_item m" onclick="showSettings()" id="sett_menu">                           
                         Settings
                     </div>  
                 </div>
@@ -46,7 +46,7 @@
         </div>                                    
         <span id="load_txt">Just rollin'</span>
     </div>
-    <div class="container-fluid" id="dash_body" align="center">
+    <div class="container-fluid sec_body " id="dash_body"  align="center">
             <div class="body_content">
                     <div class="container-fluid">
                         <div class="row">
@@ -60,7 +60,7 @@
                     </div>    
             </div>
     </div>    
-    <div class="container-fluid" id="srch_body" align="center">
+    <div class="container-fluid sec_body " id="srch_body"  align="center">
             <div class="body_content">
                 <div class="container-fluid">                                             
                     <div class="row justify-content-center"  style='zoom:0.9'>                        
@@ -136,21 +136,52 @@
                 </div>
                 </div>
     </div>
-    <div class="container-fluid" id="mon_body" align="center">
+    <div class="container-fluid sec_body " id="mon_body" align="center">
             <div class="body_content">
-                    <div class="container-fluid">
-                        <h5>Monitor your workflows</h5>
+                    <div class="container-fluid">                        
+                       <div class="row ml-3" id="filter_menu">
+                            <div class="col-lg-9 col-md-9">
+                                <div class="row mt-2 ml-2">
+                                    <div class="col-lg-auto col-md-auto mr-4" onclick="">                           
+                                        <input class="form-check-input" type="checkbox" name="server_type" id="complete_filter" checked>
+                                        <label class="form-check-label" for="complete_filter" id="complete_filter_label">COMPLETE%</label>
+                                    </div>                
+                                    <div class="col-lg-auto col-md-auto mr-4" onclick="">                           
+                                        <input class="form-check-input" type="checkbox" name="server_type" id="failed_filter" checked>
+                                        <label class="form-check-label" for="failed_filter" id="failed_filter_label">FAILED%</label>
+                                    </div>
+                                    <div class="col-lg-auto col-md-auto" onclick="">                           
+                                        <input class="form-check-input" type="checkbox" name="server_type" id="executing_filter" checked>
+                                        <label class="form-check-label" for="executing_filter" id="executing_filter_label">EXECUTING</label>
+                                    </div>
+                                    <div class="col-lg-auto col-md-auto" id="mon_status" style="margin-left:100px">                             
+                                        <b>Refreshing Workflows...</b>
+                                    </div> 
+                                </div>             
+                            </div>                              
+                            <div class="col-lg-3 col-md-3">                                
+                                <div class="row justify-content-end">
+                                    <div class="col-lg-auto col-md-auto" onclick="">                           
+                                        <span>Refresh every </span>
+                                         <div class="btn-group">
+                                            <input type="number" class="form-control" id="ref_box" min="5" value="10">
+                                        </div>
+                                        <span> seconds</span>
+                                    </div>                                      
+                                </div>
+                            </div> 
+                        </div>                                               
                         <div class="row justify-content-center">                               
                             <div class="col-lg-auto col-md-auto col-sm-6 col-xs-12" align="left">                                     
                                 <div id="monitor_div"> 
-
+                                    
                                 </div>
                             </div>
                         </div>    
                     </div>    
             </div>
     </div>   
-    <div class="container-fluid" id="sett_body" align="center">
+    <div class="container-fluid sec_body " id="sett_body"   align="center">
         <div class="body_content">
             <div class="container-fluid">
                 <div class="row">

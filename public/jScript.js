@@ -59,6 +59,8 @@ $(document).ready(function(){
 
 var configured_hosts;
 var monitored_hosts;
+var monRefreshTimer;
+var scrollTim;
 var declareListeners = function()
 {   
     $('#editServer').on('show.bs.modal', function (event) {
@@ -94,6 +96,25 @@ var declareListeners = function()
 
     });
 
+    
+    $('#ref_box').change(function() {
+        //This function is triggered when the refresh box value has changed                     
+        
+        if(visScreen.prop('id')=='mon_body')
+        {
+            //Give a 1 second delay incase the user is "scrolling" through the numbers
+            //provided the user has already been on this screen
+            clearTimeout(scrollTim);            
+            scrollTime = setTimeout(refreshMonitors,1000);            
+        }
+        else{
+            visScreen = $('#mon_body');
+            $('#mon_body').show();     
+            refreshMonitors();                        
+        }
+
+    });
+
     $('#editServer').on('hide.bs.modal', function (event) {
         //When dialog is closed, hide errors
         $("#host_name").val('');
@@ -112,12 +133,12 @@ var declareListeners = function()
     {
         monitored_hosts = undefined;                    
         if (monitors.exists) {            
-            monitored_hosts = monitors.data();                             
+            monitored_hosts = monitors.data();                                         
         }
         if(!manualToggle){
             prev_searchterm="";
             //Refresh the search results on Search screen
-            performSearch();                  
+            performSearch();                              
             return;          
         }
         
@@ -172,6 +193,20 @@ var declareListeners = function()
         }        
     });    
 }
+
+var refreshMonitors =  function()
+{
+    clearTimeout(monRefreshTimer);  
+    mon_failed_wf_count =0;
+    mon_complete_wf_count =0;
+    mon_executing_wf_count =0;
+    //Refresh monitors only if its not already refreshing
+    if(remaining_monitors_to_be_loaded==0) 
+    {        
+        performMonitorRefresh();        
+    }                              
+}
+
 var disableSearch = function()
 {
     $('#srch_box').attr('disabled','disabled');
@@ -209,6 +244,8 @@ var showSearch = function()
     //setup before functions
     clearTimeout(typingTimer);  
     clearInterval(dashStatsTimer);
+    clearTimeout(scrollTim);
+    clearTimeout(monRefreshTimer);
 
     var doneTypingInterval = 1000;  //time in ms, 1 second for example
     var $input = $('#srch_box');
@@ -225,25 +262,39 @@ var showSearch = function()
     });
 
     visScreen = $('#srch_body');
+    $('.menu_item').removeClass('menu_selected');
+    $('#srch_menu').addClass('menu_selected');
     //Remove the loading text 
     $('#load_img').hide();
-    $('#srch_body').fadeIn();            
+    $('#srch_body').show();            
     $('.menu_item').fadeIn();
 }
 
 var monTimer;
 
-var refreshMonitors = function()
-{
- //setup before functions
- clearTimeout(typingTimer);  
- clearInterval(dashStatsTimer);
- showMonitor();
-}
+
 var showMonitor = function()
+{    
+    clearTimeout(typingTimer);  
+    clearInterval(dashStatsTimer);    
+
+    if(visScreen.prop('id')!='mon_body')
+    {        
+        visScreen.hide();        
+    }     
+    $('.menu_item').removeClass('menu_selected');
+    $('#mon_menu').addClass('menu_selected');
+    $('#ref_box').change();       
+}
+
+totalMonitors = [];
+remaining_monitors_to_be_loaded = 0;
+var performMonitorRefresh = function()
 {       
-    visScreen.hide();
-    visScreen = $('#mon_body');
+    var ref_sec = Number($('#ref_box').val());                    
+    totalMonitors = [];
+    $('#mon_status').fadeIn();
+
     for(server_name in monitored_hosts)
     {        
         for(metastore_name in monitored_hosts[server_name])
@@ -253,16 +304,16 @@ var showMonitor = function()
              {                 
                  for(i=0; i< wf_list.wf_id.length; i++)                 
                  {
-                    //We have the workflow ID, lets fetch the details       
-                    req_data = {server : server_name,db:metastore_name,wf : wf_list.wf_id[i]};                                
-                    fetchWorkflow(req_data.server,req_data.db,req_data.wf,'WORKFLOW_ID','WORKFLOW_ID','asc');
+                    //We have the workflow ID, lets fetch the details                           
+                    remaining_monitors_to_be_loaded++;                    
+                    fetchWorkflow(server_name,metastore_name,wf_list.wf_id[i],'WORKFLOW_ID','WORKFLOW_ID','asc',ref_sec);                                        
                  }
              }
            
         }
     }   
 
-    $('#mon_body').fadeIn();    
+    $('#mon_body').show();    
 }
 
 var current_div;
@@ -359,46 +410,88 @@ var ok_srchConnect = function(req_data)
 }
 
 
-function fetchWorkflow(server_name,metastore_name,srch_val,srch_col,order_col,order_ad)
+function fetchWorkflow(server_name,metastore_name,srch_val,srch_col,order_col,order_ad,ref_timeout)
 {   
-    //Clear the results
-    $('#monitor_div').html("");    
-    
-    req_data = { server : server_name,auth_type: configured_hosts[server_name].auth_type,where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad, db:metastore_name , schema:'dbo'};        
+    prettyResult =  "";
+    req_data = { server : server_name,auth_type: configured_hosts[server_name].auth_type,where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad, db:metastore_name , schema:'dbo'};            
     cur_request =  $.ajax({
         url: '/wf_man/search/wf',
         data : req_data,
         type: 'GET',
-        beforeSend : function(xhr){                               
-            $('#monitor_div').hide();
+        beforeSend : function(xhr){                                                       
         },           
         success: function (response) 
-        {           
+        {    
             if(response.err==1)
-            {                
-                $('#monitor_div').html("<br><br>Something went wrong : " + response.data.info);
+            {   
+                prettyResult = "<br><br>Something went wrong : " + response.data.info;
             }
             else
             {                
                 result  = response.data.info;          
                       
-                if(!Object.keys(result).length){
-
-                    $('#monitor_div').html("<br><br>No workflows found where " + srch_col + " like '" + srch_val + "'");
-                    $('#monitor_div').fadeIn();
+                if(!Object.keys(result).length)
+                {                   
+                    prettyResult = "<br><br>No workflows found where " + srch_col + " like '" + srch_val + "'";                                       
+                    //If no workflows were found, make sure this workflow isn't being monitored.
+                    //Remove entry.
+                    toggleMonitor(server_name,metastore_name,srch_val);
                 }
                 else
                 {                
-                    prettifyAndDisplayResult(result,server_name,metastore_name,displayDiv = '#monitor_div');
+                    result['server_name'] = server_name;
+                    result['metastore_name'] = metastore_name;                    
+                    prettyResult = getPrettifyResults(result,'monitor');                                        
                 }                                            
             }            
+
+            totalMonitors.push(prettyResult);
+            remaining_monitors_to_be_loaded--;
+            if(remaining_monitors_to_be_loaded<=0)
+            {
+                //Sort the workflows, because order might keep changing during refresh
+                totalMonitors.sort();
+                remaining_monitors_to_be_loaded=0;
+                $('#monitor_div').html(totalMonitors.join(' '));
+                $('#mon_status').hide();     
+                setWorkflowStatusCounts();
+                
+                //Now that all results have been obtained, set a time out for refresh                
+                clearTimeout(monRefreshTimer);         
+                monRefreshTimer = setTimeout(function()
+                {                    
+                    refreshMonitors();     
+                    console.log('refresh');
+                }, ref_timeout * 1000);       
+            }
         },
             fail : function(xhr,textStatus,error)
-        {                        
-            $('#monitor_div').text(error);
-            $('#monitor_div').fadeIn();
+        {   
+            totalMonitors.push(error);
+            remaining_monitors_to_be_loaded--;
+            if(remaining_monitors_to_be_loaded<=0)
+            {
+                remaining_monitors_to_be_loaded=0;
+                $('#monitor_div').html(totalMonitors.join(' '));
+                $('#mon_status').hide(); 
+                setWorkflowStatusCounts();  
+                
+                 //Now that all results have been obtained, set a time out for refresh
+                 clearTimeout(monRefreshTimer);         
+                 monRefreshTimer = setTimeout(function()
+                 {                    
+                     refreshMonitors();                    
+                 }, ref_timeout * 1000);       
+            }                    
         }
         });    
+}
+
+var setWorkflowStatusCounts = function()
+{
+    $('#complete_filter_label').html("<span class='green_text font-weight-bold'>" + mon_complete_wf_count + "</span> COMPLETE%");
+    $('#failed_filter_label').html("<span class='red_text font-weight-bold'>" + mon_failed_wf_count + "</span> FAILED%");
+    $('#executing_filter_label').html("<span class='blue_text font-weight-bold'>" + mon_executing_wf_count + "</span> EXECUTING");
 }
 function fetchMetastores()
 {
@@ -657,22 +750,37 @@ function performSearch()
         },           
         success: function (response) 
         {
-           $('#notif_bar').hide();
+           $('#notif_bar').hide();            
             if(response.err==1)
-            {                
-                $('#srch_result_div').html("<br><br>Something went wrong : " + response.data.info);
+            {
+                response.data.info = JSON.parse(response.data.info);
+                $('#notif_bar').css('background-color','#E57373');            
+                if(response.data.info.originalError.message)
+                {
+                    $('#notif_bar').html(response.data.info.originalError.message);                
+                }
+                else
+                {
+                    $('#notif_bar').html("Something went wrong : " + response.data.info);                
+                }
+                $('#notif_bar').fadeIn();    
             }
             else
             {                
-                result  = response.data.info;          
+                result  = response.data.info;    
+
                 if(!Object.keys(result).length){
 
-                    $('#srch_result_div').html("<br><br>No workflows found where " + srch_col + " like '" + srch_val + "'");
-                    $('#srch_result_div').fadeIn();
+                    $('#srch_result_div').html("<br><br>No workflows found where " + srch_col + " like '" + srch_val + "'");                    
+                    $('#srch_result_div').fadeIn();    
                 }
                 else
                 {                    
-                    prettifyAndDisplayResult(result,server_name,metastore_name + '_metastore',displayDiv = '#srch_result_div');
+                    result['server_name'] = server_name;
+                    result['metastore_name'] = metastore_name + '_metastore';
+                    prettyResult =  getPrettifyResults(result,'search');                    
+                    $('#srch_result_div').html(prettyResult.join(' '));        
+                    $('#srch_result_div').fadeIn(); 
                 }                                            
             }            
         },
@@ -685,8 +793,12 @@ function performSearch()
         });    
 }
 
-function prettifyAndDisplayResult(result,server_name,metastore_name,displayDiv)
+mon_failed_wf_count =0;
+mon_complete_wf_count =0;
+mon_executing_wf_count =0;
+function getPrettifyResults(result,screen)
 {    
+   
     var bodyStyles = window.getComputedStyle(document.body);
     var p_light = bodyStyles.getPropertyValue('--primary_light');
     var d_light = bodyStyles.getPropertyValue('--danger_light');
@@ -696,6 +808,8 @@ function prettifyAndDisplayResult(result,server_name,metastore_name,displayDiv)
     var d_dark = bodyStyles.getPropertyValue('--danger_dark');
     var s_dark = bodyStyles.getPropertyValue('--success_dark');
     filtered_wfs = undefined;
+    server_name = result['server_name'];
+    metastore_name = result['metastore_name'];
     if(monitored_hosts)                    
     {                        
         if(monitored_hosts[server_name])
@@ -708,6 +822,7 @@ function prettifyAndDisplayResult(result,server_name,metastore_name,displayDiv)
     }
 
     var new_content = "";    
+    resultList = [];
     for (i = 0; i < result.length; i++) {                 
 
         if(filtered_wfs && $.inArray(Number(result[i].WORKFLOW_ID), filtered_wfs) != -1)
@@ -721,14 +836,27 @@ function prettifyAndDisplayResult(result,server_name,metastore_name,displayDiv)
         {
             sel_light = d_light;
             sel_dark = d_dark;
+            mon_failed_wf_count++;
         }
         else if(['COMPLETE','COMPLETE-CLEANUPFAILED','COMPLETE-PENDINGCLEANUP'].indexOf(result[i].WORKFLOW_INSTANCE_STATUS) >=0)
          {
             sel_light = s_light;
             sel_dark = s_dark;
+            mon_complete_wf_count++;
          }
-         
-        new_content +=`
+        else{
+            mon_executing_wf_count++;
+        }
+        server_details = '';
+        if(screen=='monitor')
+        {
+            server_details =  `<div class='col-lg-auto col-md-auto justify-content-left'><span class='gray_text'>SERVER </span><b>`
+            + configured_hosts[server_name].nickname + ` </b><span class='gray_text'>(` + server_name + `)</span><b>` + 
+        `</div></b>
+        <div class='col-lg-auto col-md-auto justify-content-left'><span class='gray_text'>METASTORE </span><b>`
+            + metastore_name.replace('_metastore','') + `</div></b>`;
+        }
+        new_content =`
         <div class='container-fluid res_item' id='res_item_` + i +`' style='background-color:` + sel_light +`;border-left:`+ sel_dark +` solid 4px'>
             <div class='row'>
                 <div class='col-lg-auto col-md-auto'>`
@@ -741,12 +869,12 @@ function prettifyAndDisplayResult(result,server_name,metastore_name,displayDiv)
                  + result[i].WORKFLOW_INSTANCE_STATUS +   
                 `</div>
                 <div class='col-lg-auto col-md-auto'>
-                    <input type="checkbox" id="mon_toggle_`+result[i].WORKFLOW_ID+`" name="set-name" class="switch-input" onClick="toggleMonitor(`+result[i].WORKFLOW_ID+`)" ` + isChecked + `>
-                    <label for="mon_toggle_`+result[i].WORKFLOW_ID+`" class="switch-label"><span class="toggle--on">Monitoring</span><span class="toggle--off">Monitor</span></label>
+                    <input type="checkbox" id="mon_toggle_`+server_name+`_`+ metastore_name +`_`+result[i].WORKFLOW_ID+`" name="set-name" class="switch-input" onClick="toggleMonitor('`+server_name+`','`+ metastore_name +`','`+result[i].WORKFLOW_ID+`')" ` + isChecked + `>
+                    <label for="mon_toggle_`+server_name+`_`+ metastore_name +`_`+result[i].WORKFLOW_ID+`" class="switch-label"><span class="toggle--on">Monitoring</span><span class="toggle--off">Monitor</span></label>
                 </div>
             </div>
             <br>
-            <div class='row'>
+            <div class='row'>                
                 <div class='col-lg-auto col-md-auto justify-content-left'><span class='gray_text'>DURATION </span><b>`
                  + result[i].RUN_TIME_IN_MINS +  ` mins` +
                 `</div></b>
@@ -761,31 +889,33 @@ function prettifyAndDisplayResult(result,server_name,metastore_name,displayDiv)
                 `</div></b>
                 <div class='col-lg-auto col-md-auto  justify-content-left'><span class='gray_text'>UPDATED ON </span><b>`
                  + result[i].UPDATE_DT +   
-                `</div></b>
-            </div>
+                `</div></b>`
+                + server_details +
+            `</div>
         </div>`;
         
-      }           
-    $(displayDiv).html(new_content);        
-    $(displayDiv).fadeIn();        
+        //Add individual result row in a list
+        resultList.push(new_content)
+      }               
+    return resultList;    
 }
 
 
-var toggleMonitor = function(wfid)
-{   
-    manualToggle = true;
-    server_name = $('#server_name').html().trim();   
-    db_name = $('#metastore_name').html().trim();
+
+
+var toggleMonitor = function(server_name,metastore_name,wfid)
+{       
+    manualToggle = true;       
     a_type = configured_hosts[server_name].auth_type;          
-    item = $('#mon_toggle_' + wfid).prop('checked');
+    item = $('#mon_toggle_' + server_name + '_' + metastore_name + '_' + wfid).prop('checked');
     if(item)
     {        
         fire.doc("users").collection(currentUser.uid).doc('monitors').set({  
             [server_name] : 
             {     
-                [db_name + '_metastore']: 
+                [metastore_name]: 
                 {
-                    wf_id : firebase.firestore.FieldValue.arrayUnion(wfid)
+                    wf_id : firebase.firestore.FieldValue.arrayUnion(Number(wfid))
                 },
                 auth_type : a_type             
             }
@@ -808,9 +938,9 @@ var toggleMonitor = function(wfid)
         fire.doc("users").collection(currentUser.uid).doc('monitors').set({  
             [server_name] : 
             {     
-                [db_name + '_metastore']: 
+                [metastore_name]: 
                 {
-                    wf_id : firebase.firestore.FieldValue.arrayRemove(wfid)
+                    wf_id : firebase.firestore.FieldValue.arrayRemove(Number(wfid))
                 },
                 auth_type : a_type             
             }
@@ -824,15 +954,21 @@ var toggleMonitor = function(wfid)
     }
 }
 var dashStatsTimer; 
+
 var showDashboard = function()
 {
     //clearSearchTimer
     clearTimeout(typingTimer);    
     clearInterval(dashStatsTimer);
+    clearTimeout(scrollTim);
+    clearTimeout(monRefreshTimer);
 
     visScreen.hide();
     visScreen = $('#dash_body');
-    $('#dash_body').fadeIn();
+    $('.menu_item').removeClass('menu_selected');
+    $('#dash_menu').addClass('menu_selected');
+
+    $('#dash_body').show();
 
     //Run once
     updateDashboardStats("failed");
@@ -849,9 +985,14 @@ var showDashboard = function()
 
 var showSettings = function()
 {       
+    clearTimeout(scrollTim);
+    clearTimeout(monRefreshTimer);
+
     visScreen.hide();
-    visScreen = $('#sett_body');
-    $('#sett_body').fadeIn();    
+    visScreen = $('#sett_body');    
+    $('.menu_item').removeClass('menu_selected');
+    $('#sett_menu').addClass('menu_selected');
+    $('#sett_body').show();    
 }
 
 

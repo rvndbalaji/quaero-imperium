@@ -24,8 +24,7 @@ router.get('/',function(req,res){
 
 //Post HomePage
 router.post('/',function(req,res)
-{    
-    
+{       
     var result = {
         err: 1,
         data : {}

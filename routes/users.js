@@ -91,7 +91,7 @@ router.post('/login',[
         data : {}
       }; 
     
-    username = req.body.username;       
+    var username = req.body.username;       
     
     //User wanted to login, send them a token if credentails are valid
     admin.auth().createCustomToken(username)

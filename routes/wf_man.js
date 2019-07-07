@@ -84,7 +84,7 @@ router.get('/search/wf',function(req,res){
   {    
     generateConfig(req,decodedToken).then(config=>{                   
         if(JSON.stringify(config) in global_conn_pool)        
-        {
+        {          
           fetchWF(config,req,res,result);
         }
         else{
@@ -162,8 +162,9 @@ var getWorkflowCount = async function (config,req,res,res_data)
       //Prepare an SQL request
       const sql_request = global_conn_pool[JSON.stringify(config)].request();
       //Set Database and Schema
-      current_db_schema = req.query.db + "." + req.query.schema + "."
+      var current_db_schema = req.query.db + "." + req.query.schema + "."
 
+      var sql_result;
       if(req.query.type=='running')
       {
         sql_result = sql_request.query("with ONE (WORKFLOW_NAME,WORKFLOW_INSTANCE_ID) AS ( 	select WORKFLOW_NAME,WORKFLOW_INSTANCE_ID as WORKFLOW_INSTANCE_ID from " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_INSTANCE_STATUS not like 'FAILED%' and WORKFLOW_INSTANCE_STATUS not like 'COMPLETE%' ), final (WORKFLOW_NAME,WID) as (select A.WORKFLOW_NAME,max(A.WORKFLOW_INSTANCE_ID) as WID from ONE A join " + current_db_schema + "vw_WORKFLOW_EXECUTION_STATUS B on A.WORKFLOW_INSTANCE_ID = B.WORKFLOW_INSTANCE_ID group by A.WORKFLOW_NAME) select count(WID) as COUNT from final");
@@ -207,9 +208,8 @@ var fetchWF = async function (config,req,res,res_data)
       const sql_request = global_conn_pool[JSON.stringify(config)].request();
 
       //Set Database and Schema
-      current_db_schema = req.query.db + "." + req.query.schema + "."
-      
-      sql_result = sql_request.query("with ONE (WF_ID,WFI_ID) as ( select mw.WORKFLOW_ID as WF_ID,es.WORKFLOW_INSTANCE_ID as WFI_ID from " + current_db_schema +  "M_WORKFLOW mw join " + current_db_schema +  "VW_WORKFLOW_EXECUTION_STATUS es on es.WORKFLOW_ID= mw.WORKFLOW_ID where mw." + req.query.where_key + " like '%" + req.query.where_val + "%' ), TWO(WORKFLOW_ID,WORKFLOW_INSTANCE_ID) as( select WF_ID as WORKFLOW_ID,max(WFI_ID) as WORKFLOW_INSTANCE_ID from ONE group by WF_ID ) select TWO.WORKFLOW_ID, mw.WORKFLOW_NAME,WORKFLOW_DESC,ACTIVE_FLG,UPDATE_USER,UPDATE_DT, TWO.WORKFLOW_INSTANCE_ID,WORKFLOW_TYPE,START_DT,END_DT,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,EVENT_GROUP_ID from TWO join " + current_db_schema + "M_WORKFLOW mw on mw.WORKFLOW_ID = TWO.WORKFLOW_ID join " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS vw on (vw.WORKFLOW_INSTANCE_ID = TWO.WORKFLOW_INSTANCE_ID and vw.WORKFLOW_ID = TWO.WORKFLOW_ID) order by mw." + req.query.order_by + " " + req.query.order_type); 
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      var sql_result = sql_request.query("with ONE (WF_ID,WFI_ID) as ( select mw.WORKFLOW_ID as WF_ID,es.WORKFLOW_INSTANCE_ID as WFI_ID from " + current_db_schema +  "M_WORKFLOW mw join " + current_db_schema +  "VW_WORKFLOW_EXECUTION_STATUS es on es.WORKFLOW_ID= mw.WORKFLOW_ID where mw." + req.query.where_key + " like '%" + req.query.where_val + "%' ), TWO(WORKFLOW_ID,WORKFLOW_INSTANCE_ID) as( select WF_ID as WORKFLOW_ID,max(WFI_ID) as WORKFLOW_INSTANCE_ID from ONE group by WF_ID ) select TWO.WORKFLOW_ID, mw.WORKFLOW_NAME,WORKFLOW_DESC,ACTIVE_FLG,UPDATE_USER,UPDATE_DT, TWO.WORKFLOW_INSTANCE_ID,WORKFLOW_TYPE,START_DT,END_DT,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,EVENT_GROUP_ID from TWO join " + current_db_schema + "M_WORKFLOW mw on mw.WORKFLOW_ID = TWO.WORKFLOW_ID join " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS vw on (vw.WORKFLOW_INSTANCE_ID = TWO.WORKFLOW_INSTANCE_ID and vw.WORKFLOW_ID = TWO.WORKFLOW_ID) order by mw." + req.query.order_by + " " + req.query.order_type); 
 
       //Capture the result when the query completes
       sql_result.then(function(result)
@@ -259,7 +259,7 @@ var getMetastores = async function (config,res,res_data)
     try{
           //Prepare an SQL request
           const sql_request = global_conn_pool[JSON.stringify(config)].request();          
-          sql_result = sql_request.query("select NAME from sysdatabases where NAME like '%_metastore'");
+          var sql_result = sql_request.query("select NAME from sysdatabases where NAME like '%_metastore'");
 
           //Capture the result when the query completes
           sql_result.then(function(result)
@@ -287,14 +287,14 @@ var getColumns = async function (config,req,res,res_data)
 {     
     await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
-          REQ_COL = "COLUMN_NAME";
-          DB_NAME  = req.body.db;
-          SCHEMA_NAME  = "INFORMATION_SCHEMA";
-          TBL_NAME  = "COLUMNS";
+          var REQ_COL = "COLUMN_NAME";
+          var DB_NAME  = req.body.db;
+          var SCHEMA_NAME  = "INFORMATION_SCHEMA";
+          var TBL_NAME  = "COLUMNS";
 
           //Prepare an SQL request
           const sql_request = global_conn_pool[JSON.stringify(config)].request();          
-          sql_result = sql_request.query("select " + REQ_COL + " from " + DB_NAME + "." + SCHEMA_NAME + "." + TBL_NAME + " where TABLE_NAME='" + req.body.table_name + "'");
+          var sql_result = sql_request.query("select " + REQ_COL + " from " + DB_NAME + "." + SCHEMA_NAME + "." + TBL_NAME + " where TABLE_NAME='" + req.body.table_name + "'");
 
           //Capture the result when the query completes
           sql_result.then(function(result)
@@ -321,39 +321,51 @@ var getColumns = async function (config,req,res,res_data)
 
 
 var generateConfig = function(req,decodedToken)
-{   
-  return new Promise((resolve,reject) => {    
+{ 
+  return new Promise((resolve,reject) => {
+    
+    var result = {
+      err: 1,
+      data : {}
+    }; 
+
+    var servername;
+    var auth_type;
     if(req.method=='GET')
-        {
+        {          
           servername = req.query.server;
-          auth_type = req.query.auth_type;          
+          auth_type = req.query.auth_type;                    
         }
         else if(req.method=='POST')
         {
           servername = req.body.server;
           auth_type = req.body.auth_type;          
         }
-        
-      
+
     firebase.doc('users').collection(decodedToken.uid).doc('profile').get().then( user_data =>
-    {   
+    {      
       if(!user_data.exists)        
-      {   
+      { 
+          
         result.data = {info : "User does not exist. Please <a href='/users/register' target='_self'>register</a>"}
         reject(result);
       }        
-      user_data = user_data.data();       
+      var user_data = user_data.data();       
       //Prepare a connection config
+      
+
       var config = {
         user : decodedToken.uid,
         password : decrypt(user_data.password),
         server : servername,        
         domain : 'QUAERO',
+        requestTimeout : 30000,
         options: 
             {
               trustedConnection: (auth_type==0)?true:false
             }
-        }                
+        }             
+      
       resolve(config);      
     })
     .catch(function(error) {

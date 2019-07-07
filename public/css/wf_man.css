@@ -59,10 +59,11 @@ body {
     
 }
 
-#srch_body,#dash_body,#sett_body,#mon_body
+#srch_body,#dash_body,#sett_body,#mon_body,#mon_status
 {
     display: none;
 }
+
 
 a:hover,
 a:active,
@@ -98,7 +99,10 @@ a:visited {
 {
     color : #4CAF50;
 }
-
+.blue_text
+{
+  color : #2196F3;
+}
 
 .menu_bar
 {
@@ -127,6 +131,12 @@ a:visited {
     color:white;
 }
 
+.menu_selected
+{
+  background-color: #007BFF;
+  color:white;
+}
+
 .res_item
 {    
     zoom: 0.9;
@@ -152,6 +162,19 @@ a:visited {
   width : 100%;
 }
 
+#ref_box
+{
+  width: 5rem;
+}
+
+
+#filter_menu
+{
+  background-color: rgb(203, 228, 255);
+  padding: 0.2rem;
+  border-radius: 4px;  
+  font-family: 'futura_bold', serif;            
+}
 .fade {  
   transition: opacity 0.1s linear;
 }
