@@ -22,7 +22,7 @@
 body {
     overflow-x: hidden;
     margin: 0;    
-    background-color: var(--text_light);
+    background-color: var(--text_light);    
 }
 
 #title, #my_subtitle {
@@ -65,7 +65,8 @@ body {
 }
 #myTab
 {
-  font-family: 'futura_bold', serif;    
+  font-family: 'futura_bold', serif;     
+  width: 100%;
 }
 
 
@@ -138,7 +139,7 @@ a:visited {
 
 #filter_menu
 {
-  background-color: rgb(203, 228, 255);
+  border: rgb(203, 228, 255) solid 0.2rem;
   padding: 0.2rem;
   border-radius: 4px;  
   font-family: 'futura_bold', serif;            

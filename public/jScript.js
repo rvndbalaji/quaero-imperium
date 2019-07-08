@@ -163,6 +163,8 @@ var declareListeners = function()
         
         manualToggle = false;
 
+        //Refresh the monitor section
+        refreshMonitors();
         
     });
 
@@ -235,6 +237,19 @@ var disableSearch = function()
     $('#order_type').attr('disabled','disabled'); 
 }
 
+var beginLoadingEverything = function()
+{
+
+    //Preload monitors
+    showMonitor();
+        
+
+     //Remove the loading text 
+     $('#load_img').hide();   
+     $('#myTab').css('display','inline-flex');
+     //Display search section
+     $('#srch_tab').tab('show');
+}
 
 var typingTimer;                //timer identifier
 var showSearch = function()
@@ -260,10 +275,7 @@ var showSearch = function()
 
     
     //setup before functions
-    clearTimeout(typingTimer);  
-    clearInterval(dashStatsTimer);
-    clearTimeout(scrollTim);
-    clearTimeout(monRefreshTimer);
+    clearTimeout(typingTimer);      
 
     var doneTypingInterval = 1000;  //time in ms, 1 second for example
     var $input = $('#srch_box');
@@ -283,9 +295,7 @@ var showSearch = function()
 
 
 var showMonitor = function()
-{    
-    clearTimeout(typingTimer);  
-    clearInterval(dashStatsTimer);    
+{   
     $('#ref_box').change();       
 }
 
@@ -376,13 +386,7 @@ var ok_initConnect = function(req_data)
         //If current screen is search section, display the search screen
         if(visScreen=='srch_tab')
         {
-            
-            //Remove the loading text 
-            $('#load_img').hide();    
-            
-            $('#myTab').css('display','inline-flex');
-            //Display search section
-            $('#srch_tab').tab('show');
+           beginLoadingEverything();
         }
     }      
 }    
@@ -395,6 +399,7 @@ var err_serverConfig = function(error)
     $("#server_config_alert").text(error.data.info);
     $("#server_config_alert").fadeIn();
     $("#host_name").removeAttr('disabled');
+    $("#nick_name").removeAttr('disabled');
     $("input[name='auth_type']").removeAttr('disabled');
     $("input[name='server_type']").removeAttr('disabled');
     $("#saveServerDetails").removeAttr('disabled');
@@ -966,11 +971,7 @@ var dashStatsTimer;
 
 var showDashboard = function()
 {
-    //clearSearchTimer
-    clearTimeout(typingTimer);    
     clearInterval(dashStatsTimer);
-    clearTimeout(scrollTim);
-    clearTimeout(monRefreshTimer);   
     
     //Run once
     updateDashboardStats("failed");
@@ -987,8 +988,7 @@ var showDashboard = function()
 
 var showSettings = function()
 {       
-    clearTimeout(scrollTim);
-    clearTimeout(monRefreshTimer);    
+    
 }
 
 
@@ -1157,8 +1157,9 @@ var writeHostDetailsToFirebase = function()
 {    
     $('#notif_bar').hide();     
     var title = $("#host_name").val().trim().toUpperCase();
-    var server_type = ($("input[name='server_type']:checked").val()=='prod')?1:0;
-    var auth_type = ($("input[name='auth_type']:checked").val()=='sql')?1:0;    
+    var server_type = ($("input[type='radio'][name='server_type']:checked").val()=='prod')?1:0;
+    var auth_type =  ($("input[type='radio'][name='auth_type']:checked").val()=='sql')?1:0;    
+    
     var nickname = $("#nick_name").val().trim();
 
     $('#server_config_alert').removeClass('alert-warning');
@@ -1203,17 +1204,21 @@ var writeHostDetailsToFirebase = function()
 var deleteServerDetails = function()
 {    
     $('#saveServerDetails').attr('disabled','disabled');                  
-    var title = $("#host_name").val().trim().toUpperCase();
+    var host_name = $("#host_name").val().trim().toUpperCase();
     $('#server_config_alert').addClass('alert-danger');    
     $("#server_config_alert").text("Deleting...");
     $("#server_config_alert").fadeIn();
     //Prepare server configuration            
     fire.doc("users").collection(currentUser.uid).doc('hosts').update({  
-            [title] : firebase.firestore.FieldValue.delete()
+            [host_name] : firebase.firestore.FieldValue.delete()
     })
     .then(function() {       
        $('#editServer').modal('toggle');    
-       $('#saveServerDetails').removeAttr('disabled');                                
+       $('#saveServerDetails').removeAttr('disabled');                  
+       //Now delete the monitors of the above server
+        fire.doc("users").collection(currentUser.uid).doc('monitors').update({  
+                [host_name] : firebase.firestore.FieldValue.delete()
+            });
     })
     .catch(function(error) {
         $('#server_config_alert').removeClass('alert-success');
