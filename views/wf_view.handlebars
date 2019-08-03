@@ -1,0 +1,44 @@
+<div class="jumbotron mb-1 container-fluid">
+        <div class="jumbo_text row">
+            <div class="col-lg-4 col-md-4 mt-2" align="left">                
+                <a href="/" target="_self"><img src="../images/q_logo_full.png" class="img-responsive" width="120rem" id="logo"></a>
+            </div>                
+            <div class="animated fadeInDown col-lg-4 col-md-4">
+                <h1 id="title">Workflow Viewer</h1>
+            </div>
+            </a>            
+        </div>                
+</div>
+<div class="container-fluid sec_body tab-pane mt-2" role="tabpanel"  id="view_body" align="center">
+            <div class="body_content">
+                    <div class="container-fluid">                        
+                       <div class="row ml-3" id="filter_menu">
+                            <div class="col-lg-9 col-md-9">
+                                <div class="row mt-2 ml-2">                                  
+                                    <div class="col-lg-auto col-md-auto" id="ref_status" style="margin-left:100px">                             
+                                        <b>Refreshing workflow...</b>
+                                    </div> 
+                                </div>             
+                            </div>                              
+                            <div class="col-lg-3 col-md-3">                                
+                                <div class="row justify-content-end">
+                                    <div class="col-lg-auto col-md-auto" onclick="">                           
+                                        <span>Refresh every </span>
+                                         <div class="btn-group">
+                                            <input type="number" class="form-control" id="ref_box" min="5" value="60">
+                                        </div>
+                                        <span> seconds</span>
+                                    </div>                                      
+                                </div>
+                            </div> 
+                        </div>                                               
+                        <div class="row justify-content-center">                               
+                            <div class="col-lg-auto col-md-auto col-sm-6 col-xs-12" align="left" style="width: 100%">                                     
+                                <div id="wf_result"> 
+                                    
+                                </div>
+                            </div>
+                        </div>    
+                    </div>    
+            </div>
+</div>  

@@ -6,6 +6,10 @@
     --primary_dark : #6AB0DE;
     --danger_dark  : #F29F97;
     --success_dark : #1ABC9C;
+
+    --primary_bright: #2196F3;
+    --danger_bright: #F44336;
+    --success_bright: #4CAF50;    
 }
 
 
@@ -82,7 +86,7 @@ a:visited {
     display:  inline-block;
     padding: 0.3rem;    
     margin:1rem;    
-    background-color: #2196F3;
+    background-color: var(--primary_bright);
     color:white;
     box-shadow: 0rem 0rem 1rem gray;       
     z-index: 2;
@@ -98,15 +102,15 @@ a:visited {
 
 .red_text
 {
-    color : #F44336;
+    color : var(--danger_bright);
 }
 .green_text
 {
-    color : #4CAF50;
+    color : var(--success_bright) ;
 }
 .blue_text
 {
-  color : #2196F3;
+  color : var(--primary_bright);
 }
 
 .res_item
@@ -115,7 +119,7 @@ a:visited {
     margin: 1rem;
     padding: 0.5rem;        
     font-family: futura_bold;
-    border-radius: 4px;        
+    border-radius: 4px;    
 }
 
 .sett_item
@@ -213,7 +217,7 @@ a:visited {
   
 }
 .switch-input:checked + .switch-label:after {
-  background-color: #4CAF50;
+  background-color: var(--success_bright);
   
   -ms-transform: translate(80%, -50%);
   -webkit-transform: translate(80%, -50%);

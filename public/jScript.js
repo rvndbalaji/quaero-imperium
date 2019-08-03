@@ -5,6 +5,7 @@ var unsAuth;
 var unsHost;
 var unsMon;
 var manualToggle=false;
+var wf_view_open = false;
 function getCurrentUser(auth) {    
   return new Promise((resolve, reject) => {
      if (userLoaded) {         
@@ -40,15 +41,20 @@ var clearSession = function()
 var fire;
 $(document).ready(function(){        
     
-    if(window.location.pathname=='/' || window.location.pathname=='/wf_man')
-    {        
-        getCurrentUser(firebase.auth()).then(user=>{            
-            currentUser = user;                
-                fire = firebase.firestore().collection('root');                          
-                if(window.location.pathname=='/wf_man')
-                {                       
-                    declareListeners();                      
-                }
+    if(window.location.pathname=='/' || window.location.pathname=='/wf_man' || window.location.pathname=='/wf_man/view' )
+    {   
+            getCurrentUser(firebase.auth()).then(user=>{            
+            currentUser = user;                        
+            fire = firebase.firestore().collection('root');                          
+            if(window.location.pathname=='/wf_man')
+            {                       
+                declareListeners();                      
+            }
+            else if(window.location.pathname=='/wf_man/view')
+            {
+                wf_view_open = true;
+                declareFirebaseListeners();
+            }
         }).catch(err=>{
             console.log(err);          
         });
@@ -145,7 +151,63 @@ var declareListeners = function()
     $("#server_config_alert").hide();
     $('#notif_bar').hide();
 
-    //Listener to get the monitors and update any workflow results
+   declareFirebaseListeners();
+}
+
+var refreshSearchAndMonitor = function()
+{
+    if(!manualToggle){
+        prev_searchterm="";
+        //Refresh the search results on Search screen
+        performSearch();                              
+        return;          
+    }
+    
+    manualToggle = false;
+
+    //Refresh the monitor section    
+    refreshMonitors();    
+}
+
+var setDropDownMenuAndConnectToAllHosts = function()
+{
+    if(configured_host_names.length!=0)
+    {
+        var sett_content = "";
+        var srch_content = "";
+        configured_host_names.forEach(myFunction);            
+        function myFunction(item, index) 
+        {
+            sett_content += "<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'><button type='button' class='btn btn-light'  data-toggle='modal' data-target='#editServer' data-type='edit' data-title='Edit server'>" + item + "</button></div>"; 
+            srch_content += "<a class='dropdown-item server_item' href='#' target='_self'>" +  item + " - " + configured_hosts[item].nickname +  "</a>"
+
+            //For every server, begin making connections to it
+            $('#load_txt').text("Preparing workspace...");                                                            
+            req_data = {server : item,auth_type: configured_hosts[item].auth_type};
+            performConnect(req_data,ok_initConnect,err_initConnect);
+        }               
+
+        $('#server_list').html(sett_content);                                            
+        $('#server_drop').html(srch_content);                                                            
+        $('#server_name').removeAttr('disabled');        
+        $('#server_name').html("Select server");                                                                                            
+        disableSearch();
+        
+        empty =false;
+    }    
+    
+    if(empty  && !wf_view_open)
+    {
+        $('#server_list').html("<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'>You haven't configured any servers</div>");            
+        $('#server_name').html("Not configured");                                            
+        $('#server_name').attr('disabled','disabled');    
+        disableSearch();   
+    }        
+}
+
+var declareFirebaseListeners = function()
+{
+     //Listener to get the monitors and update any workflow results
    //Remove any previous listeners            
    if (unsMon) unsMon();   
    unsMon =  fire.doc('users').collection(currentUser.uid).doc('monitors').onSnapshot(function(monitors)
@@ -154,19 +216,12 @@ var declareListeners = function()
         if (monitors.exists) {            
             monitored_hosts = monitors.data();                                         
         }
-        if(!manualToggle){
-            prev_searchterm="";
-            //Refresh the search results on Search screen
-            performSearch();                              
-            return;          
+        if(!wf_view_open)
+        {
+            refreshSearchAndMonitor();
         }
-        
-        manualToggle = false;
-
-        //Refresh the monitor section
-        refreshMonitors();
-        
     });
+
 
     //Listener to get hosts and set them as drop down menus in search section
     //Remove any previous listeners     
@@ -178,40 +233,19 @@ var declareListeners = function()
         if (hosts.exists) 
         {            
             configured_hosts = hosts.data();
-            configured_host_names = Object.keys(configured_hosts);                        
-            if(configured_host_names.length!=0)
+            configured_host_names = Object.keys(configured_hosts);          
+            if(wf_view_open)
+            {                
+                //Call ok_wf_Connect present in wf_view.js
+                req_data = {server : server_name,auth_type: auth};
+                performConnect(req_data,ok_wfConnect,err_wfConnect);
+            }
+            else    
             {
-                var sett_content = "";
-                var srch_content = "";
-                configured_host_names.forEach(myFunction);            
-                function myFunction(item, index) 
-                {
-                    sett_content += "<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'><button type='button' class='btn btn-light'  data-toggle='modal' data-target='#editServer' data-type='edit' data-title='Edit server'>" + item + "</button></div>"; 
-                    srch_content += "<a class='dropdown-item server_item' href='#' target='_self'>" +  item + " - " + configured_hosts[item].nickname +  "</a>"
-
-                    //For every server, begin making connections to it
-                    $('#load_txt').text("Preparing workspace...");                                                            
-                    req_data = {server : item,auth_type: configured_hosts[item].auth_type};
-                    performConnect(req_data,ok_initConnect,err_initConnect);
-                }               
-
-                $('#server_list').html(sett_content);                                            
-                $('#server_drop').html(srch_content);                                                            
-                $('#server_name').removeAttr('disabled');        
-                $('#server_name').html("Select server");                                                                                            
-                disableSearch();
-                
-                empty =false;
+                setDropDownMenuAndConnectToAllHosts()              
             }
         }
-        if(empty)
-        {
-            $('#server_list').html("<div class='col-lg-auto col-md-auto col-sm-auto col-xs-auto'>You haven't configured any servers</div>");            
-            $('#server_name').html("Not configured");                                            
-            $('#server_name').attr('disabled','disabled');    
-            disableSearch();      
-             
-        }        
+           
     });    
 }
 
@@ -315,9 +349,10 @@ var performMonitorRefresh = function()
              {                 
                  for(i=0; i< wf_list.wf_id.length; i++)                 
                  {
-                    //We have the workflow ID, lets fetch the details                           
-                    remaining_monitors_to_be_loaded++;                    
-                    fetchWorkflow(server_name,metastore_name,wf_list.wf_id[i],'WORKFLOW_ID','WORKFLOW_ID','asc',ref_sec);                                        
+                    //We have the workflow ID, lets fetch the details                                               
+                    remaining_monitors_to_be_loaded++;    
+                    req_data = { server : server_name,auth_type: configured_hosts[server_name].auth_type,where_key : 'WORKFLOW_ID', where_val : wf_list.wf_id[i], order_by: 'WORKFLOW_ID', order_type: 'asc', db:metastore_name , schema:'dbo'};            
+                    fetchWorkflow(req_data,ok_monRefresh,err_monRefresh,ref_sec);                                        
                  }
              }
            
@@ -332,7 +367,10 @@ var performMonitorRefresh = function()
 }
 
 var current_div;
-
+function getConfiguredHosts()
+{    
+    return configured_hosts;
+}
 function performConnect(req_data,exec_function,err_function)
     {   
         //Check if payload has been passed, if not, fetch it.        
@@ -424,11 +462,76 @@ var ok_srchConnect = function(req_data)
     fetchMetastores();                      
 }
 
+var err_monRefresh = function(error,ref_timeout)
+{
+    totalMonitors.push(error);
+    remaining_monitors_to_be_loaded--;
+    if(remaining_monitors_to_be_loaded<=0)
+    {
+        remaining_monitors_to_be_loaded=0;
+        $('#monitor_div').html(totalMonitors.join(' '));
+        $('#mon_status').hide(); 
+        setWorkflowStatusCounts();  
+        
+         //Now that all results have been obtained, set a time out for refresh
+         clearTimeout(monRefreshTimer);         
+         monRefreshTimer = setTimeout(function()
+         {                    
+             refreshMonitors();                    
+         }, ref_timeout * 1000);       
+    }        
+}
 
-function fetchWorkflow(server_name,metastore_name,srch_val,srch_col,order_col,order_ad,ref_timeout)
+var ok_monRefresh = function(req_data,response,ref_timeout)
+{              
+    if(response.err==1)
+    {                   
+        prettyResult = "<br><br>Something went wrong : " + error.data.info;
+    }
+    else
+    {   
+        result  = response.data.info;          
+              
+        if(!Object.keys(result).length)
+        {                   
+            prettyResult = "<br><br>No workflows found where " + req_data.where_key + " like '" + req_data.where_val + "'";                                       
+            //If no workflows were found, make sure this workflow isn't being monitored.
+            //Remove entry.
+            toggleMonitor(req_data.server,req_data.db,req_data.where_val);
+        }
+        else
+        {                
+            result['server_name'] = req_data.server;
+            result['metastore_name'] = req_data.db;                    
+            prettyResult = getPrettifyResults(result,'monitor');                                        
+        }                                            
+    }            
+
+    totalMonitors.push(prettyResult);
+    remaining_monitors_to_be_loaded--;
+    if(remaining_monitors_to_be_loaded<=0)
+    {
+        //Sort the workflows, because order might keep changing during refresh
+        totalMonitors.sort();
+        remaining_monitors_to_be_loaded=0;
+        $('#monitor_div').html(totalMonitors.join(' '));
+        $('#mon_status').hide();     
+        setWorkflowStatusCounts();
+        
+        //Now that all results have been obtained, set a time out for refresh                
+        clearTimeout(monRefreshTimer);         
+        monRefreshTimer = setTimeout(function()
+        {                    
+            refreshMonitors();                         
+        }, ref_timeout * 1000);       
+    }
+
+}
+
+function fetchWorkflow(req_data,exec_function,err_function,ref_timeout)
 {   
     prettyResult =  "";
-    req_data = { server : server_name,auth_type: configured_hosts[server_name].auth_type,where_key : srch_col, where_val : srch_val, order_by: order_col, order_type: order_ad, db:metastore_name , schema:'dbo'};            
+    
     cur_request =  $.ajax({
         url: '/wf_man/search/wf',
         data : req_data,
@@ -437,68 +540,13 @@ function fetchWorkflow(server_name,metastore_name,srch_val,srch_col,order_col,or
         },           
         success: function (response) 
         {    
-            if(response.err==1)
-            {   
-                prettyResult = "<br><br>Something went wrong : " + response.data.info;
-            }
-            else
-            {                
-                result  = response.data.info;          
-                      
-                if(!Object.keys(result).length)
-                {                   
-                    prettyResult = "<br><br>No workflows found where " + srch_col + " like '" + srch_val + "'";                                       
-                    //If no workflows were found, make sure this workflow isn't being monitored.
-                    //Remove entry.
-                    toggleMonitor(server_name,metastore_name,srch_val);
-                }
-                else
-                {                
-                    result['server_name'] = server_name;
-                    result['metastore_name'] = metastore_name;                    
-                    prettyResult = getPrettifyResults(result,'monitor');                                        
-                }                                            
-            }            
-
-            totalMonitors.push(prettyResult);
-            remaining_monitors_to_be_loaded--;
-            if(remaining_monitors_to_be_loaded<=0)
-            {
-                //Sort the workflows, because order might keep changing during refresh
-                totalMonitors.sort();
-                remaining_monitors_to_be_loaded=0;
-                $('#monitor_div').html(totalMonitors.join(' '));
-                $('#mon_status').hide();     
-                setWorkflowStatusCounts();
-                
-                //Now that all results have been obtained, set a time out for refresh                
-                clearTimeout(monRefreshTimer);         
-                monRefreshTimer = setTimeout(function()
-                {                    
-                    refreshMonitors();                         
-                }, ref_timeout * 1000);       
-            }
+            exec_function(req_data,response,ref_timeout);
         },
             fail : function(xhr,textStatus,error)
         {   
-            totalMonitors.push(error);
-            remaining_monitors_to_be_loaded--;
-            if(remaining_monitors_to_be_loaded<=0)
-            {
-                remaining_monitors_to_be_loaded=0;
-                $('#monitor_div').html(totalMonitors.join(' '));
-                $('#mon_status').hide(); 
-                setWorkflowStatusCounts();  
-                
-                 //Now that all results have been obtained, set a time out for refresh
-                 clearTimeout(monRefreshTimer);         
-                 monRefreshTimer = setTimeout(function()
-                 {                    
-                     refreshMonitors();                    
-                 }, ref_timeout * 1000);       
-            }                    
+           err_function(error,ref_timeout);
         }
-        });    
+    });    
 }
 
 var setWorkflowStatusCounts = function()
@@ -686,35 +734,6 @@ function fetchMWorkflowColumns(req_data,metastore_name)
 }
 
 
-function updateDashboardStats(wf_type)
-{
-    prev_value = $('#' + wf_type + '_wf').text();    
-    metastore_name = $('#metastore_name').html().trim();        
-    req_data = { type : wf_type, db:metastore_name + "_metastore",schema:'dbo'};
-    
-    $.ajax({
-        url: '/wf_man/wf/count',
-        data : req_data,
-        type: 'GET',
-        beforeSend : function(xhr){            
-            $('#' + wf_type + '_wf').text(prev_value + " (updating)");            
-        },           
-        success: function (response) 
-        {   
-            if(response.err==1)
-            {
-                $('#' + wf_type + '_wf').text(prev_value);                
-            }
-            else{                
-                $('#' + wf_type + '_wf').text(response.data.count);
-            }
-        },
-         fail : function(xhr,textStatus,error)
-        {            
-            $('#' + wf_type + '_wf').text(prev_value);
-        }
-        });
-}
 
 prev_searchterm = "";
 var cur_request;
@@ -821,6 +840,11 @@ function getPrettifyResults(result,screen)
     var p_dark = bodyStyles.getPropertyValue('--primary_dark');
     var d_dark = bodyStyles.getPropertyValue('--danger_dark');
     var s_dark = bodyStyles.getPropertyValue('--success_dark');
+
+    var p_bright = bodyStyles.getPropertyValue('--primary_bright');
+    var d_bright = bodyStyles.getPropertyValue('--danger_bright');
+    var s_bright = bodyStyles.getPropertyValue('--success_bright');
+
     filtered_wfs = undefined;
     server_name = result['server_name'];
     metastore_name = result['metastore_name'];
@@ -835,6 +859,7 @@ function getPrettifyResults(result,screen)
         }
     }
 
+    
     var new_content = "";    
     resultList = [];
     for (i = 0; i < result.length; i++) {                 
@@ -846,16 +871,19 @@ function getPrettifyResults(result,screen)
                 
         sel_light = p_light;
         sel_dark = p_dark;
+        sel_bright = p_bright;
         if(['FAILED','FAILED-CLEANUPFAILED'].indexOf(result[i].WORKFLOW_INSTANCE_STATUS) >=0)        
         {
             sel_light = d_light;
             sel_dark = d_dark;
+            sel_bright = d_bright;
             mon_failed_wf_count++;
         }
         else if(['COMPLETE','COMPLETE-CLEANUPFAILED','COMPLETE-PENDINGCLEANUP'].indexOf(result[i].WORKFLOW_INSTANCE_STATUS) >=0)
          {
             sel_light = s_light;
             sel_dark = s_dark;
+            sel_bright = s_bright;
             mon_complete_wf_count++;
          }
         else{
@@ -863,7 +891,8 @@ function getPrettifyResults(result,screen)
         }
         server_details = '';
         if(screen=='monitor')
-        {
+        {            
+            
             server_details =  `<div class='col-lg-auto col-md-auto justify-content-left'><span class='gray_text'>SERVER </span><b>`
             + configured_hosts[server_name].nickname + ` </b><span class='gray_text'>(` + server_name + `)</span><b>` + 
         `</div></b>
@@ -879,12 +908,17 @@ function getPrettifyResults(result,screen)
                 <div class='col-lg-auto col-md-auto'><b>`
                  + result[i].WORKFLOW_NAME +   
                 `</div></b>
-                <div class='col-lg-auto col-md-auto'>`
+                <div class='col-lg-auto col-md-auto' style='color:`+ sel_bright +`;font-weight:bold;'>`
                  + result[i].WORKFLOW_INSTANCE_STATUS +   
                 `</div>
-                <div class='col-lg-auto col-md-auto'>
+                <div class='col-lg-auto col-md-auto ml-auto'>
                     <input type="checkbox" id="mon_toggle_`+server_name+`_`+ metastore_name +`_`+result[i].WORKFLOW_ID+`" name="set-name" class="switch-input" onClick="toggleMonitor('`+server_name+`','`+ metastore_name +`','`+result[i].WORKFLOW_ID+`')" ` + isChecked + `>
                     <label for="mon_toggle_`+server_name+`_`+ metastore_name +`_`+result[i].WORKFLOW_ID+`" class="switch-label"><span class="toggle--on">Monitoring</span><span class="toggle--off">Monitor</span></label>
+                </div>  
+                <div class="btn-group mr-3">
+                    <a href="/wf_man/view?auth=`+ configured_hosts[server_name].auth_type +`&server=`+server_name+`&db=`+metastore_name+`&wf=`+result[i].WORKFLOW_ID+`" id="view_wf" class="btn btn-primary btn-sm" target="_blank" style='color:white'>
+                    View workflow
+                    </a>                                       
                 </div>
             </div>
             <br>
@@ -973,7 +1007,18 @@ var showDashboard = function()
 {
     clearInterval(dashStatsTimer);
     
-    //Run once
+    //Loop through every sever_name and fetch the details
+    for(server_name in monitored_hosts)
+    {        
+        meta_list = [];
+        for(metastore_name in monitored_hosts[server_name])
+        {    
+            meta_list.push(metastore_name);
+        }    
+        fetchServerStats(server_name,meta_list);
+    }
+
+    /*Run once
     updateDashboardStats("failed");
     updateDashboardStats("running");
 
@@ -982,10 +1027,46 @@ var showDashboard = function()
     updateDashboardStats("failed");
     updateDashboardStats("running");
     //0.5 minutes
-    }, 0.5 * 60 * 1000);    
+    }, 2 * 60 * 1000);    
+    */
     
 }
 
+function fetchServerStats(server_name,meta_list)
+{
+    req_data = { server: server_name, db:metastore_name, metastore_list : meta_list};
+}
+
+
+function updateDashboardStats(wf_type)
+{
+    prev_value = $('#' + wf_type + '_wf').text();    
+    metastore_name = $('#metastore_name').html().trim();        
+    req_data = { type : wf_type, db:metastore_name + "_metastore",schema:'dbo'};
+    
+    $.ajax({
+        url: '/wf_man/wf/count',
+        data : req_data,
+        type: 'GET',
+        beforeSend : function(xhr){            
+            $('#' + wf_type + '_wf').text(prev_value + " (updating)");            
+        },           
+        success: function (response) 
+        {   
+            if(response.err==1)
+            {
+                $('#' + wf_type + '_wf').text(prev_value);                
+            }
+            else{                
+                $('#' + wf_type + '_wf').text(response.data.count);
+            }
+        },
+         fail : function(xhr,textStatus,error)
+        {            
+            $('#' + wf_type + '_wf').text(prev_value);
+        }
+        });
+}
 var showSettings = function()
 {       
     
