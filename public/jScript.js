@@ -862,8 +862,8 @@ function getPrettifyResults(result,screen)
     
     var new_content = "";    
     resultList = [];
-    for (i = 0; i < result.length; i++) {                 
-
+    for (i = 0; i < result.length; i++) 
+    {
         if(filtered_wfs && $.inArray(Number(result[i].WORKFLOW_ID), filtered_wfs) != -1)
             isChecked = "checked";            
         else
@@ -942,7 +942,7 @@ function getPrettifyResults(result,screen)
             `</div>
         </div>`;
         
-        //Add individual result row in a list
+        //Add individual result row in a list        
         resultList.push(new_content)
       }               
     return resultList;    
@@ -1195,11 +1195,11 @@ var LogOut = function()
       });
 }
 
-var saveServerDetails = function()
-{   
-    var title = $("#host_name").val().trim().toUpperCase();    
-    var nickname = $("#nick_name").val().trim();
-    var auth = ($("input[name='auth_type']:checked").val()=='sql')?1:0;    
+    var saveServerDetails = function()
+    {   
+        var title = $("#host_name").val().trim().toUpperCase();    
+        var nickname = $("#nick_name").val().trim();
+        var auth = ($("input[name='auth_type']:checked").val()=='sql')?1:0;    
 
     if(title=='')
     {       

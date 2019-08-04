@@ -94,9 +94,6 @@ router.get('/wf/count',function(req,res)
 });
 
 
-
-//Get the count of any workflows give the type.
-//Example : when type = "failed", returns the number of failed workflows in the environment
 router.post('/wf/act_deact',function(req,res)
 {  
   var result = {
@@ -111,6 +108,87 @@ router.post('/wf/act_deact',function(req,res)
         if(JSON.stringify(config) in global_conn_pool)        
         {
           setWorkflowActiveFlag(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
+router.get('/wf/exec_details',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getWorkflowExecutionStatus(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
+router.post('/wf/modifyStatus',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          setWorkflowInstanceStatus(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
+router.get('/wf/error_log',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getErrorLog(config,req,res,result);  
         }
         else{
           result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
@@ -335,7 +413,7 @@ var fetchWFDetails = async function (config,req,res,res_data)
 
       //Set Database and Schema
       current_db_schema = req.query.db + "." + req.query.schema + ".";      
-      var sql_result = sql_request.query("with ONE (WF_ID,WFI_ID) as ( select mw.WORKFLOW_ID as WF_ID,es.WORKFLOW_INSTANCE_ID as WFI_ID from " + current_db_schema +  "M_WORKFLOW mw join " + current_db_schema +  "VW_WORKFLOW_EXECUTION_STATUS es on es.WORKFLOW_ID= mw.WORKFLOW_ID where mw." + req.query.where_key + " like '%" + req.query.where_val + "%' ), TWO(WORKFLOW_ID,WORKFLOW_INSTANCE_ID) as( select WF_ID as WORKFLOW_ID,max(WFI_ID) as WORKFLOW_INSTANCE_ID from ONE group by WF_ID ) select TWO.WORKFLOW_ID, mw.WORKFLOW_NAME,WORKFLOW_DESC,ACTIVE_FLG,UPDATE_USER,UPDATE_DT, TWO.WORKFLOW_INSTANCE_ID,WORKFLOW_TYPE,START_DT,END_DT,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,EVENT_GROUP_ID from TWO join " + current_db_schema + "M_WORKFLOW mw on mw.WORKFLOW_ID = TWO.WORKFLOW_ID join " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS vw on (vw.WORKFLOW_INSTANCE_ID = TWO.WORKFLOW_INSTANCE_ID and vw.WORKFLOW_ID = TWO.WORKFLOW_ID) order by mw." + req.query.order_by + " " + req.query.order_type); 
+      var sql_result = sql_request.query("with ONE (WF_ID,WFI_ID) as ( select mw.WORKFLOW_ID as WF_ID,es.WORKFLOW_INSTANCE_ID as WFI_ID from " + current_db_schema +  "M_WORKFLOW mw join " + current_db_schema +  "VW_WORKFLOW_EXECUTION_STATUS es on es.WORKFLOW_ID= mw.WORKFLOW_ID where mw." + req.query.where_key + " like '%" + req.query.where_val + "%' ), TWO(WORKFLOW_ID,WORKFLOW_INSTANCE_ID) as( select WF_ID as WORKFLOW_ID,max(WFI_ID) as WORKFLOW_INSTANCE_ID from ONE group by WF_ID ) select TWO.WORKFLOW_ID, mw.WORKFLOW_NAME,WORKFLOW_DESC,ACTIVE_FLG,UPDATE_USER,cast(UPDATE_DT as varchar(40)) as UPDATE_DT, TWO.WORKFLOW_INSTANCE_ID,WORKFLOW_TYPE,cast(START_DT as varchar(40)) as START_DT,cast(END_DT as varchar(40)) as END_DT,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,EVENT_GROUP_ID from TWO join " + current_db_schema + "M_WORKFLOW mw on mw.WORKFLOW_ID = TWO.WORKFLOW_ID join " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS vw on (vw.WORKFLOW_INSTANCE_ID = TWO.WORKFLOW_INSTANCE_ID and vw.WORKFLOW_ID = TWO.WORKFLOW_ID) order by mw." + req.query.order_by + " " + req.query.order_type); 
 
       //Capture the result when the query completes
       sql_result.then(function(result)
@@ -359,6 +437,77 @@ var fetchWFDetails = async function (config,req,res,res_data)
     }
 }
 
+
+var getWorkflowExecutionStatus = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      //Set Database and Schema
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      
+      var sql_result = sql_request.query("select top " + req.query.limit + " WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,OOZIE_JOB_URL,FILE_NM,NUM_RECORDS_INSERTED,cast(START_DT as varchar(40)) as START_DT,cast(END_DT as varchar(40)) as END_DT, INPUT_DATASET_INSTANCE,OUTPUT_DATASET_INSTANCE,WF_ACTIVE_FLG,DSI_IN_STAUTS,DSI_OUT_STATUS,EVENT_GROUP_ID from " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_ID = " + req.query.where_val + " order by " + req.query.order_by + " " + req.query.order_type); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
+
+
+var getErrorLog = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      //Set Database and Schema
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      
+      var sql_result = sql_request.query("select EVENT_ID,EVENT_MSG,cast(UPDATE_DT as varchar(40)) as DATE from " + current_db_schema + "M_TRACK_EVENT_LOG where EVENT_GROUP_ID = " + req.query.event_group_id + " order by EVENT_ID desc"); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
 
     /*  JOBS
     SELECT    
@@ -436,6 +585,41 @@ var setWorkflowActiveFlag = async function (config,req,res,res_data)
             res.send(res_data);       
             return; 
           }
+          //Capture the result when the query completes
+          sql_result.then(function(result)
+          {                    
+            res_data.err = 0;             
+            //Get the result and set it                
+            res_data.data = {info : result.recordset};
+            res.send(res_data);
+          }).catch(err=>{                  
+            res_data.err = 1; 
+            res_data.data = {info : err};
+            res.send(res_data);        
+          });
+      }
+      catch (err)
+      {
+        res_data.err = 1; 
+        res_data.data = {info : 'Something went wrong'};
+        res.send(res_data);               
+      }
+}
+
+
+var setWorkflowInstanceStatus = async function (config,req,res,res_data)
+{     
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+          //Prepare an SQL request
+          const sql_request = global_conn_pool[JSON.stringify(config)].request();    
+
+          //Set Database and Schema
+          current_db_schema = req.body.db + "." + req.body.schema + ".";      
+          var sql_result;          
+          
+          sql_result = sql_request.query('EXEC ' + current_db_schema + 'USP_MODIFY_WORKFLOW_INSTANCE_STATUS ' + req.body.workflow_instance_id + ',\'' + req.body.workflow_status + '\'');
+
           //Capture the result when the query completes
           sql_result.then(function(result)
           {                    

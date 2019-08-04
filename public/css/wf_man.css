@@ -63,7 +63,7 @@ body {
     
 }
 
-#mon_status, #myTab
+#mon_status, #myTab,#workflow_instance_status_display,#wf_result
 {
     display: none;
 }
@@ -140,6 +140,24 @@ a:visited {
   width: 5rem;
 }
 
+#err_log_display
+{
+  font-size: 70%;
+}
+
+#wfi_table thead
+{
+  font-size: 85%;
+}
+#wfi_table tbody
+{
+  font-family: 'futura_light', serif;            
+}
+
+#wfi_table .wfi_row
+{
+  cursor: pointer;
+}
 
 #filter_menu
 {
