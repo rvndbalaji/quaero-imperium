@@ -140,7 +140,7 @@ a:visited {
   width: 5rem;
 }
 
-#err_log_display
+#err_log_display,#pc_display
 {
   font-size: 70%;
 }

@@ -10,6 +10,7 @@ var instance_limit = 5;
 ///GLOBAL LATEST_VALUES
 let LATEST_INSTANCES = undefined;
 let current_error_logs;
+let current_pc_param;
 
 $(document).ready(function(){            
     /*
@@ -85,6 +86,14 @@ var declareLocalListeners = function()
         modal.find('.modal-title').text('Error Logs for ' + eg_id);        
         getErrorLogs(eg_id);
     });
+
+    $('#preCompileDialog').on('show.bs.modal', function (event) {        
+        var wfi_id = $('#PrecompileButton').attr('data-whatever');        
+        $('#pc_config_alert').html('Generating precompile, please wait...');
+        var modal = $(this)
+        modal.find('.modal-title').text('Precompile for instance ' + wfi_id);        
+        getPrecompile(wfi_id);
+    });
     
       //on keyup, start the countdown
       $('#log_srch_box').on('keyup', function () 
@@ -122,6 +131,41 @@ var declareLocalListeners = function()
             displayLogTable(filtered_log);
         }
       });
+       //on keyup, start the countdown
+       $('#pc_srch_box').on('keyup', function () 
+       {
+         typed_text = $('#pc_srch_box').val().trim().toLowerCase();
+         if(typed_text=='')
+         {
+             displayPCTable(current_pc_param);
+         }
+         else
+         {   
+             var filtered_pc = [];
+             var def = {
+                 PARAM_NAME : '-',
+                 PARAM_VALUE : "No param name or value contains the text '" + typed_text + "'"                 
+             }
+             //Replace all null values with '-'
+             current_pc_param = JSON.parse(JSON.stringify(current_pc_param).split(":null").join((':\"-"')));
+             for(i=0; i < current_pc_param.length; i++)
+             {
+                 if((current_pc_param[i].PARAM_NAME.toLowerCase().includes(typed_text)) || (current_pc_param[i].PARAM_VALUE.toLowerCase().includes(typed_text)))
+                 {   
+                     var cur = {
+                        PARAM_NAME : current_pc_param[i].PARAM_NAME,
+                        PARAM_VALUE : current_pc_param[i].PARAM_VALUE                         
+                     }
+                     filtered_pc.push(cur);
+                 }
+             }
+             if(filtered_pc.length==0)
+             {
+                filtered_pc.push(def);
+             }
+             displayPCTable(filtered_pc);
+         }
+       });
 
 }
 
@@ -185,6 +229,68 @@ var err_elog = function(error,ref_timeout)
     $('#log_config_alert').removeClass('alert-warning');
     $('#log_config_alert').addClass('alert-danger');
     $('#log_config_alert').html(error);    
+}
+
+
+
+var getPrecompile = function(wfi_id)
+{   
+    $('#pc_config_alert').show(); 
+    $('#pc_config_alert').removeClass('alert-danger');
+    $('#pc_config_alert').addClass('alert-warning');
+    $("#pc_display").hide();
+    $("#pc_srch_box").val("");
+    req_data = { server : server_name,auth_type: auth,db:metastore , schema:'dbo', workflow_instance_id : wfi_id};                
+    getRequest(req_data,ok_precompile,err_precompile,undefined,'/wf_man/wf/precompile');                                        
+}
+
+
+
+var ok_precompile = function(req_data,response,ref_timeout)
+{
+    if(response.err==1)
+    {       
+        err_precompile((JSON.parse(response.data.info).originalError.info.message));
+    }        
+    else
+    {
+        current_pc_param = response.data.info;
+        displayPCTable(current_pc_param);
+    }
+    
+}
+var displayPCTable = function(pc_params)
+{
+    t_headers = `
+        <thead>
+            <tr>
+                <th scope="col">Param Name</th>            
+                <th scope="col">Value</th>                
+            </tr>
+        </thead>`;
+
+        t_body = `<tbody>`;
+        each_row = '';
+        for (i = 0; i < pc_params.length; i++) 
+        {
+            each_row += `
+            <tr class="log_row">
+            <td>`+ pc_params[i].PARAM_NAME + `</td>                                          
+            <td>`+ pc_params[i].PARAM_VALUE + `</td>            
+            </tr>`;        
+        }           
+
+        $('#pc_table').html(t_headers + t_body + each_row + '</tbody>');
+        $("#pc_config_alert").hide();
+        $('#pc_display').fadeIn();        
+        $("#pc_srch_box").focus();
+}
+
+var err_precompile = function(error,ref_timeout)
+{
+    $('#pc_config_alert').removeClass('alert-warning');
+    $('#pc_config_alert').addClass('alert-danger');
+    $('#pc_config_alert').html(error);    
 }
 
 var ok_wfConnect = function(req_data,response,ref_timeout)

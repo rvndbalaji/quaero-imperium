@@ -202,6 +202,33 @@ router.get('/wf/error_log',function(req,res)
 });
 
 
+router.get('/wf/precompile',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getPrecompile(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
 //Get the server stats given the servername and all the metastores
 router.get('/stats',function(req,res)
 {  
@@ -494,6 +521,59 @@ var getErrorLog = async function (config,req,res,res_data)
         //Get the result and set it                
         res_data.data = {info : result.recordset};
         res.send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
+
+
+var getPrecompile = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      //Set Database and Schema
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      
+      var sql_result = sql_request.query("EXEC " + current_db_schema + "USP_PRECOMPILE_WORKFLOW_PACKAGE_MANIFEST " + req.query.workflow_instance_id); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(first_result)
+      {                
+        //Get the resultant temp table name
+        temp_tbl_name = first_result.recordset[0].PRECOMPILED_TEMP_TABLE_NAME;
+        
+        //We can now send another request to query the PARAM_NAME and PARAM_VALUE in this temp table
+        param_request = global_conn_pool[JSON.stringify(config)].request();
+        var param_result = param_request.query("select PARAM_NAME,PARAM_VALUE from " + temp_tbl_name);         
+      
+        //Capture the result when the query completes
+        param_result.then(function(final_result)
+          {        
+            res_data.err = 0; 
+            res_data.data = {info : final_result.recordset};
+            res.send(res_data);               
+          })
+          .catch(err=>{
+            res_data.err = 1; 
+            res_data.data = {info : JSON.stringify(err)};
+            res.send(res_data);               
+          });
+
+        //Wait for second request to complete, so don't send response to client
       })
       .catch(err=>{
         res_data.err = 1; 
