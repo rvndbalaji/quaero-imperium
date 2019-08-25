@@ -176,6 +176,7 @@ var getErrorLogs = function(eg_id)
     $('#log_config_alert').addClass('alert-warning');
     $("#err_log_display").hide();
     $("#log_srch_box").val("");
+    $("#RefreshLogs").attr('onclick','getErrorLogs(' + eg_id +')');
     req_data = { server : server_name,auth_type: auth,db:metastore , schema:'dbo', event_group_id : eg_id};                
     getRequest(req_data,ok_elog,err_elog,undefined,'/wf_man/wf/error_log');                                        
 }
@@ -375,7 +376,8 @@ function generateWorkflowInstanceTable()
     LATEST_INSTANCES = JSON.parse(JSON.stringify(LATEST_INSTANCES).split(":null").join((':\"-"')));
 
     bold_style = '';
-    for (i = 0; i < LATEST_INSTANCES.length; i++) 
+    limit = (LATEST_INSTANCES.length>7)?7:LATEST_INSTANCES.length;    
+    for (i = 0; i < limit; i++) 
     {
         if(i==0)
         {
@@ -560,7 +562,7 @@ function minimumPrettify(result,screen)
     else
     {
         act_deact =  `<input type="button" id="act_wf" class="btn btn-success btn-sm act_deact_wf" value="Activate Workflow"/>`
-        s_light = '#eaeaea  '
+        s_light = '#eaeaea'
     }
         
             

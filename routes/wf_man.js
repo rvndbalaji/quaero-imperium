@@ -12,7 +12,7 @@ router.get('/', async function(req,res){
     admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
     .then(function(decodedToken) 
     {
-      res.render('wf_man',{
+      res.status(200).render('wf_man',{
           title: 'Workflow Manager',
           cssfile : 'css/wf_man.css',
           cssanimate : 'frameworks/animate.css'          
@@ -33,7 +33,7 @@ router.get('/view', async function(req,res){
   admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
   .then(function(decodedToken) 
   {
-    res.render('wf_view',{
+    res.status(200).render('wf_view',{
         title: 'Workflow Viewer',     
         cssfile : '../css/wf_man.css',
         cssanimate : '../frameworks/animate.css',
@@ -369,7 +369,7 @@ var getServerStats = async function (config,req,res,res_data)
           //Get the result and set it
           count_num = result.recordset[0].COUNT;                
           res_data.data = {count : count_num};
-          res.send(res_data);
+          res.status(200).send(res_data);
         }) .catch(err=>{
           res_data.err = 1; 
           res_data.data = {info : err};
@@ -415,7 +415,7 @@ var getWorkflowCount = async function (config,req,res,res_data)
           //Get the result and set it
           count_num = result.recordset[0].COUNT;                
           res_data.data = {count : count_num};
-          res.send(res_data);
+          res.status(200).send(res_data);
         }) .catch(err=>{
           res_data.err = 1; 
           res_data.data = {info : err};
@@ -436,19 +436,66 @@ var fetchWFDetails = async function (config,req,res,res_data)
     await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();      
+      where_list_query_part = ``;
+      if(req.query.where_is_list=='true')
+      {
+        where_list_query_part = `in (` + req.query.where_val + `)`        
+      }     
+      else
+      {
+        where_list_query_part = `like '%` + req.query.where_val + `%'`        
+      }
+
+      //Dirty fix, if column name is WORKFLOW_INSTANCE_ID, prefix it with "a." alias of the following query
+      if(req.query.where_key=='WORKFLOW_INSTANCE_ID')
+      {
+        req.query.where_key = 'a.' + req.query.where_key;        
+      }
+      else
+      {
+        req.query.where_key = 'w.' + req.query.where_key;
+      }
 
       //Set Database and Schema
-      current_db_schema = req.query.db + "." + req.query.schema + ".";      
-      var sql_result = sql_request.query("with ONE (WF_ID,WFI_ID) as ( select mw.WORKFLOW_ID as WF_ID,es.WORKFLOW_INSTANCE_ID as WFI_ID from " + current_db_schema +  "M_WORKFLOW mw join " + current_db_schema +  "VW_WORKFLOW_EXECUTION_STATUS es on es.WORKFLOW_ID= mw.WORKFLOW_ID where mw." + req.query.where_key + " like '%" + req.query.where_val + "%' ), TWO(WORKFLOW_ID,WORKFLOW_INSTANCE_ID) as( select WF_ID as WORKFLOW_ID,max(WFI_ID) as WORKFLOW_INSTANCE_ID from ONE group by WF_ID ) select TWO.WORKFLOW_ID, mw.WORKFLOW_NAME,WORKFLOW_DESC,ACTIVE_FLG,UPDATE_USER,cast(UPDATE_DT as varchar(40)) as UPDATE_DT, TWO.WORKFLOW_INSTANCE_ID,WORKFLOW_TYPE,cast(START_DT as varchar(40)) as START_DT,cast(END_DT as varchar(40)) as END_DT,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,EVENT_GROUP_ID from TWO join " + current_db_schema + "M_WORKFLOW mw on mw.WORKFLOW_ID = TWO.WORKFLOW_ID join " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS vw on (vw.WORKFLOW_INSTANCE_ID = TWO.WORKFLOW_INSTANCE_ID and vw.WORKFLOW_ID = TWO.WORKFLOW_ID) order by mw." + req.query.order_by + " " + req.query.order_type); 
+      current_db_schema = req.query.db + "." + req.query.schema + ".";            
+      query_text = `      
+      with main_view as (
+      select 
+            a.WORKFLOW_ID as WORKFLOW_ID,	  
+            a.workflow_instance_id as WORKFLOW_INSTANCE_ID,
+            (select STATUS from ` + current_db_schema + `M_WORKFLOW_INSTANCE_STATUS where STATUS_ID=a.STATUS_ID) as WORKFLOW_INSTANCE_STATUS,
+            w.WORKFLOW_NAME,   
+          w.WORKFLOW_DESC,         
+            DATEDIFF(MINUTE,a.START_DT,isnull(a.END_DT,GETDATE()) ) as RUN_TIME_IN_MINS,
+            w.ACTIVE_FLG,
+          w.UPDATE_USER,
+          cast(w.UPDATE_DT as varchar(40)) as UPDATE_DT,
+          cast(START_DT as varchar(40)) as START_DT,
+          cast(END_DT as varchar(40)) as END_DT                
+      from ` + current_db_schema + `M_TRACK_WORKFLOW_INSTANCE a
+      join ` + current_db_schema + `M_WORKFLOW w on w.WORKFLOW_ID=a.WORKFLOW_ID
+      left join (SELECT  b.WORKFLOW_DATASET_INSTANCE_MAP_ID,coalesce(a.WORKFLOW_INSTANCE_ID,b.WORKFLOW_INSTANCE_ID) as WORKFLOW_INSTANCE_ID
+                                ,a.DATASET_INSTANCE_ID as DSI_IN
+                                ,b.DATASET_INSTANCE_ID as DSI_OUT
+                    FROM ( select  a.WORKFLOW_DATASET_INSTANCE_MAP_ID,a.WORKFLOW_INSTANCE_ID,a.DATASET_INSTANCE_DIRECTION,a.DATASET_INSTANCE_ID 
+                                from ` + current_db_schema + `M_TRACK_WORKFLOW_DATASET_INSTANCE_MAP a where DATASET_INSTANCE_DIRECTION='INPUT' )a
+                    full outer join ( select  a.WORKFLOW_DATASET_INSTANCE_MAP_ID,a.WORKFLOW_INSTANCE_ID,a.DATASET_INSTANCE_DIRECTION,a.DATASET_INSTANCE_ID 
+                                from `+ current_db_schema +`M_TRACK_WORKFLOW_DATASET_INSTANCE_MAP a where DATASET_INSTANCE_DIRECTION='OUTPUT' ) b 
+                    on a.WORKFLOW_INSTANCE_ID=b.WORKFLOW_INSTANCE_ID            
+                    ) b on a.WORKFLOW_INSTANCE_ID=b.WORKFLOW_INSTANCE_ID          
+      where ` + req.query.where_key + ` ` + where_list_query_part  + `)
+      select distinct WORKFLOW_ID,WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,WORKFLOW_DESC,RUN_TIME_IN_MINS,ACTIVE_FLG,UPDATE_USER,UPDATE_DT,START_DT,END_DT from main_view where WORKFLOW_INSTANCE_ID in (select max(WORKFLOW_INSTANCE_ID) from main_view group by WORKFLOW_ID)
+      order by ` + req.query.order_by + ` ` + req.query.order_type + `;`
 
+      var sql_result = sql_request.query(query_text);             
       //Capture the result when the query completes
       sql_result.then(function(result)
       {        
         res_data.err = 0; 
         //Get the result and set it                
         res_data.data = {info : result.recordset};
-        res.send(res_data);
+        res.status(200).send(res_data);
       })
       .catch(err=>{
         res_data.err = 1; 
@@ -476,7 +523,8 @@ var getWorkflowExecutionStatus = async function (config,req,res,res_data)
       //Set Database and Schema
       current_db_schema = req.query.db + "." + req.query.schema + ".";      
       
-      var sql_result = sql_request.query("select top " + req.query.limit + " WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,OOZIE_JOB_URL,FILE_NM,NUM_RECORDS_INSERTED,cast(START_DT as varchar(40)) as START_DT,cast(END_DT as varchar(40)) as END_DT, INPUT_DATASET_INSTANCE,OUTPUT_DATASET_INSTANCE,WF_ACTIVE_FLG,DSI_IN_STAUTS,DSI_OUT_STATUS,EVENT_GROUP_ID from " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_ID = " + req.query.where_val + " order by " + req.query.order_by + " " + req.query.order_type); 
+      //var sql_result = sql_request.query("select top " + req.query.limit + " WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,OOZIE_JOB_URL,FILE_NM,NUM_RECORDS_INSERTED,cast(START_DT as varchar(40)) as START_DT,cast(END_DT as varchar(40)) as END_DT, INPUT_DATASET_INSTANCE,OUTPUT_DATASET_INSTANCE,WF_ACTIVE_FLG,DSI_IN_STAUTS,DSI_OUT_STATUS,EVENT_GROUP_ID from " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_ID = " + req.query.where_val + " order by " + req.query.order_by + " " + req.query.order_type); 
+      var sql_result = sql_request.query("select WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,OOZIE_JOB_URL,FILE_NM,NUM_RECORDS_INSERTED,cast(START_DT as varchar(40)) as START_DT,cast(END_DT as varchar(40)) as END_DT, INPUT_DATASET_INSTANCE,OUTPUT_DATASET_INSTANCE,WF_ACTIVE_FLG,DSI_IN_STAUTS,DSI_OUT_STATUS,EVENT_GROUP_ID from " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_ID = " + req.query.where_val + " order by " + req.query.order_by + " " + req.query.order_type); 
 
       //Capture the result when the query completes
       sql_result.then(function(result)
@@ -484,7 +532,7 @@ var getWorkflowExecutionStatus = async function (config,req,res,res_data)
         res_data.err = 0; 
         //Get the result and set it                
         res_data.data = {info : result.recordset};
-        res.send(res_data);
+        res.status(200).send(res_data);
       })
       .catch(err=>{
         res_data.err = 1; 
@@ -520,7 +568,7 @@ var getErrorLog = async function (config,req,res,res_data)
         res_data.err = 0; 
         //Get the result and set it                
         res_data.data = {info : result.recordset};
-        res.send(res_data);
+        res.status(200).send(res_data);
       })
       .catch(err=>{
         res_data.err = 1; 
@@ -558,14 +606,14 @@ var getPrecompile = async function (config,req,res,res_data)
         
         //We can now send another request to query the PARAM_NAME and PARAM_VALUE in this temp table
         param_request = global_conn_pool[JSON.stringify(config)].request();
-        var param_result = param_request.query("select PARAM_NAME,PARAM_VALUE from " + temp_tbl_name);         
+        var param_result = param_request.query("select distinct PARAM_NAME,PARAM_VALUE from " + temp_tbl_name);         
       
         //Capture the result when the query completes
         param_result.then(function(final_result)
           {        
             res_data.err = 0; 
             res_data.data = {info : final_result.recordset};
-            res.send(res_data);               
+            res.status(200).send(res_data);               
           })
           .catch(err=>{
             res_data.err = 1; 
@@ -622,7 +670,7 @@ var getMetastores = async function (config,res,res_data)
             res_data.err = 0;             
             //Get the result and set it                
             res_data.data = {info : result.recordset};
-            res.send(res_data);
+            res.status(200).send(res_data);
           }).catch(err=>{                  
             res_data.err = 1; 
             res_data.data = {info : err};
@@ -675,7 +723,7 @@ var setWorkflowActiveFlag = async function (config,req,res,res_data)
           }).catch(err=>{                  
             res_data.err = 1; 
             res_data.data = {info : err};
-            res.send(res_data);        
+            res.status(200).send(res_data);        
           });
       }
       catch (err)
@@ -706,7 +754,7 @@ var setWorkflowInstanceStatus = async function (config,req,res,res_data)
             res_data.err = 0;             
             //Get the result and set it                
             res_data.data = {info : result.recordset};
-            res.send(res_data);
+            res.status(200).send(res_data);
           }).catch(err=>{                  
             res_data.err = 1; 
             res_data.data = {info : err};
@@ -740,7 +788,7 @@ var getColumns = async function (config,req,res,res_data)
             res_data.err = 0;             
             //Get the result and set it                
             res_data.data = {info : result.recordset};
-            res.send(res_data);
+            res.status(200).send(res_data);
             
           }).catch(err=>{                  
             res_data.err = 1; 
@@ -823,7 +871,7 @@ var connectSQL = async function (decodedToken,req,res,res_data)
         {                       
           res_data.err = 0;      
           res_data.data = {info : "connected"};             
-          res.send(res_data);                
+          res.status(200).send(res_data);                
         }
         else
         {                    
@@ -834,7 +882,7 @@ var connectSQL = async function (decodedToken,req,res,res_data)
               global_conn_pool[JSON.stringify(config)] = pool;
               res_data.err = 0;      
               res_data.data = {info : "connected"};             
-              res.send(res_data);              
+              res.status(200).send(res_data);              
 
           }).catch(err => {
               delete global_conn_pool[JSON.stringify(config)];

@@ -1,7 +1,7 @@
 <div class="jumbotron mb-1 container-fluid">
         <div class="jumbo_text row">
             <div class="col-lg-4 col-md-4 mt-2" align="left">                
-                <a href="/" target="_self"><img src="../images/q_logo_full.png" class="img-responsive" width="120rem" id="logo"></a>
+                <a href="/wf_man" target="_self"><img src="../images/q_logo_full.png" class="img-responsive" width="120rem" id="logo"></a>
             </div>                
             <div class="animated fadeInDown col-lg-4 col-md-4">
                 <h1 id="title">Workflow Viewer</h1>
@@ -79,49 +79,7 @@
                                     </div>
                                 </div>
                             </div>                            
-                        </div>    
-                        <!--div class="row justify-content-start" id="new_tab">                                                              
-                            <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                <div class="row mt-2">
-                                    <span><b>Workflow Instances</b></span>
-                                </div>
-                                <div class="row mt-2">
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                        <button type="button" id="modifyInstanceButton" class="wfi_action btn btn-info btn-sm"  data-toggle="modal" data-target="#modifyStatusDialog" disabled>
-                                            Modify Status
-                                        </button>
-                                    </div>
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                        <button type="button" id="ViewLogsButton" class="wfi_action btn btn-info btn-sm"  data-toggle="modal" data-target="#viewLogDialog" disabled>
-                                            View Logs
-                                        </button>
-                                    </div>
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                        <button type="button" id="PrecompileButton" class="wfi_action btn btn-info btn-sm"  data-toggle="modal" data-target="#preCompile" disabled>
-                                            Precompile  
-                                        </button>
-                                    </div>
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                        <a href="https://www.facebook.com/" id="VisitOozieButton" class="wfi_action btn btn-info btn-sm disabled" target="_blank" style="color:white">
-                                            Visit Oozie URL
-                                        </a>
-                                    </div>
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                        <button type="button" id="bulkStatusChangeButton" class="btn btn-secondary btn-sm"  data-toggle="modal" data-target="#bulkStatusChange">
-                                            Bulk Status Change
-                                        </button>
-                                    </div>
-                                </div>                                
-                                <div class="row mt-3">                                    
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                    <div class="table-responsive">
-                                       <table class="table table-hover table-sm" id="wfi_table">                                                                                  
-                                        </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>                            
-                        </div-->
+                        </div>                          
                     </div>    
             </div>
 </div>  
@@ -169,15 +127,25 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="viewLogLabel">Error Logs</h5>
+                <h5 class="modal-title" id="viewLogLabel">Error Logs</h5>                
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
-                </button>
+                </button>                
             </div>
             <div class="modal-body">          
                 <div id='log_config_alert' class="alert alert-warning"></div>                                    
-                <div id="err_log_display" style="text-align: left">                    
-                    <input type="text" class="form-control" id="log_srch_box" placeholder="Search logs"/>                                                                                                                  
+                <div id="err_log_display" style="text-align: left">            
+                    <div class="row">
+                        <div class="col-lg-11 col-md-11 col-sm-11">
+                            <input type="text" class="form-control" id="log_srch_box" placeholder="Search logs"/>                                                                                                                                      
+                        </div>
+                        <button type="button" id="RefreshLogs"  class="btn btn-info btn-sm">
+                               Refresh
+                        </button>
+                        <div class="col-lg-1 col-md-1 col-sm-1">
+                            
+                        </div>
+                    </div>                            
                      <div class="table-responsive">
                         <table class="table table-hover table-sm" id="log_table">                                                                                                              
                         </table>
