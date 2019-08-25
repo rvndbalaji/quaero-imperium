@@ -63,16 +63,16 @@ body {
     
 }
 
-#mon_status, #myTab,#workflow_instance_status_display,#wf_result
+#mon_status, #myTab,#workflow_instance_status_display,#wf_result,#dataset_display,#stage_display
 {
     display: none;
 }
+
 #myTab
 {
   font-family: 'futura_bold', serif;     
   width: 100%;
 }
-
 
 a:hover,
 a:active,
@@ -140,21 +140,12 @@ a:visited {
   width: 5rem;
 }
 
-#err_log_display,#pc_display
+#err_log_display,#pc_display,#ds_display
 {
   font-size: 70%;
 }
 
-#wfi_table thead
-{
-  font-size: 85%;
-}
-#wfi_table tbody
-{
-  font-family: 'futura_light', serif;            
-}
-
-#wfi_table .wfi_row
+.wfi_row,.ds_row,.stage_row
 {
   cursor: pointer;
 }

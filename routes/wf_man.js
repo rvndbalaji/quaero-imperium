@@ -202,6 +202,86 @@ router.get('/wf/error_log',function(req,res)
 });
 
 
+router.get('/wf/datasets',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getWFDatasets(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
+router.get('/wf/entity',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getWFEntity(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
+router.get('/wf/stageInfo',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getWFStageInfo(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
 router.get('/wf/precompile',function(req,res)
 {  
   var result = {
@@ -523,8 +603,8 @@ var getWorkflowExecutionStatus = async function (config,req,res,res_data)
       //Set Database and Schema
       current_db_schema = req.query.db + "." + req.query.schema + ".";      
       
-      //var sql_result = sql_request.query("select top " + req.query.limit + " WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,OOZIE_JOB_URL,FILE_NM,NUM_RECORDS_INSERTED,cast(START_DT as varchar(40)) as START_DT,cast(END_DT as varchar(40)) as END_DT, INPUT_DATASET_INSTANCE,OUTPUT_DATASET_INSTANCE,WF_ACTIVE_FLG,DSI_IN_STAUTS,DSI_OUT_STATUS,EVENT_GROUP_ID from " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_ID = " + req.query.where_val + " order by " + req.query.order_by + " " + req.query.order_type); 
       var sql_result = sql_request.query("select WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,OOZIE_JOB_URL,FILE_NM,NUM_RECORDS_INSERTED,cast(START_DT as varchar(40)) as START_DT,cast(END_DT as varchar(40)) as END_DT, INPUT_DATASET_INSTANCE,OUTPUT_DATASET_INSTANCE,WF_ACTIVE_FLG,DSI_IN_STAUTS,DSI_OUT_STATUS,EVENT_GROUP_ID from " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_ID = " + req.query.where_val + " order by " + req.query.order_by + " " + req.query.order_type); 
+      //var sql_result = sql_request.query("declare @limit int; set @limit = " + req.query.limit + "; select top (@limit) WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,RUN_TIME_IN_MINS,OOZIE_JOB_URL,FILE_NM,NUM_RECORDS_INSERTED,cast(START_DT as varchar(40)) as START_DT,cast(END_DT as varchar(40)) as END_DT, INPUT_DATASET_INSTANCE,OUTPUT_DATASET_INSTANCE,WF_ACTIVE_FLG,DSI_IN_STAUTS,DSI_OUT_STATUS,EVENT_GROUP_ID from " + current_db_schema + "VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_ID = " + req.query.where_val + " order by " + req.query.order_by + " " + req.query.order_type); 
 
       //Capture the result when the query completes
       sql_result.then(function(result)
@@ -561,6 +641,143 @@ var getErrorLog = async function (config,req,res,res_data)
       current_db_schema = req.query.db + "." + req.query.schema + ".";      
       
       var sql_result = sql_request.query("select EVENT_ID,EVENT_MSG,cast(UPDATE_DT as varchar(40)) as DATE from " + current_db_schema + "M_TRACK_EVENT_LOG where EVENT_GROUP_ID = " + req.query.event_group_id + " order by EVENT_ID desc"); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
+
+
+
+var getWFDatasets = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      //Set Database and Schema
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      
+      var query_string = `
+      select 'INPUT' as DATASET_TYPE, ds.DATASET_ID,DATASET_NAME,DATASET_DESC,OBJECT_TYPE,OBJECT_SCHEMA,OBJECT_NAME,HOST_ID,EXPIRATION_CONDITION,PRIMARY_KEY_COLUMNS,DATA_COLUMNS,PARTITION_COLUMNS,ACTIVE_FLG from ` + current_db_schema + `M_DATASET ds
+      join ` + current_db_schema + `M_WORKFLOW_INPUT inp on inp.DATASET_ID =  ds.DATASET_ID
+      where WORKFLOW_ID = ` + req.query.workflow_id + `
+      union all
+      select 'OUTPUT' as DATASET_TYPE,ds.DATASET_ID,DATASET_NAME,DATASET_DESC,OBJECT_TYPE,OBJECT_SCHEMA,OBJECT_NAME,HOST_ID,EXPIRATION_CONDITION,PRIMARY_KEY_COLUMNS,DATA_COLUMNS,PARTITION_COLUMNS,ACTIVE_FLG from ` + current_db_schema + `M_DATASET ds
+      join ` + current_db_schema + `M_WORKFLOW_OUTPUT outp on outp.DATASET_ID =  ds.DATASET_ID
+      where WORKFLOW_ID = ` + req.query.workflow_id + `;`;
+      var sql_result = sql_request.query(query_string); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
+
+
+
+var getWFEntity = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      //Set Database and Schema
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      
+      var query_string = `
+      select ID,SYSTEM_ID,DATASET_ID,ENTITY_NM,ENTITY_DESC,FREQUENCY,FREQUENCY_DAYS,INCLUDE_HEADER,NUM_HEADER_ROWS,STAGE_STRATEGY,STAGE_TABLE_NM,SOURCE_FILE_MASK,FILE_FORMAT_ID,COLUMN_DELIMITER,TEXT_QUALIFIER,ALLOW_STRING_TRUNCATION,ROW_DELIMITER,UNZIP_FILE_FLG,UNZIP_FILE_PASSWORD,STATUS,ACTIVE_FLG,DELETE_SOURCE_FILE_FLG,HEADER_EXCLUDE_EXPRESSION from ` + current_db_schema + `M_SOURCE_ENTITY
+      where DATASET_ID in (select DATASET_ID from ` + current_db_schema + `M_WORKFLOW_INPUT where WORKFLOW_ID = ` + req.query.workflow_id + `);`;
+      var sql_result = sql_request.query(query_string); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
+
+
+var getWFStageInfo = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      //Set Database and Schema
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      
+      var query_string = `with dess as
+      (
+      select ID,PARENT_FTP_ID from ` + current_db_schema + `M_TRACK_FTP 
+      where PARENT_FTP_ID is NULL
+      and SOURCE_ENTITY_ID = ` + req.query.entity_id + `
+      union all
+      select A.ID , A.PARENT_FTP_ID  from ` + current_db_schema + `M_TRACK_FTP A
+      inner join dess B on B.ID = A.PARENT_FTP_ID
+      )
+      select SOURCE_ENTITY_ID, ftp.ID as FTP_ID, fle.ID as FLE_ID,fle.DATASET_INSTANCE_ID,dsis.STATUS as DSI_STATUS,fle.FILE_NM,ftp.STATUS as FTP_STATUS, fle.STATUS as FLE_STATUS,PARENT_FTP_ID,(fle.FILE_SIZE_BYTES/(1024.0*1024.0)) as FILE_SIZE_MB from ` + current_db_schema + `M_TRACK_FTP ftp
+      left join ` + current_db_schema + `M_TRACK_FILE fle on ftp.ID = fle.FTP_ID
+      left join ` + current_db_schema + `M_TRACK_DATASET_INSTANCE dsi on dsi.DATASET_INSTANCE_ID = fle.DATASET_INSTANCE_ID
+      inner join ` + current_db_schema + `M_DATASET_INSTANCE_STATUS dsis on dsi.STATUS_ID=dsis.STATUS_ID
+      where ftp.ID not in (select PARENT_FTP_ID from dess where PARENT_FTP_ID is not NULL)
+      and SOURCE_ENTITY_ID = ` + req.query.entity_id + `
+      order by ftp.ID desc`;
+      var sql_result = sql_request.query(query_string); 
 
       //Capture the result when the query completes
       sql_result.then(function(result)

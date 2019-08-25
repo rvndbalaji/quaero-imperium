@@ -11,7 +11,9 @@ var instance_limit = 5;
 let LATEST_INSTANCES = undefined;
 let current_error_logs;
 let current_pc_param;
-
+let current_datasets;
+let current_entity;
+let current_stage;
 $(document).ready(function(){            
     /*
         Firebase is initialzed in jScript
@@ -55,7 +57,7 @@ var declareLocalListeners = function()
     });
 
     $('#wfi_table').on('click', '.wfi_row', function(event) {
-        //Enable selection of tows in table        
+        //Enable selection of rows in table        
         if($(this).hasClass('table-active'))
         {                        
             $(this).removeClass('table-active'); 
@@ -77,6 +79,46 @@ var declareLocalListeners = function()
             }
             $('.wfi_action').removeAttr('disabled');                        
         }        
+    });
+
+    $('#ds_table').on('click', '.ds_row', function(event) {
+        //Enable selection of rows in table        
+        if($(this).hasClass('table-active'))
+        {                        
+            $(this).removeClass('table-active'); 
+            $('.ds_action').attr('disabled','disabled');               
+        } else 
+        {
+            $(this).addClass('table-active').siblings().removeClass('table-active');            
+            selected_row = $(this).html();
+            sel_index = (selected_row=='OUTPUT')?1:0;
+            //Set the data-title attribute that performs an action on the selected workflow dataset
+            $('#editDatasetButton').attr('data-whatever',(current_datasets[sel_index].DATASET_ID));                                     
+            $('.ds_action').removeAttr('disabled');                        
+        }        
+    });
+
+    $('#stage_table').on('click', '.stage_row', function(event) {
+        //Enable selection of rows in table        
+        if($(this).hasClass('table-active'))
+        {                        
+            $(this).removeClass('table-active'); 
+            $('.stage_action').attr('disabled','disabled');               
+        } else 
+        {
+            $(this).addClass('table-active').siblings().removeClass('table-active');            
+            selected_row = $(this).children("th").html();                        
+            //Set the data-title attribute that performs an action on the selected workflow stage file            
+            $('#restageButton').attr('data-whatever',(current_stage[selected_row-1].DATASET_INSTANCE_ID));                                     
+            $('.stage_action').removeAttr('disabled');                        
+        }        
+    });
+
+    $('#editDatasetDialog').on('show.bs.modal', function (event) {        
+        var ds_id = $('#editDatasetButton').attr('data-whatever');        
+        $('#ds_config_alert').html('Preparing dataset..');
+        var modal = $(this)
+        modal.find('.modal-title').text('Edit Dataset for ' + ds_id);                
     });
 
     $('#viewLogDialog').on('show.bs.modal', function (event) {        
@@ -132,7 +174,7 @@ var declareLocalListeners = function()
         }
       });
        //on keyup, start the countdown
-       $('#pc_srch_box').on('keyup', function () 
+       $('#pc_srch_box').on('keyup', function ()
        {
          typed_text = $('#pc_srch_box').val().trim().toLowerCase();
          if(typed_text=='')
@@ -167,6 +209,195 @@ var declareLocalListeners = function()
          }
        });
 
+
+       //Begin fetching DATASETS, ENTITY
+       getDatasets();
+       getSourceEntity();       
+}
+
+
+var getSourceEntity = function()
+{    
+    req_data = { server : server_name,auth_type: auth,workflow_id: wf_id, db:metastore , schema:'dbo'};                
+    getRequest(req_data,ok_fetchEntity,err_fetchEntity,undefined,'/wf_man/wf/entity');                                        
+}
+
+
+var ok_fetchEntity = function(req_data,response,ref_timeout)
+{
+    if(response.err==1)
+    {   
+        err_fetchEntity(response);
+    }        
+    else
+    {
+        current_entity = response.data.info;        
+        //Once we fetch the entities, we may use the entity_id to fetch Staging details
+        getStageInfo();
+    }
+}
+
+var err_fetchEntity = function(error)
+{
+    console.log("EntityFetch : " + JSON.stringify(error))
+}
+
+
+var getStageInfo = function()
+{   
+    if(current_entity[0]) 
+    {
+        req_data = { server : server_name,auth_type: auth,entity_id: current_entity[0].ID, db:metastore , schema:'dbo'};                
+        getRequest(req_data,ok_stageInfo,err_stageInfo,undefined,'/wf_man/wf/stageInfo');                                        
+    }
+    else
+    {
+        $("#Stage_Res").hide(); 
+        $('#stage_table').html("<i>No files were staged by this workflow</i>");                                   
+    }
+}
+
+
+var ok_stageInfo = function(req_data,response,ref_timeout)
+{
+    if(response.err==1)
+    {   
+        err_stageInfo(response);
+    }        
+    else
+    {
+        current_stage = response.data.info;   
+        displayStageInformation(current_stage);                        
+    }
+}
+
+var err_stageInfo = function(error)
+{
+    console.log("StageFetch : " + JSON.stringify(error))
+}
+
+
+
+var displayStageInformation = function(current_stage)
+{
+    if(current_stage.length==0)
+    {
+        $("#Stage_Res").hide(); 
+        $('#stage_table').html("<i>No files were staged by this workflow</i>");                                   
+        return;
+    }
+    bold_style = "style=\"font-family:'futura_bold', serif;font-weight:400\"";            
+    t_headers = `
+        <thead>
+            <tr ` + bold_style + `">        
+                <th scope="col">#</th>             
+                <th scope="col">Dataset Instance ID</th>                               
+                <th scope="col">File Name</th>                
+                <th scope="col">FTP Status</th>                                
+                <th scope="col">File Status</th>                
+                <th scope="col">DSI Status</th>                                
+                <th scope="col">File Size</th>                
+            </tr>
+        </thead>`;
+
+        //Replace all null values with '-'
+        current_stage = JSON.parse(JSON.stringify(current_stage).split(":null").join((':\"-"')));
+
+        t_body = `<tbody>`;
+        each_row = '';
+        bold_style = '';
+        limit = (current_stage.length>7)?7:current_stage.length;
+        for (i = 0; i < limit; i++) 
+        {        
+            
+            each_row += `                        
+            <tr class="stage_row">
+                <th scope="row">` + (i+1) + `</th>                
+                <td>`+ current_stage[i].DATASET_INSTANCE_ID + `</td>                                    
+                <td>`+ current_stage[i].FILE_NM + `</td>                                          
+                <td>`+ current_stage[i].FTP_STATUS + `</td>
+                <td>`+ current_stage[i].FLE_STATUS + `</td>                                                    
+                <td>`+ current_stage[i].DSI_STATUS + `</td>                                    
+                <td>`+ current_stage[i].FILE_SIZE_MB.toFixed(2) + ` MB</td>                                    
+            </tr>`;        
+        }                   
+        $('#stage_table').html(t_headers + t_body + each_row + '</tbody>');                                        
+}
+
+var getDatasets = function()
+{    
+    req_data = { server : server_name,auth_type: auth,workflow_id: wf_id, db:metastore , schema:'dbo'};                
+    getRequest(req_data,ok_fetchDatasets,err_fetchDatasets,undefined,'/wf_man/wf/datasets');                                        
+}
+
+var ok_fetchDatasets = function(req_data,response,ref_timeout)
+{
+    if(response.err==1)
+    {   
+        err_fetchDatasets(response);
+    }        
+    else
+    {
+        current_datasets = response.data.info;
+        displayDatasetTable(current_datasets);        
+    }
+}
+
+var err_fetchDatasets = function(error)
+{
+    console.log("DatasetFetch : " + JSON.stringify(error))
+}
+
+
+var displayDatasetTable = function(current_datasets)
+{
+    if(current_datasets.length==0)
+    {
+        $("#Dataset_Res").hide(); 
+        $('#ds_table').html("<i>No input/output datasets for this workflow</i>");                                   
+        return;
+    }
+    bold_style = "style=\"font-family:'futura_bold', serif;font-weight:400\"";            
+    t_headers = `
+        <thead>
+            <tr ` + bold_style + `">                        
+                <th scope="col">Dataset Type</th>            
+                <th scope="col">Dataset ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Object Type</th>
+                <th scope="col">Object Schema</th>                
+                <th scope="col">Host ID</th>
+                <th scope="col">Primary Columns</th>
+                <th scope="col">Data Columns</th>
+                <th scope="col">Partition Columns</th>
+                <th scope="col">Active</th>
+            </tr>
+        </thead>`;
+
+        //Replace all null values with '-'
+        current_datasets = JSON.parse(JSON.stringify(current_datasets).split(":null").join((':\"-"')));
+
+        t_body = `<tbody>`;
+        each_row = '';
+        bold_style = '';
+        for (i = 0; i < current_datasets.length; i++) 
+        {        
+            
+            each_row += `            
+            <tr class="ds_row">
+                <td>`+ current_datasets[i].DATASET_TYPE + `</td>                                          
+                <td>`+ current_datasets[i].DATASET_ID + `</td>
+                <td>`+ current_datasets[i].DATASET_NAME + `</td>                                    
+                <td>`+ current_datasets[i].OBJECT_TYPE + `</td>                                    
+                <td>`+ current_datasets[i].OBJECT_SCHEMA + `</td>                                    
+                <td>`+ current_datasets[i].HOST_ID + `</td>                                    
+                <td>`+ current_datasets[i].PRIMARY_KEY_COLUMNS + `</td>
+                <td>`+ current_datasets[i].DATA_COLUMNS + `</td>
+                <td>`+ current_datasets[i].PARTITION_COLUMNS + `</td>
+                <td>`+ ((current_datasets[i].ACTIVE_FLG==1)?'Yes':'NO') + `</td>
+            </tr>`;        
+        }                   
+        $('#ds_table').html(t_headers + t_body + each_row + '</tbody>');                                
 }
 
 var getErrorLogs = function(eg_id)
@@ -187,7 +418,7 @@ var ok_elog = function(req_data,response,ref_timeout)
 {
     if(response.err==1)
     {       
-        err_elog((JSON.parse(response.data.info).originalError.info.message));
+        err_elog(JSON.stringify(error));
     }        
     else
     {
@@ -225,7 +456,7 @@ var displayLogTable = function(err_logs)
         $("#log_srch_box").focus();
 }
 
-var err_elog = function(error,ref_timeout)
+var err_elog = function(error)
 {
     $('#log_config_alert').removeClass('alert-warning');
     $('#log_config_alert').addClass('alert-danger');
@@ -287,7 +518,7 @@ var displayPCTable = function(pc_params)
         $("#pc_srch_box").focus();
 }
 
-var err_precompile = function(error,ref_timeout)
+var err_precompile = function(error)
 {
     $('#pc_config_alert').removeClass('alert-warning');
     $('#pc_config_alert').addClass('alert-danger');
@@ -305,7 +536,7 @@ var err_wfConnect = function(error)
     $('#wf_result').html(error);                        
 }
 
-var err_fetchSingleWF = function(error,ref_timeout)
+var err_fetchSingleWF = function(error)
 {
     $('#wf_result').html(error);                        
 }
@@ -352,9 +583,10 @@ var ok_fetchSingleWF = function(req_data,response,ref_timeout)
 
 function generateWorkflowInstanceTable()
 {
+    bold_style = "style=\"font-family:'futura_bold', serif;font-weight:400\"";            
     t_headers = `
-    <thead>
-        <tr>
+        <thead>
+        <tr ` + bold_style + `"> 
             <th scope="col">#</th>
             <th scope="col">Instance ID</th>
             <th scope="col">Status</th>
@@ -376,12 +608,15 @@ function generateWorkflowInstanceTable()
     LATEST_INSTANCES = JSON.parse(JSON.stringify(LATEST_INSTANCES).split(":null").join((':\"-"')));
 
     bold_style = '';
+
+    //limit = LATEST_INSTANCES.length;
     limit = (LATEST_INSTANCES.length>7)?7:LATEST_INSTANCES.length;    
+
     for (i = 0; i < limit; i++) 
     {
         if(i==0)
         {
-            bold_style = "style=\"font-family:'futura_bold', serif;font-weight:400\"";            
+            bold_style = "style=\"font-weight:400\"";            
         }
         else
         {
@@ -404,8 +639,14 @@ function generateWorkflowInstanceTable()
     }
            
 
-    $('#wfi_table').html(t_headers + t_body + each_row + '</tbody>');
+    $('#wfi_table').html(t_headers + t_body + each_row + '</tbody>');    
+    showAllTables();
+}
+function showAllTables()
+{
     $('#workflow_instance_status_display').fadeIn();
+    $('#dataset_display').fadeIn();
+    $("#stage_display").fadeIn();
 }
 
 function nullToDash(obj){
@@ -419,7 +660,7 @@ function nullToDash(obj){
 
 function getWorkflow()
 {    
-    //Set refreshing statush
+    //Set refreshing status
     //Disable wfi action buttons
     $('.wfi_action').attr('disabled','disabled');
     $('#VisitOozieButton').addClass('disabled');
