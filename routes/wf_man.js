@@ -229,6 +229,33 @@ router.get('/wf/datasets',function(req,res)
 });
 
 
+router.get('/wf/restage',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          restageFile(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
 router.get('/wf/entity',function(req,res)
 {  
   var result = {
@@ -255,6 +282,32 @@ router.get('/wf/entity',function(req,res)
   });
 });
 
+
+router.get('/wf/blockInfo',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getBlockedInfo(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
 
 router.get('/wf/stageInfo',function(req,res)
 {  
@@ -710,6 +763,98 @@ var getWFDatasets = async function (config,req,res,res_data)
 }
 
 
+var getBlockedInfo = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      //Set Database and Schema
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      
+      var query_string = `
+      select BLOCKED_REASON from ` + current_db_schema + `VW_BLOCKED_WORKFLOWS where WORKFLOW_ID = ` + req.query.workflow_id ;
+      var sql_result = sql_request.query(query_string); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
+
+
+var restageFile = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      //Set Database and Schema
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      
+      var query_string = `
+      DECLARE @TEMP TABLE (
+        FTP_ID int  
+      )
+      ;with dess as
+      (
+      select ID,PARENT_FTP_ID from ` + current_db_schema + `M_TRACK_FTP 
+      where ID = ` + req.query.ftp_id + `
+      union all
+      select A.ID , A.PARENT_FTP_ID  from ` + current_db_schema + `M_TRACK_FTP A
+      inner join dess B on B.PARENT_FTP_ID = A.ID
+      )
+      INSERT INTO @TEMP ( FTP_ID )
+      select ID from dess;
+      delete from ` + current_db_schema + `M_TRACK_FTP where ID in (select FTP_ID from @TEMP);
+      delete from ` + current_db_schema + `M_TRACK_FILE where FTP_ID in (select FTP_ID from @TEMP);
+      delete from ` + current_db_schema + `M_TRACK_DATASET_INSTANCE where DATASET_INSTANCE_ID in (select DATASET_INSTANCE_ID from ` + current_db_schema + `M_TRACK_FILE where FTP_ID in (select FTP_ID from @TEMP));      
+       `;
+      var sql_result = sql_request.query(query_string); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
+
+
 
 var getWFEntity = async function (config,req,res,res_data)
 {   
@@ -723,8 +868,12 @@ var getWFEntity = async function (config,req,res,res_data)
       current_db_schema = req.query.db + "." + req.query.schema + ".";      
       
       var query_string = `
-      select ID,SYSTEM_ID,DATASET_ID,ENTITY_NM,ENTITY_DESC,FREQUENCY,FREQUENCY_DAYS,INCLUDE_HEADER,NUM_HEADER_ROWS,STAGE_STRATEGY,STAGE_TABLE_NM,SOURCE_FILE_MASK,FILE_FORMAT_ID,COLUMN_DELIMITER,TEXT_QUALIFIER,ALLOW_STRING_TRUNCATION,ROW_DELIMITER,UNZIP_FILE_FLG,UNZIP_FILE_PASSWORD,STATUS,ACTIVE_FLG,DELETE_SOURCE_FILE_FLG,HEADER_EXCLUDE_EXPRESSION from ` + current_db_schema + `M_SOURCE_ENTITY
-      where DATASET_ID in (select DATASET_ID from ` + current_db_schema + `M_WORKFLOW_INPUT where WORKFLOW_ID = ` + req.query.workflow_id + `);`;
+      select * from ` + current_db_schema + `M_SOURCE_ENTITY
+      where DATASET_ID in (
+        select DATASET_ID from ` + current_db_schema + `M_WORKFLOW_INPUT where WORKFLOW_ID = ` + req.query.workflow_id +`
+        union 
+        select DATASET_ID from ` + current_db_schema + `M_WORKFLOW_OUTPUT where WORKFLOW_ID = ` + req.query.workflow_id +`        
+        );`;
       var sql_result = sql_request.query(query_string); 
 
       //Capture the result when the query completes
@@ -770,10 +919,10 @@ var getWFStageInfo = async function (config,req,res,res_data)
       select A.ID , A.PARENT_FTP_ID  from ` + current_db_schema + `M_TRACK_FTP A
       inner join dess B on B.ID = A.PARENT_FTP_ID
       )
-      select SOURCE_ENTITY_ID, ftp.ID as FTP_ID, fle.ID as FLE_ID,fle.DATASET_INSTANCE_ID,dsis.STATUS as DSI_STATUS,fle.FILE_NM,ftp.STATUS as FTP_STATUS, fle.STATUS as FLE_STATUS,PARENT_FTP_ID,(fle.FILE_SIZE_BYTES/(1024.0*1024.0)) as FILE_SIZE_MB from ` + current_db_schema + `M_TRACK_FTP ftp
+      select SOURCE_ENTITY_ID, ftp.ID as FTP_ID, fle.ID as FLE_ID,fle.DATASET_INSTANCE_ID,dsis.STATUS as DSI_STATUS,ftp.FILE_NM,ftp.STATUS as FTP_STATUS, fle.STATUS as FLE_STATUS,PARENT_FTP_ID,fle.FILE_SIZE_BYTES from ` + current_db_schema + `M_TRACK_FTP ftp
       left join ` + current_db_schema + `M_TRACK_FILE fle on ftp.ID = fle.FTP_ID
       left join ` + current_db_schema + `M_TRACK_DATASET_INSTANCE dsi on dsi.DATASET_INSTANCE_ID = fle.DATASET_INSTANCE_ID
-      inner join ` + current_db_schema + `M_DATASET_INSTANCE_STATUS dsis on dsi.STATUS_ID=dsis.STATUS_ID
+      left join ` + current_db_schema + `M_DATASET_INSTANCE_STATUS dsis on dsi.STATUS_ID=dsis.STATUS_ID
       where ftp.ID not in (select PARENT_FTP_ID from dess where PARENT_FTP_ID is not NULL)
       and SOURCE_ENTITY_ID = ` + req.query.entity_id + `
       order by ftp.ID desc`;

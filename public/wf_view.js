@@ -5,7 +5,10 @@ let wf_id = params.get("wf");
 let auth = params.get("auth");
 var wfRefreshTimer;
 var ref_timeout;
-var instance_limit = 5;
+var instance_limit =7;
+let total_items = 5;
+let items_loaded = 0;
+let first_time_load = true;
 
 ///GLOBAL LATEST_VALUES
 let LATEST_INSTANCES = undefined;
@@ -28,11 +31,13 @@ $(document).ready(function(){
 var declareLocalListeners = function()
 {
     ref_timeout = Number($('#ref_box').val());                                           
+            
     $('#ref_box').change(function() {
         //This function is triggered when the refresh box value has changed                             
         //Give a 1 second delay incase the user is "scrolling" through the numbers
         //provided the user has already been on this screen
         ref_timeout = Number($('#ref_box').val());                                   
+        ref_timeout = (ref_timeout<5)?5:ref_timeout;
         clearTimeout(scrollTim);                                  
         scrollTime = setTimeout(getWorkflow,1000);                                               
     });
@@ -97,8 +102,9 @@ var declareLocalListeners = function()
             $('.ds_action').removeAttr('disabled');                        
         }        
     });
-
-    $('#stage_table').on('click', '.stage_row', function(event) {
+    
+    $('#stage_table').on('click', '.stage_row', function(event) {  
+        
         //Enable selection of rows in table        
         if($(this).hasClass('table-active'))
         {                        
@@ -109,10 +115,17 @@ var declareLocalListeners = function()
             $(this).addClass('table-active').siblings().removeClass('table-active');            
             selected_row = $(this).children("th").html();                        
             //Set the data-title attribute that performs an action on the selected workflow stage file            
-            $('#restageButton').attr('data-whatever',(current_stage[selected_row-1].DATASET_INSTANCE_ID));                                     
-            $('.stage_action').removeAttr('disabled');                        
+            ftp_id = current_stage[selected_row-1].FTP_ID;               
+            $('#restageButton').attr('data-title',("Restage File " + ftp_id));
+            $('#restageButton').attr('data-body',("Restaging removes file tracking information, downloads the file and ingests it again. This may cause duplication of data in the staging table<br>Are you sure you wish to re-stage the file?<br><b>" + current_stage[selected_row-1].FILE_NM + "</b>"));
+            $('#restageButton').attr('data-alert',("alert-danger"));
+            $('#restageButton').attr('data-alert_msg',("WARNING : You are about to perform a dangerous action"));
+            $('#restageButton').attr('data-oktext',"Re-Stage");
+            $('#msg_success_btn').attr('onclick','reStage(' + ftp_id + ')');
+            $('.stage_action').removeAttr('disabled');                    
         }        
     });
+
 
     $('#editDatasetDialog').on('show.bs.modal', function (event) {        
         var ds_id = $('#editDatasetButton').attr('data-whatever');        
@@ -135,6 +148,27 @@ var declareLocalListeners = function()
         var modal = $(this)
         modal.find('.modal-title').text('Precompile for instance ' + wfi_id);        
         getPrecompile(wfi_id);
+    });
+
+      $('#messageDialog').on('show.bs.modal', function (event) {                
+        
+        var button = $(event.relatedTarget) // Button that triggered the modal                                
+        var body = button.attr('data-body')
+        var alert = button.attr('data-alert')
+        var alert_msg = button.attr('data-alert_msg')
+        var okText = button.attr('data-oktext')
+        var title = button.attr('data-title')
+
+        $("#msg_config_alert").removeClass('alert-info');
+        $("#msg_config_alert").removeClass('alert-danger');
+        $("#msg_config_alert").removeClass('alert-success');
+        $("#msg_config_alert").removeClass('alert-warning');
+        $("#msg_config_alert").addClass(alert);
+        $('#msg_config_alert').html(alert_msg);
+        $('#msg_success_btn').html(okText);
+        $('#msg_display').html(body);
+        var modal = $(this)
+        modal.find('.modal-title').text(title);                
     });
     
       //on keyup, start the countdown
@@ -210,14 +244,101 @@ var declareLocalListeners = function()
        });
 
 
-       //Begin fetching DATASETS, ENTITY
-       getDatasets();
-       getSourceEntity();       
+        //Display progress bar only if its first time loading. If its refreshing, then not required.
+        if(first_time_load)
+        {
+            $("#ref_progress_bar").fadeIn();            
+        }        
+        //Begin fetching DATASETS, ENTITY       
+        getDatasets();       
+}
+
+var getBlockedStatus = function()
+{   
+    req_data = { server : server_name,auth_type: auth,workflow_id: wf_id, db:metastore , schema:'dbo'};                
+    getRequest(req_data,ok_blockInfo,err_blockInfo,undefined,'/wf_man/wf/blockInfo');                                        
+}
+
+
+var ok_blockInfo = function(req_data,response,ref_timeout)
+{
+    if(response.err==1)
+    {   
+        err_blockInfo(response);
+    }        
+    else
+    {
+        blockRows = response.data.info;                
+        block_reasons = []        
+        
+        if(LATEST_INSTANCES && !LATEST_INSTANCES[0].WORKFLOW_INSTANCE_STATUS.match('COMPLETE.*|FAILED.*'))
+        {
+            $("#blocked_reason").hide();
+        }
+        else
+        {                        
+            if(blockRows.length>0)
+            {           
+                if(blockRows.length==1 && blockRows[0].BLOCKED_REASON.match("No Available DSIs"))     
+                {
+                    $("#blocked_reason").hide();
+                }
+                else 
+                {
+                    for(i=0; i<blockRows.length; i++)
+                    {
+                        block_reasons.push(blockRows[i].BLOCKED_REASON)
+                    }                         
+                    $("#blocked_reason").html(block_reasons.join(', '));
+                    $("#blocked_reason").fadeIn();
+                }
+            }              
+            else
+            {
+                //If there is workflow is not blocked and not executing, it implies
+                //that the workflow is waiting to be dispatched
+                $("#blocked_reason").html("<span style='color:black'><i>Awaiting Dispatch</i></span>");
+                $("#blocked_reason").fadeIn();
+            }
+            
+        }
+            updateLoadProgress();   
+    }
+}
+
+var updateLoadProgress = function()
+{
+    //We display the Load Progress bar only when the page is loading
+    //During refresh, nothing is displayed except the refresh status
+    //which is hidden when this function is called    
+    items_loaded++;
+    percent_refreshed = (items_loaded/total_items)* 100;
+    $("#ref_progress").css('width',percent_refreshed + '%');   
+    if(items_loaded>=total_items)    
+    {        
+        $("#ref_progress").css('width',0);           
+        $("#ref_progress_bar").hide();
+        $("#ref_status").hide();
+
+        $('#workflow_instance_status_display').fadeIn();
+        $('#dataset_display').fadeIn();
+        $("#stage_display").fadeIn();     
+        $("#entity_display").fadeIn();
+        $("#blocked_wf").fadeIn();        
+        first_time_load = false;
+        items_loaded=total_items;
+    }
+}
+
+var err_blockInfo = function(error)
+{
+    console.log("BlockInfo : " + JSON.stringify(error))
+    updateLoadProgress();   
 }
 
 
 var getSourceEntity = function()
-{    
+{   
     req_data = { server : server_name,auth_type: auth,workflow_id: wf_id, db:metastore , schema:'dbo'};                
     getRequest(req_data,ok_fetchEntity,err_fetchEntity,undefined,'/wf_man/wf/entity');                                        
 }
@@ -232,28 +353,95 @@ var ok_fetchEntity = function(req_data,response,ref_timeout)
     else
     {
         current_entity = response.data.info;        
+        displayEntityTable(current_entity);
+        console.log(current_entity);
+        updateLoadProgress();   
         //Once we fetch the entities, we may use the entity_id to fetch Staging details
-        getStageInfo();
+        getStageInfo();        
     }
+    
 }
 
 var err_fetchEntity = function(error)
 {
     console.log("EntityFetch : " + JSON.stringify(error))
+    updateLoadProgress();   
+}
+
+var displayEntityTable = function(current_entity)
+{
+    if(current_entity.length==0)
+    {
+        $("#Entity_Res").hide(); 
+        $('#ent_table').html("<i>No source entities used by this workflow</i>");                                   
+        return;
+    }
+    bold_style = "style=\"font-family:'futura_bold', serif;font-weight:400\"";            
+    t_headers = `
+        <thead>
+            <tr ` + bold_style + `">                                        
+                <th scope="col">Entity ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Stage Table</th>
+                <th scope="col">Stage Strategy</th>                
+                <th scope="col">Include Header</th>
+                <th scope="col">Header Rows</th>
+                <th scope="col">File Mask</th>
+                <th scope="col">Column Delimiter</th>
+                <th scope="col">Row Delimiter</th>
+                <th scope="col">Text Qualifier</th>            
+                <th scope="col">File Format</th>            
+                <th scope="col">Frequency</th>            
+                <th scope="col">Freq Days</th>            
+                <th scope="col">Unzip Flag</th>                
+                <th scope="col">Active</th>                
+            </tr>
+        </thead>`;
+
+        //Replace all null values with '-'
+        current_entity = JSON.parse(JSON.stringify(current_entity).split(":null").join((':\"-"')));
+
+        t_body = `<tbody>`;
+        each_row = '';
+        bold_style = '';
+        for (i = 0; i < current_entity.length; i++) 
+        {        
+            
+            each_row += `            
+            <tr class="ent_row">
+                <td>`+ current_entity[i].ID + `</td>                                          
+                <td>`+ current_entity[i].ENTITY_NM + `</td>
+                <td>`+ current_entity[i].STAGE_TABLE_NM + `</td>                                    
+                <td>`+ current_entity[i].STAGE_STRATEGY + `</td>                                    
+                <td>`+ current_entity[i].INCLUDE_HEADER + `</td>                                    
+                <td>`+ current_entity[i].NUM_HEADER_ROWS + `</td>                          
+                <td>`+ current_entity[i].SOURCE_FILE_MASK + `</td>
+                <td>`+ current_entity[i].COLUMN_DELIMITER + `</td>
+                <td>`+ current_entity[i].ROW_DELIMITER + `</td>
+                <td>`+ current_entity[i].TEXT_QUALIFIER + `</td>
+                <td>`+ current_entity[i].FILE_FORMAT_ID + `</td>
+                <td>`+ current_entity[i].TEXT_QUALIFIER + `</td>
+                <td>`+ current_entity[i].FREQUENCY + `</td>
+                <td>`+ current_entity[i].FREQUENCY_DAYS + `</td>
+                <td>`+ current_entity[i].ACTIVE_FLG + `</td>
+            </tr>`;        
+        }                   
+        $('#ent_table').html(t_headers + t_body + each_row + '</tbody>');                                
 }
 
 
 var getStageInfo = function()
 {   
     if(current_entity[0]) 
-    {
+    {        
         req_data = { server : server_name,auth_type: auth,entity_id: current_entity[0].ID, db:metastore , schema:'dbo'};                
         getRequest(req_data,ok_stageInfo,err_stageInfo,undefined,'/wf_man/wf/stageInfo');                                        
     }
     else
-    {
+    {        
         $("#Stage_Res").hide(); 
         $('#stage_table').html("<i>No files were staged by this workflow</i>");                                   
+        updateLoadProgress();   
     }
 }
 
@@ -269,17 +457,27 @@ var ok_stageInfo = function(req_data,response,ref_timeout)
         current_stage = response.data.info;   
         displayStageInformation(current_stage);                        
     }
+    updateLoadProgress();   
 }
 
 var err_stageInfo = function(error)
 {
     console.log("StageFetch : " + JSON.stringify(error))
+    updateLoadProgress();   
 }
 
-
+function formatBytes(bytes, decimals = 2) {
+    bytes = parseInt(bytes);
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
 
 var displayStageInformation = function(current_stage)
-{
+{    
     if(current_stage.length==0)
     {
         $("#Stage_Res").hide(); 
@@ -307,20 +505,44 @@ var displayStageInformation = function(current_stage)
         each_row = '';
         bold_style = '';
         limit = (current_stage.length>7)?7:current_stage.length;
+        var failed_files = 0;
         for (i = 0; i < limit; i++) 
         {        
+            file_size = current_stage[i].FILE_SIZE_BYTES;
             
+            if(file_size!='-')
+            {                   
+                file_size = formatBytes(file_size);                
+            }
+            color_code_row = "stage_row"
+            //Match all status which contains the text 'fail'. i option is case-insensitive
+            var fail_string_regex = new RegExp('.*FAIL.*','i');
+            if(current_stage[i].FTP_STATUS.match(fail_string_regex) || current_stage[i].FLE_STATUS.match(fail_string_regex) || current_stage[i].DSI_STATUS.match(fail_string_regex))
+            {
+                color_code_row = "stage_row text-danger font-weight-bold"                
+                failed_files++;                
+            }                       
             each_row += `                        
-            <tr class="stage_row">
+            <tr class="` + color_code_row + `">
                 <th scope="row">` + (i+1) + `</th>                
                 <td>`+ current_stage[i].DATASET_INSTANCE_ID + `</td>                                    
                 <td>`+ current_stage[i].FILE_NM + `</td>                                          
                 <td>`+ current_stage[i].FTP_STATUS + `</td>
                 <td>`+ current_stage[i].FLE_STATUS + `</td>                                                    
                 <td>`+ current_stage[i].DSI_STATUS + `</td>                                    
-                <td>`+ current_stage[i].FILE_SIZE_MB.toFixed(2) + ` MB</td>                                    
+                <td>`+ file_size +`</td>                                    
             </tr>`;        
-        }                   
+        }        
+        if(failed_files>0)
+        {
+            $('#stage_status').html("Ingestion failed for " +failed_files + " files");           
+            $('#stage_wf').fadeIn();
+        }
+        else
+        {
+            $('#stage_wf').fadeOut();
+        }
+        
         $('#stage_table').html(t_headers + t_body + each_row + '</tbody>');                                        
 }
 
@@ -340,12 +562,14 @@ var ok_fetchDatasets = function(req_data,response,ref_timeout)
     {
         current_datasets = response.data.info;
         displayDatasetTable(current_datasets);        
+        updateLoadProgress();   
     }
 }
 
 var err_fetchDatasets = function(error)
 {
     console.log("DatasetFetch : " + JSON.stringify(error))
+    updateLoadProgress();   
 }
 
 
@@ -367,10 +591,10 @@ var displayDatasetTable = function(current_datasets)
                 <th scope="col">Object Type</th>
                 <th scope="col">Object Schema</th>                
                 <th scope="col">Host ID</th>
+                <th scope="col">Active</th>
                 <th scope="col">Primary Columns</th>
                 <th scope="col">Data Columns</th>
-                <th scope="col">Partition Columns</th>
-                <th scope="col">Active</th>
+                <th scope="col">Partition Columns</th>                
             </tr>
         </thead>`;
 
@@ -390,11 +614,11 @@ var displayDatasetTable = function(current_datasets)
                 <td>`+ current_datasets[i].DATASET_NAME + `</td>                                    
                 <td>`+ current_datasets[i].OBJECT_TYPE + `</td>                                    
                 <td>`+ current_datasets[i].OBJECT_SCHEMA + `</td>                                    
-                <td>`+ current_datasets[i].HOST_ID + `</td>                                    
+                <td>`+ current_datasets[i].HOST_ID + `</td>          
+                <td>`+ ((current_datasets[i].ACTIVE_FLG==1)?'Yes':'<span style=\'color:var(--danger_bright)\'>NO</span>') + `</td>                          
                 <td>`+ current_datasets[i].PRIMARY_KEY_COLUMNS + `</td>
                 <td>`+ current_datasets[i].DATA_COLUMNS + `</td>
-                <td>`+ current_datasets[i].PARTITION_COLUMNS + `</td>
-                <td>`+ ((current_datasets[i].ACTIVE_FLG==1)?'Yes':'NO') + `</td>
+                <td>`+ current_datasets[i].PARTITION_COLUMNS + `</td>                
             </tr>`;        
         }                   
         $('#ds_table').html(t_headers + t_body + each_row + '</tbody>');                                
@@ -528,7 +752,7 @@ var err_precompile = function(error)
 var ok_wfConnect = function(req_data,response,ref_timeout)
 {
     //Once conneciton is established we request workflow details    
-    getWorkflow();
+    getWorkflow();    
     
 }
 var err_wfConnect = function(error)
@@ -538,7 +762,8 @@ var err_wfConnect = function(error)
 
 var err_fetchSingleWF = function(error)
 {
-    $('#wf_result').html(error);                        
+    $('#wf_result').html(error);   
+    updateLoadProgress();                          
 }
 
 var ok_fetchSingleWF = function(req_data,response,ref_timeout)
@@ -557,20 +782,19 @@ var ok_fetchSingleWF = function(req_data,response,ref_timeout)
             LATEST_INSTANCES = undefined;
         }
         else
-        {                
+        {   
             result['server_name'] = req_data.server;            
             result['metastore_name'] = req_data.db;             
             //Store results in global variable
             LATEST_INSTANCES = result;
             prettyResult = minimumPrettify('monitor');       
-            generateWorkflowInstanceTable();         
+            generateWorkflowInstanceTable();    
+            updateLoadProgress();     
         }                                            
     }       
 
     $('#wf_result').html(prettyResult);   
-    $('#wf_result').fadeIn();
-    //Set refreshing status
-    $('#ref_status').hide();
+    $('#wf_result').fadeIn();    
         
     //Now that the result has been obtained, set a time out for refresh                    
     clearTimeout(wfRefreshTimer);         
@@ -610,7 +834,7 @@ function generateWorkflowInstanceTable()
     bold_style = '';
 
     //limit = LATEST_INSTANCES.length;
-    limit = (LATEST_INSTANCES.length>7)?7:LATEST_INSTANCES.length;    
+    limit = (LATEST_INSTANCES.length>instance_limit)?instance_limit:LATEST_INSTANCES.length;    
 
     for (i = 0; i < limit; i++) 
     {
@@ -639,15 +863,49 @@ function generateWorkflowInstanceTable()
     }
            
 
-    $('#wfi_table').html(t_headers + t_body + each_row + '</tbody>');    
-    showAllTables();
+    $('#wfi_table').html(t_headers + t_body + each_row + '</tbody>');        
 }
-function showAllTables()
+
+function reStage(ftp_id_num)
 {
-    $('#workflow_instance_status_display').fadeIn();
-    $('#dataset_display').fadeIn();
-    $("#stage_display").fadeIn();
+    req_data = { server : server_name,auth_type: auth,ftp_id : ftp_id_num, db:metastore , schema:'dbo', limit : instance_limit};                
+    
+    $('#msg_config_alert').removeClass('alert-danger');
+    $('#msg_config_alert').addClass('alert-warning');
+    $('#msg_config_alert').html("Removing tracking information...");        
+    $("#msg_success_btn").text('Re-staging...')
+    $("#msg_success_btn").attr('disabled','disabled');
+    getRequest(req_data,ok_restage,err_restage,ref_timeout,'/wf_man/wf/restage');                                                            
 }
+
+
+var ok_restage = function(req_data,response,ref_timeout)
+{
+    if(response.err==1)
+    {   
+        err_restage(response);
+    }        
+    else
+    {        
+        clearTimeout(wfRefreshTimer);                       
+        getWorkflow();
+        $("#msg_success_btn").removeAttr('disabled');
+        $('#messageDialog').modal('toggle');
+    }
+    
+}
+
+var err_restage = function(error)
+{
+    $('#msg_config_alert').html("Something went wrong");        
+    $('#msg_config_alert').removeClass('alert-warning');
+    $('#msg_config_alert').addClass('alert-danger');    
+    $("#msg_success_btn").text('Re-Stage')
+    $("#msg_success_btn").removeAttr('disabled');
+    $('#msg_config_alert').html(JSON.stringify(error));            
+}
+
+
 
 function nullToDash(obj){
     for(e in obj){
@@ -661,12 +919,18 @@ function nullToDash(obj){
 function getWorkflow()
 {    
     //Set refreshing status
+    $('#ref_status').fadeIn();
+
     //Disable wfi action buttons
     $('.wfi_action').attr('disabled','disabled');
     $('#VisitOozieButton').addClass('disabled');
-    $('#ref_status').fadeIn();
+
     req_data = { server : server_name,auth_type: auth,where_key : 'WORKFLOW_ID', where_val : wf_id, order_by: 'WORKFLOW_INSTANCE_ID', order_type: 'desc', db:metastore , schema:'dbo', limit : instance_limit};                
     getRequest(req_data,ok_fetchSingleWF,err_fetchSingleWF,ref_timeout,'/wf_man/wf/exec_details');                                        
+
+    //Add all functions that you wish to run at every refresh    
+    getSourceEntity();  //Implicitly gets StagingInfo 
+    getBlockedStatus();
 }
 
 
