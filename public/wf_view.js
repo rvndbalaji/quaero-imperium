@@ -6,7 +6,7 @@ let auth = params.get("auth");
 var wfRefreshTimer;
 var ref_timeout;
 var instance_limit =7;
-let total_items = 5;
+let total_items = 6;
 let items_loaded = 0;
 let first_time_load = true;
 
@@ -17,6 +17,7 @@ let current_pc_param;
 let current_datasets;
 let current_entity;
 let current_stage;
+let current_source_system;
 $(document).ready(function(){            
     /*
         Firebase is initialzed in jScript
@@ -86,23 +87,7 @@ var declareLocalListeners = function()
         }        
     });
 
-    $('#ds_table').on('click', '.ds_row', function(event) {
-        //Enable selection of rows in table        
-        if($(this).hasClass('table-active'))
-        {                        
-            $(this).removeClass('table-active'); 
-            $('.ds_action').attr('disabled','disabled');               
-        } else 
-        {
-            $(this).addClass('table-active').siblings().removeClass('table-active');            
-            selected_row = $(this).html();
-            sel_index = (selected_row=='OUTPUT')?1:0;
-            //Set the data-title attribute that performs an action on the selected workflow dataset
-            $('#editDatasetButton').attr('data-whatever',(current_datasets[sel_index].DATASET_ID));                                     
-            $('.ds_action').removeAttr('disabled');                        
-        }        
-    });
-    
+   
     $('#stage_table').on('click', '.stage_row', function(event) {  
         
         //Enable selection of rows in table        
@@ -126,13 +111,6 @@ var declareLocalListeners = function()
         }        
     });
 
-
-    $('#editDatasetDialog').on('show.bs.modal', function (event) {        
-        var ds_id = $('#editDatasetButton').attr('data-whatever');        
-        $('#ds_config_alert').html('Preparing dataset..');
-        var modal = $(this)
-        modal.find('.modal-title').text('Edit Dataset for ' + ds_id);                
-    });
 
     $('#viewLogDialog').on('show.bs.modal', function (event) {        
         var eg_id = $('#ViewLogsButton').attr('data-whatever');        
@@ -301,13 +279,14 @@ var ok_blockInfo = function(req_data,response,ref_timeout)
                 $("#blocked_reason").fadeIn();
             }
             
-        }
-            updateLoadProgress();   
+        }        
+        updateLoadProgress();   
+            
     }
 }
 
 var updateLoadProgress = function()
-{
+{    
     //We display the Load Progress bar only when the page is loading
     //During refresh, nothing is displayed except the refresh status
     //which is hidden when this function is called    
@@ -318,13 +297,36 @@ var updateLoadProgress = function()
     {        
         $("#ref_progress").css('width',0);           
         $("#ref_progress_bar").hide();
-        $("#ref_status").hide();
+        $("#ref_status").hide();        
+        
+        $('#wf_result').fadeIn();    
 
-        $('#workflow_instance_status_display').fadeIn();
-        $('#dataset_display').fadeIn();
-        $("#stage_display").fadeIn();     
-        $("#entity_display").fadeIn();
-        $("#blocked_wf").fadeIn();        
+        if(LATEST_INSTANCES && LATEST_INSTANCES.length>0)
+        {
+            $('#workflow_instance_status_display').fadeIn();    
+        }
+        
+        if(current_datasets && current_datasets.length>0)
+        {
+            $('#dataset_display').fadeIn();        
+        }
+        
+        if(current_entity.length && current_entity.length>0)
+        {
+            $("#entity_display").fadeIn();
+        }
+
+        $("#blocked_wf").fadeIn(); 
+        //Display stage only if stage is available    
+        if(current_stage.length && current_stage.length>=0)
+        {
+            $("#stage_display").fadeIn();
+        }
+        if(current_source_system && current_source_system.length>=0)
+        {
+            $("#ss_display").fadeIn();
+        }
+
         first_time_load = false;
         items_loaded=total_items;
     }
@@ -353,11 +355,12 @@ var ok_fetchEntity = function(req_data,response,ref_timeout)
     else
     {
         current_entity = response.data.info;        
-        displayEntityTable(current_entity);
-        console.log(current_entity);
+        displayEntityTable(current_entity);                
         updateLoadProgress();   
         //Once we fetch the entities, we may use the entity_id to fetch Staging details
         getStageInfo();        
+        //Once we fetch the entities, we may use the source_system_id to fetch Source System details
+        getSourceSystem();        
     }
     
 }
@@ -372,7 +375,7 @@ var displayEntityTable = function(current_entity)
 {
     if(current_entity.length==0)
     {
-        $("#Entity_Res").hide(); 
+        $("#entity_display").hide(); 
         $('#ent_table').html("<i>No source entities used by this workflow</i>");                                   
         return;
     }
@@ -430,6 +433,88 @@ var displayEntityTable = function(current_entity)
 }
 
 
+var getSourceSystem = function()
+{   
+
+    system_id_list =  []
+    for(i=0; i<current_entity.length; i++)
+    {
+        system_id_list.push(current_entity[i].SYSTEM_ID)
+    }
+    
+    req_data = { server : server_name,auth_type: auth,ss_id: system_id_list.join(","), db:metastore , schema:'dbo'};
+    getRequest(req_data,ok_fetchSource,err_fetchSource,undefined,'/wf_man/wf/source_system');                                        
+}
+
+
+var ok_fetchSource = function(req_data,response,ref_timeout)
+{
+    if(response.err==1)
+    {   
+        err_fetchSource(response);
+    }        
+    else
+    {
+        current_source_system = response.data.info;        
+        displaySourceSystemTable(current_source_system);                
+        updateLoadProgress();           
+    }
+    
+}
+
+var err_fetchSource = function(error)
+{
+    console.log("SourceSystemFetch : " + JSON.stringify(error))
+    updateLoadProgress();   
+}
+
+var displaySourceSystemTable = function(current_source_system)
+{
+    if(current_source_system.length==0)
+    {
+        $("#ss_display").hide(); 
+        $('#ss_table').html("<i>No source systems used by this workflow</i>");                                   
+        return;
+    }
+    bold_style = "style=\"font-family:'futura_bold', serif;font-weight:400\"";            
+    t_headers = `
+        <thead>
+            <tr ` + bold_style + `">                                        
+                <th scope="col">System ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Ingestion Protocol</th>                
+                <th scope="col">Host ID</th>
+                <th scope="col">Scan Interval</th>        
+                <th scope="col">Directory</th>        
+                <th scope="col">Type</th>        
+                <th scope="col">Active</th>                
+            </tr>
+        </thead>`;
+
+        //Replace all null values with '-'
+        current_source_system = JSON.parse(JSON.stringify(current_source_system).split(":null").join((':\"-"')));
+
+        t_body = `<tbody>`;
+        each_row = '';
+        bold_style = '';
+        for (i = 0; i < current_source_system.length; i++) 
+        {        
+            
+            each_row += `            
+            <tr class="ent_row">
+                <td>`+ current_source_system[i].ID + `</td>                                          
+                <td>`+ current_source_system[i].SYSTEM_NM + `</td>
+                <td>`+ current_source_system[i].DATA_INGESTION_PROTOCOL + `</td>                                                    
+                <td>`+ current_source_system[i].API_HOST_ID + `</td>                          
+                <td>`+ current_source_system[i].SOURCE_SYSTEM_TIME_BETWEEN_SCAN_SECS + `</td>
+                <td>`+ current_source_system[i].REMOTE_DIRECTORY + `</td>
+                <td>`+ current_source_system[i].SYSTEM_TYPE + `</td>                
+                <td>`+ current_source_system[i].ACTIVE_FLG + `</td>
+            </tr>`;        
+        }                   
+        $('#ss_table').html(t_headers + t_body + each_row + '</tbody>');                                
+}
+
 var getStageInfo = function()
 {   
     if(current_entity[0]) 
@@ -439,8 +524,8 @@ var getStageInfo = function()
     }
     else
     {        
-        $("#Stage_Res").hide(); 
         $('#stage_table').html("<i>No files were staged by this workflow</i>");                                   
+        $("#stage_display").hide();          
         updateLoadProgress();   
     }
 }
@@ -457,7 +542,7 @@ var ok_stageInfo = function(req_data,response,ref_timeout)
         current_stage = response.data.info;   
         displayStageInformation(current_stage);                        
     }
-    updateLoadProgress();   
+    updateLoadProgress();       
 }
 
 var err_stageInfo = function(error)
@@ -480,7 +565,7 @@ var displayStageInformation = function(current_stage)
 {    
     if(current_stage.length==0)
     {
-        $("#Stage_Res").hide(); 
+        $("#stage_display").hide(); 
         $('#stage_table').html("<i>No files were staged by this workflow</i>");                                   
         return;
     }
@@ -561,7 +646,7 @@ var ok_fetchDatasets = function(req_data,response,ref_timeout)
     else
     {
         current_datasets = response.data.info;
-        displayDatasetTable(current_datasets);        
+        displayDatasetTable(current_datasets);            
         updateLoadProgress();   
     }
 }
@@ -577,7 +662,7 @@ var displayDatasetTable = function(current_datasets)
 {
     if(current_datasets.length==0)
     {
-        $("#Dataset_Res").hide(); 
+        $("#dataset_display").hide(); 
         $('#ds_table').html("<i>No input/output datasets for this workflow</i>");                                   
         return;
     }
@@ -788,13 +873,12 @@ var ok_fetchSingleWF = function(req_data,response,ref_timeout)
             //Store results in global variable
             LATEST_INSTANCES = result;
             prettyResult = minimumPrettify('monitor');       
-            generateWorkflowInstanceTable();    
-            updateLoadProgress();     
+            generateWorkflowInstanceTable();                
         }                                            
     }       
-
-    $('#wf_result').html(prettyResult);   
-    $('#wf_result').fadeIn();    
+    
+    $('#wf_result').html(prettyResult);       
+    updateLoadProgress();     
         
     //Now that the result has been obtained, set a time out for refresh                    
     clearTimeout(wfRefreshTimer);         
@@ -807,6 +891,11 @@ var ok_fetchSingleWF = function(req_data,response,ref_timeout)
 
 function generateWorkflowInstanceTable()
 {
+    if(LATEST_INSTANCES.length==0)
+    {        
+        $('#wfi_table').html("<i>This workflow was never executed, so no instances were found</i>");                                   
+        return;
+    }
     bold_style = "style=\"font-family:'futura_bold', serif;font-weight:400\"";            
     t_headers = `
         <thead>
@@ -1124,7 +1213,6 @@ function minimumPrettify(result,screen)
     resultList.push(new_content)    
     return resultList;    
 }
-
 
 var modifyWFStatus = function(wfi_id)
 {   

@@ -137,7 +137,7 @@ router.get('/wf/exec_details',function(req,res)
           getWorkflowExecutionStatus(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFES)'}
           res.send(result);
         }
     });
@@ -164,7 +164,7 @@ router.post('/wf/modifyStatus',function(req,res)
           setWorkflowInstanceStatus(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (MODWFS)'}
           res.send(result);
         }
     });
@@ -191,7 +191,7 @@ router.get('/wf/error_log',function(req,res)
           getErrorLog(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETELOG)'}
           res.send(result);
         }
     });
@@ -218,7 +218,7 @@ router.get('/wf/datasets',function(req,res)
           getWFDatasets(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETWFDS)'}
           res.send(result);
         }
     });
@@ -245,7 +245,7 @@ router.get('/wf/restage',function(req,res)
           restageFile(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (RESTGE)'}
           res.send(result);
         }
     });
@@ -272,7 +272,34 @@ router.get('/wf/entity',function(req,res)
           getWFEntity(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETENT)'}
+          res.send(result);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
+router.get('/wf/source_system',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getWFSourceSystem(config,req,res,result);  
+        }
+        else{
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETSS)'}
           res.send(result);
         }
     });
@@ -299,7 +326,7 @@ router.get('/wf/blockInfo',function(req,res)
           getBlockedInfo(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETBLK)'}
           res.send(result);
         }
     });
@@ -325,7 +352,7 @@ router.get('/wf/stageInfo',function(req,res)
           getWFStageInfo(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETSTG)'}
           res.send(result);
         }
     });
@@ -351,7 +378,7 @@ router.get('/wf/precompile',function(req,res)
           getPrecompile(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETPRCMP)'}
           res.send(result);
         }
     });
@@ -379,7 +406,7 @@ router.get('/stats',function(req,res)
           getServerStats(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (GETWFCNT)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETSTAT)'}
           res.send(result);
         }
     });
@@ -405,7 +432,7 @@ router.get('/search/wf',function(req,res){
           fetchWFDetails(config,req,res,result);
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (FETWF)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETWF)'}
           res.send(result);
         }
     });
@@ -462,7 +489,7 @@ router.post('/getColumns',function(req,res){
           getColumns(config,req,res,result);
         }
         else{          
-          result.data = {info:'Server connection does not exist. Please reload/re-login (GETMS)'}
+          result.data = {info:'Server connection does not exist. Please reload/re-login (GETCOL)'}
           res.send(result);
         }
     });
@@ -868,12 +895,52 @@ var getWFEntity = async function (config,req,res,res_data)
       current_db_schema = req.query.db + "." + req.query.schema + ".";      
       
       var query_string = `
-      select * from ` + current_db_schema + `M_SOURCE_ENTITY
+      select ID,SYSTEM_ID,DATASET_ID,ENTITY_NM,ENTITY_DESC,FREQUENCY,FREQUENCY_DAYS,INCLUDE_HEADER,NUM_HEADER_ROWS,STAGE_STRATEGY,STAGE_TABLE_NM,SOURCE_FILE_MASK,FILE_FORMAT_ID,COLUMN_DELIMITER,TEXT_QUALIFIER,ALLOW_STRING_TRUNCATION,ROW_DELIMITER,UNZIP_FILE_FLG,STATUS,ACTIVE_FLG,DELETE_SOURCE_FILE_FLG,HEADER_EXCLUDE_EXPRESSION from ` + current_db_schema + `M_SOURCE_ENTITY
       where DATASET_ID in (
         select DATASET_ID from ` + current_db_schema + `M_WORKFLOW_INPUT where WORKFLOW_ID = ` + req.query.workflow_id +`
         union 
         select DATASET_ID from ` + current_db_schema + `M_WORKFLOW_OUTPUT where WORKFLOW_ID = ` + req.query.workflow_id +`        
         );`;
+      var sql_result = sql_request.query(query_string); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
+}
+
+
+
+var getWFSourceSystem = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      //Set Database and Schema
+      current_db_schema = req.query.db + "." + req.query.schema + ".";      
+      
+      var query_string = `
+      select ID,SYSTEM_NM,DATA_INGESTION_PROTOCOL,API_HOST_ID,SOURCE_SYSTEM_TIME_BETWEEN_SCAN_SECS,REMOTE_DIRECTORY,SYSTEM_TYPE,ACTIVE_FLG from ` + current_db_schema + `M_SOURCE_SYSTEM
+      where ID in (` + req.query.ss_id + `);`;
       var sql_result = sql_request.query(query_string); 
 
       //Capture the result when the query completes

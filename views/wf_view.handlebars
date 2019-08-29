@@ -94,52 +94,8 @@
                                     </div>
                                 </div>
                             </div>                            
-                        </div>    
-                        <div class="row justify-content-start" id="dataset_display">                                                              
-                            <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                <div class="row mt-2">
-                                    <span><b>Datasets</b></span>
-                                </div>
-                                <div class="row mt-2" id="Dataset_Res"> 
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                        <button type="button" id="editDatasetButton" class="ds_action btn btn-info btn-sm"  data-toggle="modal" data-target="#editDatasetDialog" disabled>
-                                           Edit Dataset
-                                        </button>
-                                    </div>                                   
-                                </div>                                
-                                <div class="row mt-3">                                    
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                    <div class="table-responsive">
-                                       <table class="table table-hover table-sm" id="ds_table">                                                                                  
-                                        </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>                            
-                        </div>   
-                         <div class="row justify-content-start mt-4" id="entity_display">                                                              
-                            <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                <div class="row mt-2">
-                                    <span><b>Source Entity</b></span>
-                                </div>
-                                <div class="row mt-2" id="Entity_Res"> 
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                        <button type="button" id="editEntityButton" class="ent_action btn btn-info btn-sm"  data-toggle="modal" data-target="#editEntityDialog" disabled>
-                                           Edit Entity
-                                        </button>
-                                    </div>                                   
-                                </div>                                
-                                <div class="row mt-3">                                    
-                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
-                                    <div class="table-responsive">
-                                       <table class="table table-hover table-sm" id="ent_table">                                                                                  
-                                        </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>                            
-                        </div>                       
-                        <div class="row justify-content-start" id="stage_display">                                                              
+                        </div>  
+                         <div class="row justify-content-start" id="stage_display">                                                              
                             <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
                                 <div class="row mt-2">
                                     <span><b>Staging</b></span>
@@ -155,6 +111,51 @@
                                     <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
                                     <div class="table-responsive">
                                        <table class="table table-hover table-sm" id="stage_table">                                                                                  
+                                        </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                            
+                        </div>    
+                        <div class="row justify-content-start" id="dataset_display">                                                              
+                            <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
+                                <div class="row mt-2">
+                                    <span><b>Datasets</b></span>
+                                </div>                                                        
+                                <div class="row mt-3">                                    
+                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
+                                    <div class="table-responsive">
+                                       <table class="table table-hover table-sm" id="ds_table">                                                                                  
+                                        </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                            
+                        </div>   
+                         <div class="row justify-content-start mt-4" id="entity_display">                                                              
+                            <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
+                                <div class="row mt-2">
+                                    <span><b>Source Entity</b></span>
+                                </div>                                                           
+                                <div class="row mt-3">                                    
+                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
+                                    <div class="table-responsive">
+                                       <table class="table table-hover table-sm" id="ent_table">                                                                                  
+                                        </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                            
+                        </div>  
+                         <div class="row justify-content-start mt-4" id="ss_display">                                                              
+                            <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
+                                <div class="row mt-2">
+                                    <span><b>Source System</b></span>
+                                </div>                                                     
+                                <div class="row mt-3">                                    
+                                    <div class="col-lg-auto col-md-auto col-sm-auto col-xs-auto">                                
+                                    <div class="table-responsive">
+                                       <table class="table table-hover table-sm" id="ss_table">                                                                                  
                                         </table>
                                         </div>
                                     </div>
@@ -260,31 +261,6 @@
             </div>
             <div class="modal-footer">                                            
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close_btn">Close</button>                
-            </div>
-        </div>
-    </div>            
-</div>
-<div class="modal fade" data-backdrop="static" id="editDatasetDialog" tabindex="-1" role="dialog" aria-labelledby="editDatasetLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editDatasetLabel">Edit Dataset</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">          
-                <div id='ds_config_alert' class="alert alert-warning"></div>                                    
-                <div id="ds_display" style="text-align: left">                                        
-                     <div class="table-responsive">
-                        <table class="table table-hover table-sm" id="ds_table">                                                                                                              
-                        </table>
-                    </div>                    
-                </div>
-            </div>
-            <div class="modal-footer">                                            
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancel_btn">Cancel</button>
-                <button type="button" id="saveDatasetButton" class="btn btn-success">Save Dataset</button>                                                                                
             </div>
         </div>
     </div>            

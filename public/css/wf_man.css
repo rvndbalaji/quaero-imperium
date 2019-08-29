@@ -63,7 +63,7 @@ body {
     
 }
 
-#mon_status, #myTab,#workflow_instance_status_display,#wf_result,#dataset_display,#stage_display,#blocked_wf,#stage_wf,#entity_display
+#mon_status, #myTab,#workflow_instance_status_display,#wf_result,#dataset_display,#stage_display,#blocked_wf,#stage_wf,#entity_display, #ss_display
 {
     display: none;
 }
