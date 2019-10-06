@@ -1,51 +1,52 @@
 var express = require('express');
 var router = express.Router();
+var nodemailer = require('nodemailer');
 
 //Get HomePage
-router.get('/',function(req,res){          
+router.get('/',function(req,res){              
+   res.status(200).send('Quaero Imperium API')
+});
+
+router.post('/sendMail',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {        
+     transporter = nodemailer.createTransport({
+        host: "hsrelay01.quaero.com",
+        port: 25,       
+        ignoreTLS : true          
+      });      
+    var mailOptions = {
+        from: req.body.from,
+        to: req.body.to,
+        cc : req.body.cc,
+        subject: req.body.subject,
+        html: req.body.html + '<br><br>Sent by : ' + decodedToken.uid + `<br>Source : Imperium | ` + req.body.source
+      }
+
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        result.data.info = error;
+        res.send(error)
+      } else {
+        result.err = 0;
+        result.data.info = info;
+        res.status(200).send(info)
+      }
+    });
     
-    //Verify user using token
-    //If yes, user is logged in so render the home page.        
-    admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
-        .then(function(decodedToken) 
-        {
-            res.render('index',{        
-                title: 'Quaero Imperium',
-                cssfile : 'css/index.css',
-                cssanimate : 'frameworks/animate.css'
-            });                        
-        }).catch(function(error) 
-        {        
-            //Otherwise, send him to login page            
-            res.clearCookie('authToken');  
-            res.redirect('/users/login');                  
-        });       
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
 });
 
-//Post HomePage
-router.post('/',function(req,res)
-{       
-    var result = {
-        err: 1,
-        data : {}
-      };     
-    admin.auth().verifyIdToken(acquireTokenAsString(req.body.token))
-    .then(function(decodedToken) 
-    {
-       //Token verified, take him home       
-       result.err = 0;
-       result.data = {info : "Logging in..."};
-       res.cookie('authToken', req.body.token, { httpOnly: true, secure: false });
-       res.send(result);          
-
-    }).catch(function(error) 
-    {        
-        result.data = {info : error};
-        res.clearCookie('authToken');   
-        res.send(result);     
-        
-    });      
-});
 
 module.exports = router;
 

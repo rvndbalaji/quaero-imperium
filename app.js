@@ -1,14 +1,8 @@
 //Declare server parameters
 express = require('express');
 sql = require('mssql');
-path = require('path');
-events = require('events');
-cookieParser = require('cookie-parser');
-//session = require('express-session');
 validator = require('express-validator');
-exphbs = require('express-handlebars');
 dotenv = require('dotenv').config();
-//flash = require('connect-flash');
 admin = require("firebase-admin");
 crypto = require('crypto',);
 app = express();
@@ -17,10 +11,6 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var wf_man = require('./routes/wf_man');
 
-
-// Create an eventEmitter object
-emitter = new events.EventEmitter();
-
 //To parse JSON fields
 app.use(express.json())
 
@@ -28,9 +18,6 @@ app.use(express.json())
 app.use(express.urlencoded({
   extended: true
 }));
-
-
-app.use(cookieParser());
 
 var port = process.env.PORT;
 var hostname = process.env.HOSTNAME;
@@ -48,34 +35,9 @@ var serviceAccount = {
   "auth_provider_x509_cert_url": process.env.auth_provider_x509_cert_url,
   "client_x509_cert_url": process.env.client_x509_cert_url
 }
-
-//Fetch Firebase Web Credentials and store it in a handler 
-//which is returned to the JavaScript
-//Configure Helpers
-var hbs = exphbs.create({
-  helpers : {        
-      apiKey: process.env.apiKey,
-      authDomain: process.env.authDomain,
-      databaseURL: process.env.databaseURL,
-      projectId: process.env.projectId,
-      storageBucket: process.env.storageBucket,
-      messagingSenderId: process.env.messagingSenderId,
-      appId: process.env.appId   
-  }
-});
-
-//View Engine
-app.set('views',path.join(__dirname,'views'));
-app.engine('handlebars',hbs.engine);
-app.set('view engine','handlebars');
-
 app.use('/',routes);
 app.use('/users',users);
 app.use('/wf_man',wf_man);
-
-//Serve the website
-app.use(express.static('public'))
-
 
 //Start Server and listen for requests
 var server  = app.listen(port,hostname,function(){

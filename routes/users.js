@@ -2,44 +2,6 @@ var express = require('express');
 var router = express.Router();
 const { check, validationResult } = require('express-validator/check');
 
-//Register
-router.get('/register',function(req,res){        
-    //Verify user
-    admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
-    .then(function(decodedToken) 
-    {
-        //If user is logged in, take him to the homepage instead
-        res.redirect('/');
-
-    }).catch(function(error) 
-    {        
-        //Otherwise, render registration page
-        res.render('register',{
-            title: 'Register',
-            cssfile : '../css/index.css',
-            cssanimate : '../frameworks/animate.css'            
-        });   
-    });       
-});
-
-//Login
-router.get('/login',function(req,res){    
-//Check if user has already logged in, by verifying him
-admin.auth().verifyIdToken(acquireTokenAsString(req.cookies.authToken))
-    .then(function(decodedToken) 
-    {
-        //If user is logged in, take him to the homepage instead
-        res.redirect('/');  
-    }).catch(function(error) 
-    {        
-        //Otherwise, render login page
-        res.render('login',{
-            title: 'Login',
-            cssfile : '../css/index.css',
-            cssanimate : '../frameworks/animate.css'            
-        });             
-    });      
-});
 
 //Perform registration
 router.post('/register',[
@@ -75,13 +37,6 @@ router.post('/register',[
 });
 
 
-//Logout
-router.post('/logout',function(req,res){    
-    res.clearCookie('authToken');    
-    res.send('Session Ended');       
-});
-
-
 //Perform Login
 router.post('/login',[    
 ], async (req,res) => 
@@ -103,7 +58,7 @@ router.post('/login',[
         {   
             if(!user_data.exists)        
             {   
-                result.data = {info : "User does not exist. Please <a href='/users/register' target='_self'>register</a>"}
+                result.data = {info : "User does not exist. Please register"}
                 res.send(result);
                 return;
             }  

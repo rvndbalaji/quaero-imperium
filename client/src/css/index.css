@@ -1,0 +1,405 @@
+:root {    
+    
+    --primary_dark : #7E57C2;
+    --danger_dark  : #EF5350;
+    --success_dark : #4CAF50;
+
+    --primary_bright: #8072B8;
+    --danger_bright: #E57373;
+    --success_bright: #66BB6A;    
+
+    --primary_light : #EDE7F6;
+    --danger_light  : #EF9A9A;
+    --success_light : #81C784;
+
+    --secondary_dark : #2196F3;
+}
+
+@font-face {
+    font-family: futura_bold;
+    src: url('../fonts/Futura_PT/FuturaPTBook.otf');
+}
+
+@font-face {
+    font-family: futura_light;
+    src: url('../fonts/Futura_PT/FuturaPTLight.otf');
+}
+
+body {
+    overflow-x: hidden;
+    margin: 0;    
+    background-color: var(--text_light);
+}
+
+#title, #my_subtitle,#wf_title {
+    color: white;
+}
+#wf_title{
+    font-size: 1.5rem;
+    margin-top: 0.3rem;
+    font-family: 'futura_bold',serif;
+}
+#title{
+    margin-top: 1rem;
+}
+
+#load_img
+{
+  margin-top: 10rem;
+}
+
+.my_modal_backdrop
+{
+  z-index: 1299 !important;
+}
+.modal
+{
+  z-index: 1300 !important;
+}
+
+.jumbotron {
+    text-align: center;
+    background-color: transparent;        
+    max-height: 15rem ;
+    margin-bottom: 1rem;
+    margin-top: -3rem;    
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-image: url(../images/bg.jpg);
+    background-color: rgba(0, 0, 0, 0.2);
+    background-blend-mode: multiply;
+    background-position: center;
+    border-radius: 0;    
+    font-family: 'futura_light', serif;
+    box-shadow: 0rem 0rem 1rem gray;
+}
+
+#wf_jumbotron {
+    width: 100%;
+    text-align: left;
+    background-color: transparent;        
+    margin-top: -4rem;    
+    margin-left: 0;     
+    margin-right: 0;
+    max-height: 7rem;    
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-image: url(../images/bg.jpg);
+    background-color: rgba(0, 0, 0, 0.2);
+    background-blend-mode: multiply;
+    background-position: center;
+    border-radius: 0;    
+    font-family: 'futura_light', serif;    
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 0;
+    position: fixed;
+    z-index: 10;    
+    box-shadow: none;
+}
+
+
+#sidebar
+{  
+  z-index: 10;
+  height: 100vh;
+  border-right: 1px solid #2196F3;
+}
+
+a:hover,
+a:active,
+a:focus,
+a:visited {
+    text-decoration: none;    
+}
+
+#fnf
+{
+    color: white;
+    position: absolute;
+    top: 0;
+    font-family: 'futura_bold', serif;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-size: auto;
+    background-image: url('../images/space.png');
+}
+
+.hyperlink {
+    margin-top: 1rem;        
+    z-index: 4;
+    font-weight: none;
+    position: relative;
+    cursor: pointer;
+    cursor: hand;
+    border-bottom: 2px solid transparent;
+    -webkit-transition: all 400ms;
+    transition: all 400ms;
+    color: white;
+}
+
+.hyperlink:hover {
+    color: white;
+    text-decoration: none;
+    border-bottom: 2px solid white;
+}
+
+
+.notif_bar{
+    display:  inline-block;
+    padding: 0.3rem;    
+    margin:1rem;    
+    background-color: var(--primary_bright);
+    color:white;
+    box-shadow: 0rem 0rem 1rem gray;       
+    z-index: 2;
+    position: relative;
+    width: 50%;     
+    border-radius: 3px;               
+}
+
+.main_box {    
+    background-size: cover;
+    background-color: rgba(0, 0, 0, 0.3);
+    background-blend-mode: multiply;
+    -webkit-transition: background 400ms;
+    padding: 1rem;
+    transition: background 400ms;            
+    background-position: center;
+    color:white;
+    box-shadow: 0rem 0rem 1rem gray;
+    border-radius: 0.2rem;
+}
+
+.main_box:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+    cursor: pointer;
+}
+.box_title
+{
+    font-family: 'futura_bold', serif;
+    font-size: 2rem;
+    padding: 1rem;
+    text-shadow: 0px 0px 10px white;    
+}
+
+.red_text
+{
+    color : var(--danger_bright);
+}
+.green_text
+{
+    color : var(--success_bright) ;
+}
+.blue_text
+{
+  color : var(--primary_bright);
+}
+
+.custom-control-input:checked~.custom-control-label::before
+{
+  background-color: var(--primary_dark);
+  border-color:var(--primary_dark);
+}
+
+
+.black_text
+{
+    color: #181818;
+}
+.gray_text
+{
+    color: gray;
+}
+
+.res_item
+{    
+    zoom: 0.95;
+    margin: 1rem;
+    padding: 0.5rem;        
+    font-family: futura_bold;
+    border-radius: 4px;        
+    box-shadow: 0.1rem 0.1rem 0.2rem 0rem lightgray;  
+}
+
+.sett_item
+{
+  background-color: rgb(203, 228, 255) ;
+  border-radius: 0.2rem;    
+  transition: all 300ms;
+  padding: 0.5rem;
+}
+
+.srch_box
+{
+  width : 100%;
+}
+
+#ref_box
+{
+  width: 5rem;
+}
+.white_text
+{
+    color:white;    
+}
+
+
+
+#filter_menu
+{
+  border: rgb(203, 228, 255) solid 0.2rem;
+  padding: 0.2rem;
+  border-radius: 4px;  
+  font-family: 'futura_bold', serif;            
+}
+.react-bootstrap-table table { table-layout: auto !important; }
+
+.react-bootstrap-table-pagination
+{
+ float: right;
+ margin-right: 7.5rem;
+ text-align: end;
+}
+
+
+.react-bootstrap-table > table >  tbody > tr
+{
+  cursor : hand;
+}
+/*-----------------------Custom Buttons-------------------*/
+
+
+
+.btn {
+  border-radius: 0.2rem;
+  box-shadow: 0.1rem 0.1rem 0.2rem transparent;
+  transition: all 0.2s;  
+  border : none !important;
+  
+}
+
+.btn:focus {
+  outline: none !important;  
+  box-shadow: 0.2rem 0.2rem 0.2rem transparent !important;  
+}
+
+.btn:hover {  
+  box-shadow: 0.15rem 0.15rem 0.2rem transparent;  
+}
+
+/*--------------Primary-------------*/
+
+.btn-primary 
+{
+  background-color: var(--primary_dark);  
+}
+.btn-primary:active:focus
+{
+  background-color: var(--primary_dark) !important;  
+}
+.btn-primary:hover
+{
+  background-color: var(--primary_bright);  
+}
+
+.btn-primary:disabled
+{
+  background-color:var(--primary_light);  
+  box-shadow: 0.025rem 0.025rem 0.05rem gray;
+}
+
+
+/*----------DROP DOWN BUTTON--------------*/
+
+.custom_dropdown button, .custom_white_button{
+  background-color: #f5f6f7;
+  color : #263238;
+  border-radius: 0.2rem;
+  box-shadow: 0.1rem 0.1rem 0.2rem transparent !important;
+  transition: all 0.2s;  
+  border : #ced7e0 1px solid !important;  
+}
+
+.custom_dropdown button:focus,.custom_white_button:focus {
+  outline: none !important;  
+  box-shadow: 0.2rem 0.2rem 0.2rem transparent !important;  
+  background-color: #ffffff;
+  color : #263238;
+  border : var(--primary_dark) 1px solid !important;  
+}
+
+
+.custom_dropdown button:active:focus.custom_white_button:active:focus {
+  outline: none !important;  
+  box-shadow: 0.2rem 0.2rem 0.2rem #ced7e0 !important;  
+  background-color: #ffffff;
+  color : #263238;
+}
+
+.custom_dropdown button:disabled, .custom_white_button:disabled{
+  outline: none !important;  
+  box-shadow: 0.2rem 0.2rem 0.2rem transparent !important;  
+  background-color: #ffffff;
+  color : gray;
+}
+
+.custom_dropdown button:hover, .custom_white_button:hover {  
+  box-shadow: 0.15rem 0.15rem 0.2rem #ced7e0;  
+  background-color: #ffffff;
+  color : #263238;
+}
+
+/*----------DROP DOWN BUTTON--------------*\
+
+/*--------------Success-------------*/
+
+.btn-success 
+{
+  background-color: var(--success_dark);  
+}
+.btn-success:active:focus
+{
+  background-color: var(--success_dark) !important;  
+}
+.btn-success:hover
+{
+  background-color: var(--success_bright);  
+}
+
+.btn-success:disabled
+{
+  background-color:var(--success_light);  
+}
+
+/*--------------Danger-------------*/
+
+.btn-danger 
+{
+  background-color: var(--danger_dark);  
+}
+.btn-danger:active:focus
+{
+  background-color: var(--danger_dark) !important;  
+}
+.btn-danger:hover
+{
+  background-color: var(--danger_bright);  
+}
+
+.btn-danger:disabled
+{
+  background-color:var(--danger_light);  
+}
+
+
+
+/*--------------CheckBox-------------*/
+
+
