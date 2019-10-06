@@ -103,7 +103,9 @@ fileSizeFormatter(cell, row) {
             for(var rowIndex in original_data)
             {                
                 let fail_string_regex = new RegExp('.*FAIL.*','i');
-                if(original_data[rowIndex]['FTP_STATUS'].match(fail_string_regex) || original_data[rowIndex]['FLE_STATUS'].match(fail_string_regex) || original_data[rowIndex]['DSI_STATUS'].match(fail_string_regex))
+                if((original_data[rowIndex]['FTP_STATUS'] && original_data[rowIndex]['FTP_STATUS'].match(fail_string_regex)) 
+                || (original_data[rowIndex]['FLE_STATUS'] && original_data[rowIndex]['FLE_STATUS'].match(fail_string_regex))
+                || (original_data[rowIndex]['DSI_STATUS'] && original_data[rowIndex]['DSI_STATUS'].match(fail_string_regex)))
                 {
                     fail_cnt++;
                 }    
@@ -120,8 +122,10 @@ fileSizeFormatter(cell, row) {
             const rowClasses = (row, rowIndex) => {
                 let classes = null;
                 
-                let fail_string_regex = new RegExp('.*FAIL.*','i');
-                if(row.FTP_STATUS.match(fail_string_regex) || row.FLE_STATUS.match(fail_string_regex) || row.DSI_STATUS.match(fail_string_regex))
+                let fail_string_regex = new RegExp('.*FAIL.*','i');                
+                if((original_data[rowIndex]['FTP_STATUS'] && original_data[rowIndex]['FTP_STATUS'].match(fail_string_regex)) 
+                || (original_data[rowIndex]['FLE_STATUS'] && original_data[rowIndex]['FLE_STATUS'].match(fail_string_regex))
+                || (original_data[rowIndex]['DSI_STATUS'] && original_data[rowIndex]['DSI_STATUS'].match(fail_string_regex)))
                 {
                     classes = "stage_row text-danger font-weight-bold"                                                            
                 }                           
