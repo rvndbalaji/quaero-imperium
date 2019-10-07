@@ -28,7 +28,12 @@ class WorkflowResult extends PureComponent {
         {
             wf_color.dark = '#4CAF50'
             wf_color.light = '#CEEDD1'            
-        }    
+        }  
+        else if('DID NOT RUN'===instance_status)  
+        {
+            wf_color.dark = '#282828'
+            wf_color.light = '#e0e0e0'
+        }
         return wf_color;
     }
 
@@ -66,7 +71,7 @@ class WorkflowResult extends PureComponent {
         let WorkflowList = wf_list && wf_list.filter((workflow)=>
         {                        
             if(workflow.type==='err') return true;            
-            let wf_status = workflow.WORKFLOW_INSTANCE_STATUS.toLowerCase();
+            let wf_status =  (workflow.WORKFLOW_INSTANCE_STATUS)?workflow.WORKFLOW_INSTANCE_STATUS.toLowerCase():'DID NOT RUN';
             let filter_options = (this.props.filterSortOptions)?this.props.filterSortOptions.filter_exclude:undefined;
             if(filter_options && filter_options.complete && wf_status.includes('complete')) return false;
             if(filter_options && filter_options.failed && wf_status.includes('failed')) return false;
@@ -101,7 +106,7 @@ class WorkflowResult extends PureComponent {
                 }
             }            
 
-            
+            workflow.WORKFLOW_INSTANCE_STATUS = (workflow.WORKFLOW_INSTANCE_STATUS)?workflow.WORKFLOW_INSTANCE_STATUS:'DID NOT RUN'
             let wf_color = this.computeWorkflowColors(workflow.WORKFLOW_INSTANCE_STATUS)            
 
             let ServerDetails = (
@@ -158,7 +163,7 @@ class WorkflowResult extends PureComponent {
                             <Col  lg={5} md={5} style={{fontWeight : 'bold'}}>
                                 {workflow.WORKFLOW_NAME}
                             </Col>
-                            <Col  lg='auto' md='auto' style={{fontWeight : 'bold'}}>
+                            <Col  lg='auto' md='auto' style={{fontWeight : 'bold'}}>                                
                                 {workflow.WORKFLOW_INSTANCE_STATUS}
                             </Col>                                                        
                             <Col lg='auto' md='auto' className='ml-auto justify-content-left'>                            

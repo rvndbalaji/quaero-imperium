@@ -45,9 +45,9 @@ class ViewInstanceTable extends PureComponent {
         if(len<=0)
         {
             return (
-                <div align='left'  style={{color : 'var(--primary_dark)',marginLeft : '0.4rem'}}> 
+                <div align='left'  style={{color : 'var(--secondary_dark)',marginLeft : '0.4rem'}}> 
                             <h4>Workflow Instances</h4>
-                <span>This workflow has no instances. This is probably becuase it never ran</span>
+                <span style={{color:'black'}}><i>This workflow has no instances. This is probably because it never ran</i></span>
                 </div>                
             ) 
         } 

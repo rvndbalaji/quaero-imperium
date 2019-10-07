@@ -55,8 +55,7 @@ const viewReducer = (state = initState,action) =>
             sourceSystems : action.sourceSystems,
             datasets : action.datasets,
             stageInfo : action.stageInfo,
-            workflowParams : action.params,
-            blockinfo : action.blockinfo
+            workflowParams : action.params,            
         }
 
         case 'SET_WF_BLOCK_INFO' :                 

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component,memo } from 'react'
 import Banner from '../Elements/Banner';
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -99,4 +99,4 @@ const mapDispatchToProps =(dispatch)=>
         }       
     }    
 }
-export default connect(mapStateToProps,mapDispatchToProps)(LogIn)
+export default connect(mapStateToProps,mapDispatchToProps)(memo(LogIn))

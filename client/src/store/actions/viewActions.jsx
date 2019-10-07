@@ -123,7 +123,8 @@ const fetchWFDetails = (dispatch,getState)=>
                 }
                 else
                 {
-                    dispatch(setAlert('No instances found where WORKFLOW_ID like "' + wf_id + '"' ,'info'))      
+                    //dispatch(setAlert('No instances found where WORKFLOW_ID like "' + wf_id + '"' ,'info'))      
+                    master_workflow_details['workflowResult'] = undefined;
                 }
                 updateProgress(dispatch,getState);
                 
@@ -410,8 +411,7 @@ const fetchBlockInfo = (dispatch,getState)=>
    let server_name = wf_details.server
    let metastore_name = wf_details.metastore
    let wf_id = wf_details.wf_id    
-   let auth_type = wf_details.auth
-   
+   let auth_type = wf_details.auth   
    //Prepare request     
    getIDToken().then(token=>
     {   
@@ -451,32 +451,20 @@ const fetchBlockInfo = (dispatch,getState)=>
                 dispatch({
                     type : 'SET_WF_BLOCK_INFO',
                     blockinfo : undefined
-                 });                    
-
+                 });                                     
             }
             else{                   
-                if(res.data.info.length>=1)
-                {                    
-                    let results = res.data.info;                                                          
+                let results = res.data.info;                                                          
                     dispatch({
                         type : 'SET_WF_BLOCK_INFO',
                         blockinfo : results
-                     });                    
-                }
-                else
-                {                                        
-                    dispatch({
-                        type : 'SET_WF_BLOCK_INFO',
-                        blockinfo : undefined
-                     });                                           
-                }
-                
-            }            
+                     });   
+                }            
             
         }).catch(function (thrown) {
                 if (axios.isCancel(thrown)) {                
                                     
-                } else {
+                } else {                                        
                     dispatch({
                         type : 'SET_WF_BLOCK_INFO',
                         blockinfo : undefined
@@ -485,7 +473,7 @@ const fetchBlockInfo = (dispatch,getState)=>
             });;
 
     }).catch(err=>
-        {
+        {            
             dispatch({
                 type : 'SET_WF_BLOCK_INFO',
                 blockinfo : undefined

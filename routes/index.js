@@ -9,11 +9,6 @@ router.get('/',function(req,res){
 
 router.post('/sendMail',function(req,res)
 {  
-  var result = {
-    err: 1,
-    data : {}
-  }; 
-  
   admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
   .then(function(decodedToken) 
   {        
@@ -22,31 +17,49 @@ router.post('/sendMail',function(req,res)
         port: 25,       
         ignoreTLS : true          
       });      
-    var mailOptions = {
-        from: req.body.from,
-        to: req.body.to,
-        cc : req.body.cc,
-        subject: req.body.subject,
-        html: req.body.html + '<br><br>Sent by : ' + decodedToken.uid + `<br>Source : Imperium | ` + req.body.source
-      }
-
-    transporter.sendMail(mailOptions, function(error, info){
-      if (error) {
-        result.data.info = error;
-        res.send(error)
-      } else {
-        result.err = 0;
-        result.data.info = info;
-        res.status(200).send(info)
-      }
-    });
     
+      admin.auth().getUser(decodedToken.uid)
+      .then(function(userRecord) {
+        // See the UserRecord reference doc for the contents of userRecord.        
+        dispatchEmailWith(userRecord.displayName,decodedToken,req,res)
+
+      })
+      .catch(function(error) {        
+        dispatchEmailWith(undefined,decodedToken,req,res)
+      });
+
   }).catch(function(error) 
   {   
-    res.status(403).send('Forbidden. Please sign in.')
+    res.status(403).send('Forbidden. Please sign in : ' + error)
   });
 });
 
+function dispatchEmailWith(full_name,decodedToken,req,res)
+{
+  var mailOptions = {
+    from: (full_name)?(full_name + ' ' + decodedToken.email):decodedToken.email,
+    to: req.body.to,
+    cc : (req.body.cc)?(req.body.cc + decodedToken.email):decodedToken.email,
+    subject: req.body.subject,
+    html: req.body.html + '<br><br>Source : Imperium | ' + req.body.source
+  }
+
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+
+  transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+      result.data.info = error;
+      res.send(result)
+    } else {
+      result.err = 0;
+      result.data.info = info;
+      res.status(200).send(result)
+    }
+  });
+}
 
 module.exports = router;
 

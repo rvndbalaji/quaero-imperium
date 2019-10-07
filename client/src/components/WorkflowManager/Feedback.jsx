@@ -22,8 +22,7 @@ class Feedback extends Component {
         getIDToken().then(token=>
             {
                 axios.defaults.headers.common['Authorization'] = token
-                axios.post('/sendMail',{                    
-                    from : 'Aravind Balaji aravind.balaji@quaero.com',
+                axios.post('/sendMail',{                                        
                     to : 'aravind.balaji@quaero.com',
                     subject : `Imperium Support : ` +  issue.trim(),
                     html : `<h3>` + issue + `</h3>` + html.trim(),

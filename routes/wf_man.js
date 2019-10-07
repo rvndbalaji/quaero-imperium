@@ -615,7 +615,7 @@ var fetchWFDetails = async function (config,req,res,res_data)
       query_text = `      
       with main_view as (
       select 
-            a.WORKFLOW_ID as WORKFLOW_ID,	  
+            w.WORKFLOW_ID as WORKFLOW_ID,	  
             a.workflow_instance_id as WORKFLOW_INSTANCE_ID,
             (select STATUS from M_WORKFLOW_INSTANCE_STATUS where STATUS_ID=a.STATUS_ID) as WORKFLOW_INSTANCE_STATUS,
             w.WORKFLOW_NAME,   
@@ -623,13 +623,11 @@ var fetchWFDetails = async function (config,req,res,res_data)
             DATEDIFF(MINUTE,a.START_DT,isnull(a.END_DT,GETDATE()) ) as RUN_TIME_IN_MINS,
             w.ACTIVE_FLG,
           w.UPDATE_USER,
-          cast(w.UPDATE_DT as varchar(40)) as UPDATE_DT,
-          w.CREATE_USER,
-          cast(w.UPDATE_DT as varchar(40)) as CREATE_DT,
+          cast(w.UPDATE_DT as varchar(40)) as UPDATE_DT,          
           cast(START_DT as varchar(40)) as START_DT,
           cast(END_DT as varchar(40)) as END_DT                
       from M_TRACK_WORKFLOW_INSTANCE a
-      join M_WORKFLOW w on w.WORKFLOW_ID=a.WORKFLOW_ID
+      right join M_WORKFLOW w on w.WORKFLOW_ID=a.WORKFLOW_ID
       left join (SELECT  b.WORKFLOW_DATASET_INSTANCE_MAP_ID,coalesce(a.WORKFLOW_INSTANCE_ID,b.WORKFLOW_INSTANCE_ID) as WORKFLOW_INSTANCE_ID
                                 ,a.DATASET_INSTANCE_ID as DSI_IN
                                 ,b.DATASET_INSTANCE_ID as DSI_OUT
@@ -639,8 +637,14 @@ var fetchWFDetails = async function (config,req,res,res_data)
                                 from M_TRACK_WORKFLOW_DATASET_INSTANCE_MAP a where DATASET_INSTANCE_DIRECTION='OUTPUT' ) b 
                     on a.WORKFLOW_INSTANCE_ID=b.WORKFLOW_INSTANCE_ID            
                     ) b on a.WORKFLOW_INSTANCE_ID=b.WORKFLOW_INSTANCE_ID          
-      where ` + where_list_query_part  + `)
-      select distinct top 100 WORKFLOW_ID,WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,WORKFLOW_DESC,RUN_TIME_IN_MINS,ACTIVE_FLG,UPDATE_USER,UPDATE_DT,CREATE_USER,CREATE_DT,START_DT,END_DT from main_view where WORKFLOW_INSTANCE_ID in (select max(WORKFLOW_INSTANCE_ID) from main_view group by WORKFLOW_ID)
+      where ` + where_list_query_part  + `),
+      final(WORKFLOW_ID,WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,WORKFLOW_DESC,RUN_TIME_IN_MINS,ACTIVE_FLG,UPDATE_USER,UPDATE_DT,START_DT,END_DT) 
+      as(
+      select distinct WORKFLOW_ID,WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,WORKFLOW_DESC,RUN_TIME_IN_MINS,ACTIVE_FLG,UPDATE_USER,UPDATE_DT,START_DT,END_DT from main_view where WORKFLOW_INSTANCE_ID in (select max(WORKFLOW_INSTANCE_ID) from main_view group by WORKFLOW_ID)
+      union
+      select distinct WORKFLOW_ID,WORKFLOW_NAME,WORKFLOW_INSTANCE_ID,WORKFLOW_INSTANCE_STATUS,WORKFLOW_DESC,RUN_TIME_IN_MINS,ACTIVE_FLG,UPDATE_USER,UPDATE_DT,START_DT,END_DT from main_view 
+      where WORKFLOW_INSTANCE_ID  is NULL)
+      select top 100 * from final
       order by ` + req.query.order_by + ` ` + req.query.order_type + `;`
          
       
@@ -823,44 +827,6 @@ var getWFDatasets = async function (config,req,res,res_data)
       res.send(res_data);               
     }
 }
-
-
-var getBlockedInfo = async function (config,req,res,res_data)
-{   
-    
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
-    try{
-      //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
-
-      sql_request.input('workflow_id', req.query.workflow_id)            
-      var query_string = `
-      select BLOCKED_REASON from VW_BLOCKED_WORKFLOWS where WORKFLOW_ID = @workflow_id`;
-
-      var sql_result = sql_request.query(query_string); 
-
-      //Capture the result when the query completes
-      sql_result.then(function(result)
-      {        
-        res_data.err = 0; 
-        //Get the result and set it                
-        res_data.data = {info : result.recordset};
-        res.status(200).send(res_data);
-      })
-      .catch(err=>{
-        res_data.err = 1; 
-        res_data.data = {info : JSON.stringify(err)};
-        res.send(res_data);               
-      });
-    }
-    catch (err)
-    { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
-      res.send(res_data);               
-    }
-}
-
 
 var restageFile = async function (config,req,res,res_data)
 {   
@@ -1452,5 +1418,355 @@ var connectSQL = async function (decodedToken,req)
 
 });
 
+}
+
+var getBlockedInfo = async function (config,req,res,res_data)
+{   
+    
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+
+      sql_request.input('workflow_id', req.query.workflow_id)            
+      var query_string = `
+                            SELECT blocked_wfs.BLOCKED_REASON
+                      FROM (
+                      --Disabled WFs
+                      SELECT WORKFLOW_ID, 'Disabled' AS BLOCKED_REASON
+                      FROM M_WORKFLOW WHERE ACTIVE_FLG=0
+                      and WORKFLOW_ID = @workflow_id
+                      UNION
+
+                      --WFs with no input DS
+                      SELECT a.WORKFLOW_ID, 'No Input Dataset' AS BLOCKED_REASON
+                      FROM M_WORKFLOW a
+                      LEFT OUTER JOIN M_WORKFLOW_INPUT b
+                      ON a.WORKFLOW_ID=b.WORKFLOW_ID
+                      WHERE b.WORKFLOW_ID IS NULL
+                      and a.WORKFLOW_ID = @workflow_id
+                      UNION
+
+                      --WFs with no output DS
+                      SELECT a.WORKFLOW_ID, 'No Output Dataset' AS BLOCKED_REASON
+                      FROM M_WORKFLOW a
+                      LEFT OUTER JOIN M_WORKFLOW_OUTPUT b
+                      ON a.WORKFLOW_ID=b.WORKFLOW_ID
+                      WHERE b.WORKFLOW_ID IS NULL
+                      and a.WORKFLOW_ID = @workflow_id
+                      UNION
+
+                      --WFs with no ready/expired/pending-delete DSIs
+                      SELECT x.WORKFLOW_ID, 'No Available DSIs' AS BLOCKED_REASON
+                      FROM M_WORKFLOW x
+                      LEFT OUTER JOIN (SELECT a.*
+                        FROM M_WORKFLOW a
+                        JOIN M_WORKFLOW_INPUT b
+                        ON a.WORKFLOW_ID=b.WORKFLOW_ID
+                        JOIN (SELECT t.*, stat.STATUS
+                          FROM M_TRACK_DATASET_INSTANCE t
+                          JOIN M_DATASET_INSTANCE_STATUS stat
+                          ON t.STATUS_ID=stat.STATUS_ID
+                          WHERE stat.STATUS IN ('READY','EXPIRED','PENDING-DELETE')
+                          AND t.DATASET_INSTANCE_ID NOT IN (
+                            --Exclude dataset instances created by workflow instances that are not complete
+                            SELECT y.DATASET_INSTANCE_ID
+                            FROM M_TRACK_WORKFLOW_INSTANCE x
+                            JOIN (SELECT * FROM M_TRACK_WORKFLOW_DATASET_INSTANCE_MAP WHERE DATASET_INSTANCE_DIRECTION='OUTPUT') y
+                            ON x.WORKFLOW_INSTANCE_ID=y.WORKFLOW_INSTANCE_ID
+                            JOIN (SELECT * FROM M_WORKFLOW_INSTANCE_STATUS WHERE STATUS_PHASE<>'COMPLETE') z
+                            ON x.STATUS_ID=z.STATUS_ID)) c
+                        ON b.DATASET_ID=c.DATASET_ID
+                        LEFT OUTER JOIN (
+                          --Already successfully processed or currently being processed dataset instances for the workflow
+                          SELECT DISTINCT x.WORKFLOW_ID, y.DATASET_INSTANCE_ID
+                          FROM M_TRACK_WORKFLOW_INSTANCE x
+                          JOIN (SELECT * FROM M_TRACK_WORKFLOW_DATASET_INSTANCE_MAP WHERE DATASET_INSTANCE_DIRECTION='INPUT') y
+                          ON x.WORKFLOW_INSTANCE_ID=y.WORKFLOW_INSTANCE_ID
+                          JOIN M_WORKFLOW_INSTANCE_STATUS stat
+                          ON x.STATUS_ID=stat.STATUS_ID
+                          WHERE stat.STATUS_PHASE<>'FAILED') d
+                        ON a.WORKFLOW_ID=d.WORKFLOW_ID
+                        AND c.DATASET_INSTANCE_ID=d.DATASET_INSTANCE_ID
+                        WHERE d.WORKFLOW_ID IS NULL) y
+                      ON x.WORKFLOW_ID=y.WORKFLOW_ID
+                      WHERE y.WORKFLOW_ID IS NULL
+                      and x.WORKFLOW_ID = @workflow_id
+                      UNION
+
+                      --These are all the workflows that use the output from currently running workflows whose output dataset scope is table
+                      SELECT WORKFLOW_ID, 'Input Dataset Blocked by Running WFI Writing to DS' AS BLOCKED_REASON
+                      FROM M_WORKFLOW
+                      WHERE WORKFLOW_ID IN (
+                        --Workflow is currently running, any status besides Failed or Complete designates a workflow that is in some sort of procssing or pending state and is considered active
+                        SELECT DISTINCT z.WORKFLOW_ID
+                        FROM M_TRACK_WORKFLOW_INSTANCE x -- running WFs
+                        JOIN (SELECT * FROM M_WORKFLOW_OUTPUT WHERE DATASET_SCOPE IN ('DATASET','TABLE')) y -- running WFs' with table scope output
+                        ON x.WORKFLOW_ID=y.WORKFLOW_ID
+                        and x.WORKFLOW_ID = @workflow_id
+                        JOIN M_WORKFLOW_INPUT z -- running WFs' output is another WF's input
+                        ON y.DATASET_ID=z.DATASET_ID
+                        JOIN M_WORKFLOW_INSTANCE_STATUS stat
+                        ON x.STATUS_ID=stat.STATUS_ID
+                        WHERE stat.STATUS_PHASE NOT IN ('FAILED','COMPLETE'))
+
+                      UNION
+
+                      --These are all the workflows that write to a dataset that currently running workflow(s) consume(s) with table dataset scope
+                      SELECT WORKFLOW_ID, 'Output Dataset Blocked by Running WFI Reading from DS' AS BLOCKED_REASON
+                      FROM M_WORKFLOW
+                      WHERE WORKFLOW_ID IN (
+                        --Workflow is currently running, any status besides Failed or Complete designates a workflow that is in some sort of procssing or pending state and is considered active
+                        SELECT DISTINCT z.WORKFLOW_ID
+                        FROM M_TRACK_WORKFLOW_INSTANCE x -- running WFs
+                        JOIN (SELECT * FROM M_WORKFLOW_INPUT WHERE DATASET_SCOPE IN ('DATASET','TABLE')) y -- running WF's with table scope input
+                        ON x.WORKFLOW_ID=y.WORKFLOW_ID
+                        and x.WORKFLOW_ID = @workflow_id
+                        JOIN M_WORKFLOW_OUTPUT z -- running WFs' input is another WF's output
+                        ON y.DATASET_ID=z.DATASET_ID
+                        JOIN M_WORKFLOW_INSTANCE_STATUS stat
+                        ON x.STATUS_ID=stat.STATUS_ID
+                        WHERE stat.STATUS_PHASE NOT IN ('FAILED','COMPLETE'))
+
+                      UNION
+
+                      --These are all the workflows that write to a dataset that currently running workflow(s) write(s) to with table dataset scope
+                      SELECT WORKFLOW_ID, 'Output Dataset Blocked by Running WFI Writing to DS' AS BLOCKED_REASON
+                      FROM M_WORKFLOW
+                      WHERE WORKFLOW_ID IN (
+                        --Workflow is currently running, any status besides Failed or Complete designates a workflow that is in some sort of procssing or pending state and is considered active
+                        SELECT DISTINCT z.WORKFLOW_ID
+                        FROM M_TRACK_WORKFLOW_INSTANCE x -- running WFs
+                        JOIN (SELECT * FROM M_WORKFLOW_OUTPUT WHERE DATASET_SCOPE IN ('DATASET','TABLE')) y -- running WF's with table scope input
+                        ON x.WORKFLOW_ID=y.WORKFLOW_ID
+                        and x.WORKFLOW_ID = @workflow_id
+                        JOIN M_WORKFLOW_OUTPUT z -- running WFs' output is another WF's output
+                        ON y.DATASET_ID=z.DATASET_ID
+                        JOIN M_WORKFLOW_INSTANCE_STATUS stat
+                        ON x.STATUS_ID=stat.STATUS_ID
+                        WHERE stat.STATUS_PHASE NOT IN ('FAILED','COMPLETE'))
+
+                      UNION
+
+                      --These are all the workflows that consume a dataset with table dataset scope that currently running workflow(s) are working on
+                      SELECT a.WORKFLOW_ID, 'Input Dataset Scope Blocked by Running WFI' AS BLOCKED_REASON
+                      FROM M_WORKFLOW a
+                      JOIN M_WORKFLOW_INPUT b
+                      ON a.WORKFLOW_ID=b.WORKFLOW_ID
+                      WHERE b.DATASET_ID IN (
+                        SELECT DISTINCT z.DATASET_ID
+                        FROM M_TRACK_WORKFLOW_INSTANCE x -- running WFs
+                        JOIN M_WORKFLOW y
+                        ON x.WORKFLOW_ID=y.WORKFLOW_ID
+                        and x.WORKFLOW_ID = @workflow_id
+                        JOIN M_WORKFLOW_INPUT z -- running WFs' output is another WF's output
+                        ON y.WORKFLOW_ID=z.WORKFLOW_ID
+                        JOIN M_WORKFLOW_INSTANCE_STATUS stat
+                        ON x.STATUS_ID=stat.STATUS_ID
+                        WHERE stat.STATUS_PHASE NOT IN ('FAILED','COMPLETE')
+                        UNION
+                        SELECT DISTINCT z.DATASET_ID
+                        FROM M_TRACK_WORKFLOW_INSTANCE x -- running WFs
+                        JOIN M_WORKFLOW y
+                        ON x.WORKFLOW_ID=y.WORKFLOW_ID
+                        and x.WORKFLOW_ID = @workflow_id
+                        JOIN M_WORKFLOW_OUTPUT z -- running WFs' output is another WF's output
+                        ON y.WORKFLOW_ID=z.WORKFLOW_ID
+                        JOIN M_WORKFLOW_INSTANCE_STATUS stat
+                        ON x.STATUS_ID=stat.STATUS_ID
+                        WHERE stat.STATUS_PHASE NOT IN ('FAILED','COMPLETE'))
+                      AND b.DATASET_SCOPE IN ('DATASET','TABLE')
+
+                      UNION
+
+                      --These are all the workflows that write to a dataset with table dataset scope that currently running workflow(s) are working on
+                      SELECT a.WORKFLOW_ID, 'Output Dataset Scope Blocked by Running WFI' AS BLOCKED_REASON
+                      FROM M_WORKFLOW a
+                      JOIN M_WORKFLOW_OUTPUT b
+                      ON a.WORKFLOW_ID=b.WORKFLOW_ID
+                      WHERE b.DATASET_ID IN (
+                        SELECT DISTINCT z.DATASET_ID
+                        FROM M_TRACK_WORKFLOW_INSTANCE x -- running WFs
+                        JOIN M_WORKFLOW y
+                        ON x.WORKFLOW_ID=y.WORKFLOW_ID
+                        and x.WORKFLOW_ID = @workflow_id
+                        JOIN M_WORKFLOW_INPUT z -- running WFs' output is another WF's output
+                        ON y.WORKFLOW_ID=z.WORKFLOW_ID
+                        JOIN M_WORKFLOW_INSTANCE_STATUS stat
+                        ON x.STATUS_ID=stat.STATUS_ID
+                        WHERE stat.STATUS_PHASE NOT IN ('FAILED','COMPLETE')
+                        UNION
+                        SELECT DISTINCT z.DATASET_ID
+                        FROM M_TRACK_WORKFLOW_INSTANCE x -- running WFs
+                        JOIN M_WORKFLOW y
+                        ON x.WORKFLOW_ID=y.WORKFLOW_ID
+                        and x.WORKFLOW_ID = @workflow_id
+                        JOIN M_WORKFLOW_OUTPUT z -- running WFs' output is another WF's output
+                        ON y.WORKFLOW_ID=z.WORKFLOW_ID
+                        JOIN M_WORKFLOW_INSTANCE_STATUS stat
+                        ON x.STATUS_ID=stat.STATUS_ID
+                        WHERE stat.STATUS_PHASE NOT IN ('FAILED','COMPLETE'))
+                      AND b.DATASET_SCOPE IN ('DATASET','TABLE')
+
+                      UNION
+
+                      SELECT WORKFLOW_ID, 'Dispatch Window Condition Not Met' AS BLOCKED_REASON
+                      FROM M_WORKFLOW
+                      --These are all the workflows with dispatch windows enabled
+                      WHERE WORKFLOW_ID IN (
+                      SELECT DISTINCT WORKFLOW_ID FROM M_WORKFLOW_DISPATCH_WINDOW WHERE WINDOW_ENABLED=1)
+                      --These are all the workflows with dispatch windows enabled that meet the dispatch window criteria
+                      AND WORKFLOW_ID NOT IN (
+                        SELECT DISTINCT disp_wind.WORKFLOW_ID
+                        FROM (
+                          SELECT x.WORKFLOW_ID,
+                          CASE WHEN x.WINDOW_TYPE=4 THEN 1
+                          WHEN x.WINDOW_TYPE=8 THEN
+                            CASE WHEN x.WINDOW_SUN_FLG=1 AND DATENAME(dw, GETDATE())='Sunday' THEN 1
+                            WHEN x.WINDOW_MON_FLG=1 AND DATENAME(dw, GETDATE())='Monday' THEN 1
+                            WHEN x.WINDOW_TUE_FLG=1 AND DATENAME(dw, GETDATE())='Tuesday' THEN 1
+                            WHEN x.WINDOW_WED_FLG=1 AND DATENAME(dw, GETDATE())='Wednesday' THEN 1
+                            WHEN x.WINDOW_THU_FLG=1 AND DATENAME(dw, GETDATE())='Thursday' THEN 1
+                            WHEN x.WINDOW_FRI_FLG=1 AND DATENAME(dw, GETDATE())='Friday' THEN 1
+                            WHEN x.WINDOW_SAT_FLG=1 AND DATENAME(dw, GETDATE())='Saturday' THEN 1
+                            ELSE 0 END
+                          WHEN x.WINDOW_TYPE=16 AND x.WINDOW_INTERVAL=DATEPART(DAY,GETDATE()) THEN 1
+                          WHEN x.WINDOW_TYPE=32 THEN
+                            CASE WHEN x.WINDOW_RELATIVE_INTERVAL=1 AND (DATEPART(DAY,GETDATE())-1)/7+1=1 THEN
+                              CASE WHEN x.WINDOW_SUN_FLG=1 AND DATENAME(dw, GETDATE())='Sunday' THEN 1
+                              WHEN x.WINDOW_MON_FLG=1 AND DATENAME(dw, GETDATE())='Monday' THEN 1
+                              WHEN x.WINDOW_TUE_FLG=1 AND DATENAME(dw, GETDATE())='Tuesday' THEN 1
+                              WHEN x.WINDOW_WED_FLG=1 AND DATENAME(dw, GETDATE())='Wednesday' THEN 1
+                              WHEN x.WINDOW_THU_FLG=1 AND DATENAME(dw, GETDATE())='Thursday' THEN 1
+                              WHEN x.WINDOW_FRI_FLG=1 AND DATENAME(dw, GETDATE())='Friday' THEN 1
+                              WHEN x.WINDOW_SAT_FLG=1 AND DATENAME(dw, GETDATE())='Saturday' THEN 1
+                              ELSE 0 END
+                            WHEN x.WINDOW_RELATIVE_INTERVAL=2 AND (DATEPART(DAY,GETDATE())-1)/7+1=2 THEN
+                              CASE WHEN x.WINDOW_SUN_FLG=1 AND DATENAME(dw, GETDATE())='Sunday' THEN 1
+                              WHEN x.WINDOW_MON_FLG=1 AND DATENAME(dw, GETDATE())='Monday' THEN 1
+                              WHEN x.WINDOW_TUE_FLG=1 AND DATENAME(dw, GETDATE())='Tuesday' THEN 1
+                              WHEN x.WINDOW_WED_FLG=1 AND DATENAME(dw, GETDATE())='Wednesday' THEN 1
+                              WHEN x.WINDOW_THU_FLG=1 AND DATENAME(dw, GETDATE())='Thursday' THEN 1
+                              WHEN x.WINDOW_FRI_FLG=1 AND DATENAME(dw, GETDATE())='Friday' THEN 1
+                              WHEN x.WINDOW_SAT_FLG=1 AND DATENAME(dw, GETDATE())='Saturday' THEN 1
+                              ELSE 0 END
+                            WHEN x.WINDOW_RELATIVE_INTERVAL=4 AND (DATEPART(DAY,GETDATE())-1)/7+1=3 THEN
+                              CASE WHEN x.WINDOW_SUN_FLG=1 AND DATENAME(dw, GETDATE())='Sunday' THEN 1
+                              WHEN x.WINDOW_MON_FLG=1 AND DATENAME(dw, GETDATE())='Monday' THEN 1
+                              WHEN x.WINDOW_TUE_FLG=1 AND DATENAME(dw, GETDATE())='Tuesday' THEN 1
+                              WHEN x.WINDOW_WED_FLG=1 AND DATENAME(dw, GETDATE())='Wednesday' THEN 1
+                              WHEN x.WINDOW_THU_FLG=1 AND DATENAME(dw, GETDATE())='Thursday' THEN 1
+                              WHEN x.WINDOW_FRI_FLG=1 AND DATENAME(dw, GETDATE())='Friday' THEN 1
+                              WHEN x.WINDOW_SAT_FLG=1 AND DATENAME(dw, GETDATE())='Saturday' THEN 1
+                              ELSE 0 END
+                            WHEN x.WINDOW_RELATIVE_INTERVAL=8 AND (DATEPART(DAY,GETDATE())-1)/7+1=4 THEN
+                              CASE WHEN x.WINDOW_SUN_FLG=1 AND DATENAME(dw, GETDATE())='Sunday' THEN 1
+                              WHEN x.WINDOW_MON_FLG=1 AND DATENAME(dw, GETDATE())='Monday' THEN 1
+                              WHEN x.WINDOW_TUE_FLG=1 AND DATENAME(dw, GETDATE())='Tuesday' THEN 1
+                              WHEN x.WINDOW_WED_FLG=1 AND DATENAME(dw, GETDATE())='Wednesday' THEN 1
+                              WHEN x.WINDOW_THU_FLG=1 AND DATENAME(dw, GETDATE())='Thursday' THEN 1
+                              WHEN x.WINDOW_FRI_FLG=1 AND DATENAME(dw, GETDATE())='Friday' THEN 1
+                              WHEN x.WINDOW_SAT_FLG=1 AND DATENAME(dw, GETDATE())='Saturday' THEN 1
+                              ELSE 0 END
+                            WHEN x.WINDOW_RELATIVE_INTERVAL=16 AND (DATEPART(DAY,GETDATE())-1)/7+1=5 THEN
+                              CASE WHEN x.WINDOW_SUN_FLG=1 AND DATENAME(dw, GETDATE())='Sunday' THEN 1
+                              WHEN x.WINDOW_MON_FLG=1 AND DATENAME(dw, GETDATE())='Monday' THEN 1
+                              WHEN x.WINDOW_TUE_FLG=1 AND DATENAME(dw, GETDATE())='Tuesday' THEN 1
+                              WHEN x.WINDOW_WED_FLG=1 AND DATENAME(dw, GETDATE())='Wednesday' THEN 1
+                              WHEN x.WINDOW_THU_FLG=1 AND DATENAME(dw, GETDATE())='Thursday' THEN 1
+                              WHEN x.WINDOW_FRI_FLG=1 AND DATENAME(dw, GETDATE())='Friday' THEN 1
+                              WHEN x.WINDOW_SAT_FLG=1 AND DATENAME(dw, GETDATE())='Saturday' THEN 1
+                              ELSE 0 END
+                            ELSE 0 END
+                          ELSE 0 END AS VALID_DAY_OF_WEEK_FLG,
+                          CASE WHEN ISNULL(x.WINDOW_START_TIME,'00:00:00.0000000')<=CAST(SYSDATETIME() AS TIME) THEN 1
+                            WHEN x.WINDOW_START_TIME>x.WINDOW_END_TIME AND ISNULL(x.WINDOW_END_TIME,'23:59:59.9999999')>=CAST(SYSDATETIME() AS TIME) THEN 1
+                            ELSE 0 END AS VALID_START_TIME_FLG,
+                          CASE WHEN ISNULL(x.WINDOW_END_TIME,'23:59:59.9999999')>=CAST(SYSDATETIME() AS TIME) THEN 1
+                            WHEN x.WINDOW_START_TIME>x.WINDOW_END_TIME AND ISNULL(x.WINDOW_START_TIME,'00:00:00.0000000')<=CAST(SYSDATETIME() AS TIME) THEN 1
+                            ELSE 0 END AS VALID_END_TIME_FLG,
+                          CASE WHEN ISNULL(x.WINDOW_SUBDAY_TYPE,0)=0 THEN 1
+                            WHEN x.WINDOW_SUBDAY_TYPE=2 AND DATEDIFF(SECOND,ISNULL(y.LAST_RUN_TIME,'2016-01-01'),GETDATE())>=x.WINDOW_SUBDAY_INTERVAL THEN 1
+                            WHEN x.WINDOW_SUBDAY_TYPE=4 AND DATEDIFF(MINUTE,ISNULL(y.LAST_RUN_TIME,'2016-01-01'),GETDATE())>=x.WINDOW_SUBDAY_INTERVAL THEN 1
+                            WHEN x.WINDOW_SUBDAY_TYPE=8 AND DATEDIFF(HOUR,ISNULL(y.LAST_RUN_TIME,'2016-01-01'),GETDATE())>=x.WINDOW_SUBDAY_INTERVAL THEN 1
+                            ELSE 0 END AS VALID_INTERVAL_FLG,
+                          CASE WHEN x.WINDOW_RECURRENCE_FACTOR>1 AND x.WINDOW_TYPE=8 AND DATEDIFF(WEEK,y.LAST_RUN_TIME,GETDATE())<x.WINDOW_RECURRENCE_FACTOR THEN 0
+                            WHEN x.WINDOW_RECURRENCE_FACTOR>1 AND x.WINDOW_TYPE IN (16,32) AND DATEDIFF(MONTH,y.LAST_RUN_TIME,GETDATE())<x.WINDOW_RECURRENCE_FACTOR THEN 0
+                            ELSE 1 END AS VALID_RECURRENCE_FLG
+                          FROM (SELECT * FROM M_WORKFLOW_DISPATCH_WINDOW WHERE WINDOW_ENABLED=1) x
+                          LEFT OUTER JOIN (SELECT t.WORKFLOW_ID, MAX(t.START_DT) AS LAST_RUN_TIME, COUNT(*) AS PROCESS_CNT
+                            FROM M_TRACK_WORKFLOW_INSTANCE t
+                            JOIN M_WORKFLOW_INSTANCE_STATUS stat
+                            ON t.STATUS_ID=stat.STATUS_ID
+                            WHERE stat.STATUS_PHASE<>'FAILED'
+                            AND CONVERT(VARCHAR(8),t.START_DT,112)=CONVERT(VARCHAR(8),GETDATE(),112)
+                            GROUP BY t.WORKFLOW_ID, CONVERT(VARCHAR(8),t.START_DT,120)) y
+                          ON x.WORKFLOW_ID=y.WORKFLOW_ID
+                          and x.WORKFLOW_ID = @workflow_id
+                          ) disp_wind
+                        WHERE disp_wind.VALID_DAY_OF_WEEK_FLG+disp_wind.VALID_START_TIME_FLG+disp_wind.VALID_END_TIME_FLG+disp_wind.VALID_INTERVAL_FLG+disp_wind.VALID_RECURRENCE_FLG=5)
+
+                      UNION
+
+                      --WF Client Disabled
+                      SELECT a.WORKFLOW_ID,'Client Disabled' AS BLOCKED_REASON
+                      FROM M_WORKFLOW a
+                      JOIN M_CLIENT b
+                      ON a.CLIENT_ID=b.ID
+                      WHERE b.ACTIVE_FLG=0
+                      and a.WORKFLOW_ID = @workflow_id
+
+                      UNION
+
+                      --WFs with disabled input DS
+                      SELECT a.WORKFLOW_ID, 'Disabled Input Dataset' + CASE WHEN COUNT(DISTINCT c.DATASET_ID)>1 THEN 's:' ELSE ': ' END + dbo.GROUP_CONCAT(c.DATASET_ID) AS BLOCKED_REASON
+                      FROM M_WORKFLOW a
+                      JOIN M_WORKFLOW_INPUT b
+                      ON a.WORKFLOW_ID=b.WORKFLOW_ID
+                      JOIN (SELECT * FROM M_DATASET WHERE ACTIVE_FLG=0) c
+                      ON b.DATASET_ID=c.DATASET_ID
+                      and a.WORKFLOW_ID = @workflow_id
+                      GROUP BY a.WORKFLOW_ID
+
+                      UNION
+
+                      --WFs with disabled output DS
+                      SELECT a.WORKFLOW_ID, 'Disabled Output Dataset' + CASE WHEN COUNT(DISTINCT c.DATASET_ID)>1 THEN 's: ' ELSE ': ' END + dbo.GROUP_CONCAT(c.DATASET_ID) AS BLOCKED_REASON
+                      FROM M_WORKFLOW a
+                      JOIN M_WORKFLOW_OUTPUT b
+                      ON a.WORKFLOW_ID=b.WORKFLOW_ID
+                      and a.WORKFLOW_ID = @workflow_id
+                      JOIN (SELECT * FROM M_DATASET WHERE ACTIVE_FLG=0) c
+                      ON b.DATASET_ID=c.DATASET_ID
+                      GROUP BY a.WORKFLOW_ID
+
+                      ) blocked_wfs
+                      JOIN M_WORKFLOW wf
+                      ON blocked_wfs.WORKFLOW_ID=wf.WORKFLOW_ID
+                      and wf.WORKFLOW_ID = @workflow_id
+                      ORDER BY wf.WORKFLOW_ID`;
+
+      var sql_result = sql_request.query(query_string); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.err = 1; 
+      res_data.data = {info : err};
+      res.send(res_data);               
+    }
 }
 module.exports = router;

@@ -41,7 +41,7 @@ class DatasetsTable extends PureComponent {
         if(len<=0)
         {
             return (
-                <div align='left'  style={{color : 'var(--primary_dark)',marginLeft : '0.4rem'}}> 
+                <div align='left'  style={{color : 'var(--secondary_dark)',marginLeft : '0.4rem'}}> 
                             <h4>Datasets</h4>
                 <span><i>This workflow has no input/output datasets</i></span>
                 </div>                

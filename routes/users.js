@@ -7,6 +7,12 @@ const { check, validationResult } = require('express-validator/check');
 router.post('/register',[
     check('email').isEmail(),    
 ], async (req,res) => {
+
+    var result = {
+        err: 1,
+        data : {}
+      }; 
+      
     var fullname = req.body.full_name;
     var email = req.body.email;
     var username = req.body.username;
@@ -14,24 +20,36 @@ router.post('/register',[
     
     var errors = validationResult(req); 
     if(!errors.isEmpty())
-    {
-        res.render('register',{
-            title: 'Register',
-            cssfile : '../css/index.css',
-            cssanimate : '../frameworks/animate.css',            
-            errors : errors.array()
-        });                
+    {        
+        result.data.info = errors.array();
+        res.send(result)
     }
     else{       
-            firebase.doc('users').collection(username).doc('profile').set(
-            {
-                fullname : fullname,
-                email : email,
-                password : encrypt(password)
-            });
-        
-        //Suucessfully created new user
-        res.redirect('./login');              
+           admin.auth().createUser({
+                uid : username,
+                email,
+                emailVerified: false,                
+                password,
+                displayName:  fullname,                
+                disabled: false
+              })
+                .then(function(userRecord) {                    
+                    firebase.doc('users').collection(userRecord.uid).doc('profile').set(
+                    {
+                        fullname : fullname,
+                        email : email,
+                        password : encrypt(password)
+                    }).then(()=>{
+                        //Sucessfully created new user
+                        result.err = 0;
+                        result.data.info = 'Registration successful'
+                        res.send(result)
+                    });
+                })
+                .catch(function(error) {                  
+                  result.data.info = error
+                  res.send(result)
+                });
     }
      
 });
@@ -67,8 +85,7 @@ router.post('/login',[
             try {
                 dec_pass = decrypt(user_data.password);
             } catch (error) {
-                result.data = {info : "FATAL DECRYPT ERROR : Please report to admin!"};                                        
-                res.clearCookie('authToken');
+                result.data = {info : "FATAL DECRYPT ERROR : Please report to admin!"};                                                        
                 res.send(result);
                 return;
             }
@@ -80,8 +97,7 @@ router.post('/login',[
                 res.send(result);                                                                            
             }
             else{
-                result.data = {info : "Invalid password"}
-                res.clearCookie('authToken');
+                result.data = {info : "Invalid password"}                
                 res.send(result);
             }
                

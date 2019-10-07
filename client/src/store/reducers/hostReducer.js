@@ -11,8 +11,7 @@ const hostReducer = (state = initState,action) =>
        case 'SET_HOSTS' :            
             return {
                 ...state,                
-                hosts : action.host_list,
-                isLoading : false
+                hosts : action.host_list                
             }  
         case 'SET_HOST_ALERT' :
             if(!action.msg)

@@ -121,42 +121,28 @@ refreshTimeout;
             )            
         }        
 
-        let BlockStatus = '';        
+        let BlockStatus = '';                
         if(this.props.BlockStatus)
-        {
+        {            
             let blockRows = this.props.BlockStatus;
             let block_reasons = []        
             
-            if(this.props.workflowResult && !this.props.workflowResult[0].WORKFLOW_INSTANCE_STATUS.match('COMPLETE.*|FAILED.*'))
-            {
-                 BlockStatus =  ''
-            }
-            else
-            {                        
-                if(blockRows.length>0)
-                {           
-                    if(blockRows.length===1 && blockRows[0].BLOCKED_REASON.match("No Available DSIs"))     
+            if(blockRows.length>0)
+                {                              
+                    for(var i=0; i<blockRows.length; i++)
                     {
-                        BlockStatus = ''
-                    }
-                    else 
-                    {
-                        for(var i=0; i<blockRows.length; i++)
-                        {
-                            block_reasons.push(blockRows[i].BLOCKED_REASON)
-                        }                         
-                        BlockStatus =  <span className='text-danger'>{block_reasons.join(', ')}</span>
-                    }
+                        block_reasons.push(blockRows[i].BLOCKED_REASON)
+                    }                         
+                    BlockStatus =  <span className='text-danger'>{block_reasons.join(', ')}</span>                                        
                 }              
                 else
                 {
                     //If there the workflow is not blocked and not executing, it implies
                     //that the workflow is waiting to be dispatched
                     BlockStatus =  <span className='font-weight-bold'><i>Awaiting Dispatch</i></span>
-                }
-                
-            }                    
+                }           
         }
+        
         
         return (            
             <div align='center'>
@@ -183,18 +169,17 @@ refreshTimeout;
                     <WorkflowResult type='view' wf_list={this.props.workflowResult}/>                                                
                     <Row className='justify-content-start ml-2'  style={{zoom:0.9,marginRight :'-1.8rem'}}>
                         <Col lg='auto' md='auto' sm='auto'>
-                        <b>                           
+                        <b>                                          
                             {BlockStatus}
                         </b>                        
                         </Col>
                         <Col lg='auto' md='auto' sm='auto' className='ml-auto'>
-                            <ReviewRequestModal                             
-                            button_disable = {!this.props.workflowResult}         
+                            <ReviewRequestModal                                                         
                             template = {WF_Detail_Template}                   
                             />
                         </Col>
                         <Col lg='auto' md='auto' sm='auto'>
-                            <ActivateWorkflow  wf_details={wf_details} act_flag={(this.props.workflowResult && this.props.workflowResult[0].WF_ACTIVE_FLG===1)} disabled={(!this.props.workflowResult) || (this.props.viewRefreshProgress===100)} postDispatchMethod={()=>this.props.setViewMonitor(wf_details)}/>
+                            <ActivateWorkflow  wf_details={wf_details} act_flag={(this.props.workflowResult && this.props.workflowResult[0].WF_ACTIVE_FLG===1)} disabled={(this.props.viewRefreshProgress===100)} postDispatchMethod={()=>this.props.setViewMonitor(wf_details)}/>
                         </Col>
                     </Row>    
 
@@ -238,7 +223,7 @@ refreshTimeout;
 }
 
 const mapStateToProps  = (state) =>
-{   
+{       
     return{
         workflowResult : state.view.latestInstance,                
         alert : state.view.alertView,

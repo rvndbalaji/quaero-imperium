@@ -35,22 +35,25 @@ export const setHostListener = () =>
                     dispatch({type: 'SET_METASTORE_LIST', metastoreList : []});    
                 }
                 dispatch({type : 'SET_HOSTS',host_list :configured_hosts})                
+                
             }
             else{
-                dispatch({type: 'SET_METASTORE_LIST', metastoreList : []});    
+                dispatch({type: 'SET_METASTORE_LIST', metastoreList : []});                                    
             }
+
+            dispatch(loadComplete())                
                
         });    
     }
 }
 
-/*export const loadComplete = () =>
+export const loadComplete = () =>
 {    
     return (dispatch,getState) =>
     {
        dispatch({type : 'LOAD_COMPLETE'})
     }
-}*/
+}
 
 export const deleteHost = (host_id) =>
 {    

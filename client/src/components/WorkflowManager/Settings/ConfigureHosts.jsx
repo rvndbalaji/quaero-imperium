@@ -126,10 +126,10 @@ export default function ConfigureHosts() {
                         <Button variant='primary' onClick={()=>handleShow('Add',undefined)}>
                             Add a new server
                         </Button>                        
-                        <Row id="server_list" className="mt-2 mb-2">
-                        <Col lg='auto' md='auto' sm='auto' xs='auto'>
-                            {ConfiguredHostList || 'No hosts configured'}
-                        </Col>
+                        <Row id="server_list" className="mt-2 mb-2" style={{marginLeft:'-1.4rem'}}>
+                            <Col lg='auto' md='auto' sm='auto' xs='auto'>
+                                {ConfiguredHostList || 'No hosts configured'}
+                            </Col>
                         </Row>
                     </div>                    
                     </Col>

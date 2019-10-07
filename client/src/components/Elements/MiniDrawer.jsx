@@ -19,6 +19,7 @@ import Search from '../WorkflowManager/Search';
 import Monitor from '../WorkflowManager/Monitor';
 import Settings from '../WorkflowManager/Settings'
 import Feedback from '../WorkflowManager/Feedback'
+import Profile from '../WorkflowManager/Profile'
 
 
 const ico_size =  '1.3em'
@@ -27,7 +28,7 @@ const menu_color = '#263238'
 const logo_back_color = menu_color
 const ico_color = '#ffffff'
 const ico_text_color = ico_color
-const sections = [<div>Dashboard</div>,<Search />,<Monitor/>,<div>Reporting</div>,<div>Queries</div>,<div>Profile</div>,<div>Admin</div>,<Settings />,<Feedback/>];
+const sections = [<div>Dashboard</div>,<Search />,<Monitor/>,<div>Reporting</div>,<div>Queries</div>,<Profile />,<div>Admin</div>,<Settings />,<Feedback/>];
 const icon_name = [<FaTh size={ico_size} color={ico_color}/>,<FaSearch size={ico_size} color={ico_color}/>,<FaTachometerAlt size={ico_size} color={ico_color}/>,<FaChartPie size={ico_size} color={ico_color}/>, <FaDatabase size={ico_size} color={ico_color}/>,<FaUserAlt size={ico_size} color={ico_color}/>,<FaShieldAlt size={ico_size} color={ico_color}/>,<FaTools size={ico_size} color={ico_color}/>,<FaComments size={ico_size} color={ico_color}/>]        
 
 

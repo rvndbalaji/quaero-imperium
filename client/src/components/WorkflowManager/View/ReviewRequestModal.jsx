@@ -4,17 +4,27 @@ import Modal from 'react-bootstrap/Modal';
 import axios from 'axios'
 import {getIDToken} from '../../../components/Auth/getIDToken'
 import Button from 'react-bootstrap/Button';
+import { FaRegComment } from 'react-icons/fa';
+import Alert from 'react-bootstrap/Alert';
 export default function ReviewRequestModal(props) {
     
     const [show, setShow] = useState(false);        
     const [review, setReview] = useState({
         review_email : '',
-        review_body : ''
+        review_body : '',
+        alert : {
+            msg : '',
+            color : 'danger'
+        }
     });   
   
     const handleClose = () => {                  
         setShow(false);
         setReview({
+            alert : {
+                msg : '',
+                color : 'danger'
+            },
             review_email : '',
             review_body : ''
         })
@@ -35,33 +45,64 @@ export default function ReviewRequestModal(props) {
     
     const sendMail=(to,html,detailTemplate)=>
     {
+        setReview({
+            ...review,
+            alert : {
+                msg : 'Sending request...',
+                color : 'info'
+            }
+        })
         getIDToken().then(token=>
             {
                 axios.defaults.headers.common['Authorization'] = token
-                axios.post('/sendMail',{                    
-                    from : 'Aravind Balaji aravind.balaji@quaero.com',
-                    to : to.trim().toLowerCase(),
-                    cc : `aravind.balaji@quaero.com`,
+                axios.post('/sendMail',{                                        
+                    to : to.trim().toLowerCase(),                    
                     subject : `Review Request for Workflow`,
                     html : html.trim() + detailTemplate,
                     source : 'WV - Review Request'
-                });                 
+                }).then(res=>{
+                    let resp = res.data;                    
+                    if(resp.err===1)
+                    {
+                        setReview({
+                            ...review,
+                            alert : {
+                                msg : JSON.stringify(resp.data.info),
+                                color : 'danger'
+                            }
+                        })
+                    }
+                    else
+                    {
+                      handleClose();
+                    }                  
+                }).catch(err=>{                                        
+                    setReview({
+                        ...review,
+                        alert : {
+                            msg : err.toString(),
+                            color : 'danger'
+                        }
+                    })
+                });
+                
             });   
-      
-        handleClose();            
     }
-    
+        let myAlert = (review.alert.msg!=='')?(<Alert style={{wordBreak :'break-all'}} variant={review.alert.color}>{review.alert.msg}</Alert>):'';
+         
         return (
-            <div>
-                <Button variant='primary'  onClick={handleShow} disabled={props.button_disable}>
-                        Request Review
-                </Button>
+            <div>                               
+                <Button variant='primary' onClick={handleShow} disabled={props.button_disable}>                                        
+                        <FaRegComment className='mb-1'/>
+                        <span style={{whiteSpace : 'pre'}}>  Request Review</span>                    
+                </Button>   
                 <Modal show={show} onHide={handleClose} backdrop='static' backdropClassName='my_modal_backdrop'>
                         <Modal.Header closeButton>
                             <Modal.Title>Request workflow review</Modal.Title>
                         </Modal.Header>
 
                         <Modal.Body>
+                        {myAlert}
                         Request someone to review this workflow. The user will receive the workflow details and link to this page via email/notification
                             <br/><br/>
                             <Form>
