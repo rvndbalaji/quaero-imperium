@@ -11,7 +11,7 @@ class WF_Main extends Component {
         //Dispatch the following actions
         //Register listener for monitors
          this.props.setHostListener()   
-         this.props.setMonitorListener()              
+         this.props.setMonitorListener()                       
        
     }
     render() {                

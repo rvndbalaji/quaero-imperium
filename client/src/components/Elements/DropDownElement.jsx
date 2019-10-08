@@ -34,7 +34,7 @@ import { changeOption} from '../../store/actions/searchActions'
         {
             //If theres only one element, select the first item in the list-->-----------V
             return(            
-                <Dropdown.Item href='#'  key={this.props.option_name + '_' + item} onClick={this.handleItemSelect(this.props.option_name,item)}>{visible_name}</Dropdown.Item>                                               
+                <Dropdown.Item href='#'  key={this.props.option_name + '_' + item} onClick={()=>this.handleItemSelect(this.props.option_name,item)}>{visible_name}</Dropdown.Item>                                               
                 );
         }
         else{

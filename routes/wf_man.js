@@ -254,6 +254,31 @@ router.get('/wf/entity',function(req,res)
 
 
 
+router.post('/toggleJob',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          toggleJob(config,req,res,result);  
+        }
+        else{
+          reconnectAndCallback(decodedToken,req,res,config,toggleJob);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
 router.get('/wf/params',function(req,res)
 {  
   var result = {
@@ -384,7 +409,7 @@ router.get('/wf/precompile',function(req,res)
 
 
 //Get the server stats given the servername and all the metastores
-router.get('/stats',function(req,res)
+router.get('/wf/stats',function(req,res)
 {  
   var result = {
     err: 1,
@@ -397,11 +422,37 @@ router.get('/stats',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in global_conn_pool)        
         {
-          getServerStats(config,req,res,result);  
+          getWorkflowStats(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (GETSTAT)'}
-          res.send(result);
+          reconnectAndCallback(decodedToken,req,res,config,getWorkflowStats);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
+//Get the server stats given the servername and all the metastores
+router.get('/jobStatus',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getJobStatus(config,req,res,result);  
+        }
+        else{
+          reconnectAndCallback(decodedToken,req,res,config,getJobStatus);
         }
     });
   }).catch(function(error) 
@@ -498,7 +549,7 @@ router.post('/getColumns',function(req,res){
 
 
 
-var getServerStats = async function (config,req,res,res_data)
+var getWorkflowStats = async function (config,req,res,res_data)
 {   
   await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -506,18 +557,20 @@ var getServerStats = async function (config,req,res,res_data)
       const sql_request = global_conn_pool[JSON.stringify(config)].request();
       
 
-      var sql_result;
-      if(req.query.type=='running')
-      {
-        sql_result = sql_request.query("with ONE (WORKFLOW_NAME,WORKFLOW_INSTANCE_ID) AS ( 	select WORKFLOW_NAME,WORKFLOW_INSTANCE_ID as WORKFLOW_INSTANCE_ID from VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_INSTANCE_STATUS not like 'FAILED%' and WORKFLOW_INSTANCE_STATUS not like 'COMPLETE%' ), final (WORKFLOW_NAME,WID) as (select A.WORKFLOW_NAME,max(A.WORKFLOW_INSTANCE_ID) as WID from ONE A join vw_WORKFLOW_EXECUTION_STATUS B on A.WORKFLOW_INSTANCE_ID = B.WORKFLOW_INSTANCE_ID group by A.WORKFLOW_NAME) select count(WID) as COUNT from final");
-      }
-      else if(req.query.type=='failed')
-      {
-        sql_result = sql_request.query("with ONE (WORKFLOW_NAME,WORKFLOW_INSTANCE_ID) AS ( 	select WORKFLOW_NAME,WORKFLOW_INSTANCE_ID as WORKFLOW_INSTANCE_ID from VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_INSTANCE_STATUS like 'FAILED%'), final (WORKFLOW_NAME,WID) as (select A.WORKFLOW_NAME,max(A.WORKFLOW_INSTANCE_ID) as WID from ONE A join vw_WORKFLOW_EXECUTION_STATUS B on A.WORKFLOW_INSTANCE_ID = B.WORKFLOW_INSTANCE_ID group by A.WORKFLOW_NAME) select count(WID) as COUNT from final");
-      }
-      else{
-        throw "Invalid workflow type. Available types are 'running', 'failed'";        
-      }      
+      var sql_result = sql_request.query(`
+      DECLARE @STAT_TEMP TABLE (
+        STAT varchar(max),
+        COUNT bigint  
+      )
+      ;with ONE (WORKFLOW_NAME,WORKFLOW_INSTANCE_ID) AS ( select WORKFLOW_NAME,WORKFLOW_INSTANCE_ID as WORKFLOW_INSTANCE_ID from VW_WORKFLOW_EXECUTION_STATUS	where WORKFLOW_INSTANCE_STATUS not like 'FAILED%' and WORKFLOW_INSTANCE_STATUS not like 'COMPLETE%'), final (WORKFLOW_NAME,WID) as (select A.WORKFLOW_NAME,max(A.WORKFLOW_INSTANCE_ID) as WID from ONE A join vw_WORKFLOW_EXECUTION_STATUS B on A.WORKFLOW_INSTANCE_ID = B.WORKFLOW_INSTANCE_ID group by A.WORKFLOW_NAME) 
+        INSERT INTO @STAT_TEMP ( STAT, COUNT )
+        select 'RUNNING' as STAT, count(WID) as COUNT from final
+      
+      ;with ONE (WORKFLOW_NAME,WORKFLOW_INSTANCE_ID) AS (	select WORKFLOW_NAME,WORKFLOW_INSTANCE_ID as WORKFLOW_INSTANCE_ID from VW_WORKFLOW_EXECUTION_STATUS where WORKFLOW_INSTANCE_STATUS like 'FAILED%'), final (WORKFLOW_NAME,WID) as (select A.WORKFLOW_NAME,max(A.WORKFLOW_INSTANCE_ID) as WID from ONE A join vw_WORKFLOW_EXECUTION_STATUS B on A.WORKFLOW_INSTANCE_ID = B.WORKFLOW_INSTANCE_ID group by A.WORKFLOW_NAME)
+        INSERT INTO @STAT_TEMP ( STAT, COUNT )
+        select 'FAILED' as STAT, count(WID) as COUNT from final
+      
+      select STAT,COUNT from @STAT_TEMP`);
       
         //Capture the result when the query completes
         sql_result.then(function(result)
@@ -1137,23 +1190,6 @@ var getPrecompile = async function (config,req,res,res_data)
     }
 }
 
-    /*  JOBS
-    SELECT    
-    j.name AS job_name,        
-    Js.step_name
-FROM msdb.dbo.sysjobactivity ja 
-LEFT JOIN msdb.dbo.sysjobhistory jh ON ja.job_history_id = jh.instance_id
-JOIN msdb.dbo.sysjobs j ON ja.job_id = j.job_id
-JOIN msdb.dbo.sysjobsteps js
-    ON ja.job_id = js.job_id
-    AND ISNULL(ja.last_executed_step_id,0)+1 = js.step_id
-WHERE
-  ja.session_id = (
-    SELECT TOP 1 session_id FROM msdb.dbo.syssessions ORDER BY agent_start_date DESC
-  )
-AND start_execution_date is not null
-AND stop_execution_date is null;
-*/
 
 
 var getMetastores = async function (config,req,res,res_data)
@@ -1185,6 +1221,134 @@ var getMetastores = async function (config,req,res,res_data)
       }
 }
 
+var getJobStatus = async function (config,req,res,res_data)
+{     
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+          //Prepare an SQL request
+          const sql_request = global_conn_pool[JSON.stringify(config)].request();          
+          var sql_result = sql_request.query(`
+          DECLARE @JOB_NAME_TEMP TABLE (
+            job_names varchar(max),
+            metastore varchar(max)
+          )
+          DECLARE @JOB_DETAILTEMP TABLE
+                         (job_id               UNIQUEIDENTIFIER NOT NULL,  
+                         last_run_date         INT              NOT NULL,  
+                         last_run_time         INT              NOT NULL,  
+                         next_run_date         INT              NOT NULL,  
+                         next_run_time         INT              NOT NULL,  
+                         next_run_schedule_id  INT              NOT NULL,  
+                         requested_to_run      INT              NOT NULL, 
+                         request_source        INT              NOT NULL,  
+                         request_source_id     sysname          COLLATE database_default NULL,  
+                         running               INT              NOT NULL, 
+                         current_step          INT              NOT NULL,  
+                         current_retry_attempt INT              NOT NULL,  
+                         job_state             INT              NOT NULL) 
+          DECLARE @MyCursor CURSOR
+          DECLARE @MyField VARCHAR(MAX)
+          BEGIN
+              SET @MyCursor = CURSOR FOR
+              select NAME from sysdatabases where NAME like '%_metastore'
+              OPEN @MyCursor 
+              FETCH NEXT FROM @MyCursor 
+              INTO @MyField
+              WHILE @@FETCH_STATUS = 0
+              BEGIN     
+                insert into @JOB_NAME_TEMP (job_names, metastore)
+                select name as job_names, @MyField as metastore FROM msdb.dbo.sysjobs jobs
+                where jobs.name like '%' + @MyField + '%'
+              FETCH NEXT FROM @MyCursor 
+              INTO @MyField 
+              END; 
+              CLOSE @MyCursor
+              DEALLOCATE @MyCursor
+          END;
+          insert into @JOB_DETAILTEMP
+          EXEC master.dbo.xp_sqlagent_enum_jobs 1,dbo;
+          select  name as NAME,metastore as METASTORE,enabled as ENABLED,running as RUNNING,
+          case 
+            when job_state = 0 then 'Unknown' 
+            when job_state = 1 then 'Executing' 
+            when job_state = 2 then 'Waiting for thread' 
+            when job_state = 3 then 'Between retries' 
+            when job_state = 4 then 'Idle' 
+            when job_state = 5 then 'Suspended' 
+            when job_state = 7 then 'Performing completion actions' 
+          else 'Invalid' end as JOB_STATUS
+          from msdb.dbo.sysjobs jb
+          inner join @JOB_DETAILTEMP tmp on tmp.job_id = jb.job_id
+          inner join @JOB_NAME_TEMP nm on jb.name=nm.job_names
+          order by name asc
+          `);
+
+          //Capture the result when the query completes
+          sql_result.then(function(result)
+          {                    
+            res_data.err = 0;             
+            //Get the result and set it                
+            res_data.data = {info : result.recordset};
+            res.status(200).send(res_data);
+          }).catch(err=>{                  
+            res_data.err = 1; 
+            res_data.data = {info : err};
+            res.send(res_data);        
+          });
+      }
+      catch (err)
+      {
+        res_data.err = 1; 
+        res_data.data = {info : err};
+        res.send(res_data);               
+      }
+}
+
+
+var toggleJob = async function (config,req,res,res_data)
+{     
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+          //Prepare an SQL request
+          const sql_request = global_conn_pool[JSON.stringify(config)].request();                        
+          var sql_result;                    
+          //Check for both true and false, return error incase it undefined or some other value                                       
+          sql_request.input('job_name',req.body.job_name)
+          if(req.body.act_flag==1)    
+          {
+            sql_result = sql_request.execute('sp_start_job');
+          }
+          else if(req.body.act_flag==0)    
+          {              
+            sql_result = sql_request.execute('sp_stop_job');          
+          }      
+          else
+          {
+            res_data.err = 1; 
+            res_data.data = {info : 'Invalid option. Accepts 1 or 0'};
+            res.send(res_data);       
+            return; 
+          }
+          //Capture the result when the query completes
+          sql_result.then(function(result)
+          {                    
+            res_data.err = 0;             
+            //Get the result and set it                
+            res_data.data = {info : result.returnValue};            
+            res.send(res_data);
+          }).catch(err=>{                  
+            res_data.err = 1; 
+            res_data.data = {info : err};
+            res.status(200).send(res_data);        
+          });
+      }
+      catch (err)
+      {
+        res_data.err = 1; 
+        res_data.data = {info : 'Something went wrong'};
+        res.send(res_data);               
+      }
+}
 
 var setWorkflowActiveFlag = async function (config,req,res,res_data)
 {     

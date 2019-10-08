@@ -208,6 +208,10 @@ a:visited {
   border-color:var(--primary_dark);
 }
 
+.gray_hover:hover
+{
+  background-color: lightgray;
+}
 
 .black_text
 {

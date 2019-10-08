@@ -10,7 +10,7 @@ import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItem from '@material-ui/core/ListItem';
-import {FaTh,FaTachometerAlt,FaShieldAlt, FaTools, FaSearch,FaUserAlt,FaChartPie, FaDatabase,FaChevronRight, FaChevronLeft,FaComments} from "react-icons/fa";
+import {FaServer,FaTachometerAlt,FaShieldAlt, FaTools, FaSearch,FaUserAlt,FaChartPie, FaDatabase,FaChevronRight, FaChevronLeft,FaComments} from "react-icons/fa";
 
 import {Link} from 'react-router-dom'
 import quaero_logo from '../../images/q_logo_full.png'
@@ -20,6 +20,8 @@ import Monitor from '../WorkflowManager/Monitor';
 import Settings from '../WorkflowManager/Settings'
 import Feedback from '../WorkflowManager/Feedback'
 import Profile from '../WorkflowManager/Profile'
+import Servers from '../WorkflowManager/Servers';
+
 
 
 const ico_size =  '1.3em'
@@ -28,8 +30,8 @@ const menu_color = '#263238'
 const logo_back_color = menu_color
 const ico_color = '#ffffff'
 const ico_text_color = ico_color
-const sections = [<div>Dashboard</div>,<Search />,<Monitor/>,<div>Reporting</div>,<div>Queries</div>,<Profile />,<div>Admin</div>,<Settings />,<Feedback/>];
-const icon_name = [<FaTh size={ico_size} color={ico_color}/>,<FaSearch size={ico_size} color={ico_color}/>,<FaTachometerAlt size={ico_size} color={ico_color}/>,<FaChartPie size={ico_size} color={ico_color}/>, <FaDatabase size={ico_size} color={ico_color}/>,<FaUserAlt size={ico_size} color={ico_color}/>,<FaShieldAlt size={ico_size} color={ico_color}/>,<FaTools size={ico_size} color={ico_color}/>,<FaComments size={ico_size} color={ico_color}/>]        
+const sections = [<Search />,<Monitor/>,<div>Reporting</div>,<div>Queries</div>,<Servers />,<Profile />,<div>Admin</div>,<Settings />,<Feedback/>];
+const icon_name = [<FaSearch size={ico_size} color={ico_color}/>,<FaTachometerAlt size={ico_size} color={ico_color}/>,<FaChartPie size={ico_size} color={ico_color}/>, <FaDatabase size={ico_size} color={ico_color}/>,<FaServer size={ico_size} color={ico_color}/>,<FaUserAlt size={ico_size} color={ico_color}/>,<FaShieldAlt size={ico_size} color={ico_color}/>,<FaTools size={ico_size} color={ico_color}/>,<FaComments size={ico_size} color={ico_color}/>]        
 
 
 
@@ -100,7 +102,7 @@ export default function MiniDrawer() {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
-  const [selectedIndex, setSelectedIndex] = React.useState(1);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
   
   function handleDrawerOpen() {
     setOpen(true);
@@ -159,7 +161,7 @@ export default function MiniDrawer() {
         </div>
         <Divider />
         <List className='ml-1' style={{color:ico_text_color}}>
-          {['Dashboard','Search','Monitor','Reporting','Queries'].map((text, index) => (
+          {['Search','Monitor','Reporting','Queries','Servers'].map((text, index) => (
              <ListItem button key={text}
                 onClick={event => handleListItemClick(event, index)}
                 selected={selectedIndex === index}

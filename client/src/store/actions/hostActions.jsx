@@ -1,6 +1,7 @@
 import  firebase from '../../firebase/firebase'
 import axios from 'axios'
 import {getIDToken} from '../../components/Auth/getIDToken'
+import {getJobStats} from './serverActions'
 const CancelToken = axios.CancelToken;
 let fire = firebase.firestore().collection('root')
 let unsubscribeHost;
@@ -35,6 +36,7 @@ export const setHostListener = () =>
                     dispatch({type: 'SET_METASTORE_LIST', metastoreList : []});    
                 }
                 dispatch({type : 'SET_HOSTS',host_list :configured_hosts})                
+                dispatch(getJobStats())
                 
             }
             else{
@@ -42,7 +44,7 @@ export const setHostListener = () =>
             }
 
             dispatch(loadComplete())                
-               
+            
         });    
     }
 }

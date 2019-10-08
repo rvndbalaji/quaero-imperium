@@ -3,6 +3,7 @@ import hostReducer from './hostReducer'
 import searchReducer from './searchReducer'
 import monitorReducer from './monitorReducer'
 import viewReducer from './viewReducer'
+import serverReducer from './serverReducer'
 import  {combineReducers} from 'redux'
 
 const rootReducer = combineReducers({
@@ -10,7 +11,8 @@ const rootReducer = combineReducers({
     host : hostReducer,
     search : searchReducer,
     monitor : monitorReducer,
-    view : viewReducer
+    view : viewReducer,
+    dash : serverReducer
 });
 
 export default rootReducer;
