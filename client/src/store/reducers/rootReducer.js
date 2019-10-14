@@ -12,7 +12,7 @@ const rootReducer = combineReducers({
     search : searchReducer,
     monitor : monitorReducer,
     view : viewReducer,
-    dash : serverReducer
+    server : serverReducer
 });
 
 export default rootReducer;

@@ -8,7 +8,14 @@ import { changeOption} from '../../store/actions/searchActions'
    handleItemSelect=(opt_name,opt_value)=>
    {
        //When an item is selected, update global state
-       this.props.changeOption(opt_name,opt_value);            
+       if(!this.props.customSelectAction)
+       {
+         this.props.changeOption(opt_name,opt_value);            
+       }
+       else
+       {
+        this.props.customSelectAction(opt_name,opt_value)
+       }
    }  
   
    applyRegexIfExists =(reg_exp,originalText)=>{
@@ -29,12 +36,13 @@ import { changeOption} from '../../store/actions/searchActions'
     let Items = itemList && itemList.map((item)=>
     {               
         let visible_name = this.applyRegexIfExists(reg_exp,item);             
-     
-        if(itemList.length===1)
-        {
+             
+        
+        if(itemList.length===1 && this.props.text.startsWith('Select'))
+        {            
             //If theres only one element, select the first item in the list-->-----------V
             return(            
-                <Dropdown.Item href='#'  key={this.props.option_name + '_' + item} onClick={()=>this.handleItemSelect(this.props.option_name,item)}>{visible_name}</Dropdown.Item>                                               
+                <Dropdown.Item href='#'  key={this.props.option_name + '_' + item} onClick={this.handleItemSelect(this.props.option_name,item)}>{visible_name}</Dropdown.Item>                                               
                 );
         }
         else{

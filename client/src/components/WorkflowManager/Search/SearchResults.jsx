@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Alert from 'react-bootstrap/Alert'
 import WorkflowResult from './WorkflowResult'
-
+import {Animated} from "react-animated-css";
 class SearchResults extends Component {
 
   
@@ -15,9 +15,11 @@ class SearchResults extends Component {
                 msg = 'Something\'s fishy :\\ Please contact admin. ERR : ALERT_EMPTY'
             }
             return ( 
-                <div className='mt-5'> 
-                    <Alert variant={this.props.alert.color}>{msg}</Alert>
-                </div>                                       
+                <Animated animationIn="fadeIn" animationInDuration={500} isVisible={true}>
+                    <div className='mt-5'> 
+                        <Alert variant={this.props.alert.color}>{msg}</Alert>
+                    </div>                                       
+                </Animated>
             )            
         }        
         if(!this.props.workflowResults)
@@ -35,8 +37,11 @@ class SearchResults extends Component {
             return (                
             <div className='mt-4' align='left'> 
                 <span className='gray_text ml-3'><b>{len} workflows found | {timeTaken} sec</b></span>
-                {limit_reached}                    
-                <WorkflowResult type='search' wf_list={this.props.workflowResults}/>
+                {limit_reached}                                    
+                <Animated animationIn="fadeIn" animationInDuration={500} isVisible={true}>
+                    <WorkflowResult type='search' wf_list={this.props.workflowResults}/>   
+                </Animated>                 
+                    
             </div>)
                
         }

@@ -18,7 +18,7 @@ import SourceEntityTable from './SourceEntityTable';
 import SourceSystemTable from './SourceSystemTable';
 import ActivateWorkflow from './ActivateWorkflow';
 import WorkflowParamsTable from './WorkflowParamsTable';
-
+import {Animated} from "react-animated-css";
 class WF_View extends PureComponent {
 refreshTimeout;
 
@@ -148,75 +148,76 @@ refreshTimeout;
             <div align='center'>
                 {MyToolbar}   
                 <br />             
-                <div style={{zoom : 0.9, width:'90%'}} align='center' className='mb-5'>                    
-                    <Row className='justify-content-start'  style={{zoom:0.9,marginRight:'-1.5rem',marginLeft : '0.5rem'}}>                                                            
-                        <Col lg="auto" md="auto">                                                         
-                                {IngestionFailure}                            
-                        </Col>      
-                        <Col lg="auto" md="auto" className='ml-auto'>
-                            <span>Refresh every </span>
-                            <div className="btn-group">
-                                <input type="number" className="form-control" id="ref_box"  min={7} defaultValue={this.props.refreshInterval} onChange={(e)=>this.refreshChanged(e,wf_details)}/>
-                            </div>
-                            <span> seconds</span>
-                        </Col>        
-                    </Row>
-                    <Row className='justify-content-center mt-2 mb-1 ml-1' >                    
-                        <Col lg={12} md={12}>
-                            {LoadProgressBar}
-                        </Col>                                     
-                    </Row>                                         
-                    <WorkflowResult type='view' wf_list={this.props.workflowResult}/>                                                
-                    <Row className='justify-content-start ml-2'  style={{zoom:0.9,marginRight :'-1.8rem'}}>
-                        <Col lg='auto' md='auto' sm='auto'>
-                        <b>                                          
-                            {BlockStatus}
-                        </b>                        
-                        </Col>
-                        <Col lg='auto' md='auto' sm='auto' className='ml-auto'>
-                            <ReviewRequestModal                                                         
-                            template = {WF_Detail_Template}                   
-                            />
-                        </Col>
-                        <Col lg='auto' md='auto' sm='auto'>
-                            <ActivateWorkflow  wf_details={wf_details} act_flag={(this.props.workflowResult && this.props.workflowResult[0].WF_ACTIVE_FLG===1)} disabled={(this.props.viewRefreshProgress===100)} postDispatchMethod={()=>this.props.setViewMonitor(wf_details)}/>
-                        </Col>
-                    </Row>    
+                <Animated animationIn="fadeIn" animationInDuration={500} isVisible={true}>
+                    <div style={{zoom : 0.9, width:'90%'}} align='center' className='mb-5'>                    
+                        <Row className='justify-content-start'  style={{zoom:0.9,marginRight:'-1.5rem',marginLeft : '0.5rem'}}>                                                            
+                            <Col lg="auto" md="auto">                                                         
+                                    {IngestionFailure}                            
+                            </Col>      
+                            <Col lg="auto" md="auto" className='ml-auto'>
+                                <span>Refresh every </span>
+                                <div className="btn-group">
+                                    <input type="number" className="form-control" id="ref_box"  min={7} defaultValue={this.props.refreshInterval} onChange={(e)=>this.refreshChanged(e,wf_details)}/>
+                                </div>
+                                <span> seconds</span>
+                            </Col>        
+                        </Row>
+                        <Row className='justify-content-center mt-2 mb-1 ml-1' >                    
+                            <Col lg={12} md={12}>
+                                {LoadProgressBar}
+                            </Col>                                     
+                        </Row>                                         
+                        <WorkflowResult type='view' wf_list={this.props.workflowResult}/>                                                
+                        <Row className='justify-content-start ml-2'  style={{zoom:0.9,marginRight :'-1.8rem'}}>
+                            <Col lg='auto' md='auto' sm='auto'>
+                            <b>                                          
+                                {BlockStatus}
+                            </b>                        
+                            </Col>
+                            <Col lg='auto' md='auto' sm='auto' className='ml-auto'>
+                                <ReviewRequestModal                                                         
+                                template = {WF_Detail_Template}                   
+                                />
+                            </Col>
+                            <Col lg='auto' md='auto' sm='auto'>
+                                <ActivateWorkflow  wf_details={wf_details} act_flag={(this.props.workflowResult && this.props.workflowResult[0].WF_ACTIVE_FLG===1)} disabled={(this.props.viewRefreshProgress===100)} postDispatchMethod={()=>this.props.setViewMonitor(wf_details)}/>
+                            </Col>
+                        </Row>    
 
-                    <Row className='justify-content-center'>
-                        <Col lg={12} md={12} sm={12}>
-                            <ViewInstanceTable wf_details={wf_details}/>
-                        </Col>
-                    </Row>       
+                        <Row className='justify-content-center'>
+                            <Col lg={12} md={12} sm={12}>
+                                <ViewInstanceTable wf_details={wf_details}/>
+                            </Col>
+                        </Row>       
 
-                    <Row className='justify-content-center'>
-                        <Col lg={12} md={12} sm={12}>
-                            <StageInfoTable wf_details={wf_details}/>
-                        </Col>
-                    </Row>     
-                    <Row className='justify-content-center'>
-                        <Col lg={12} md={12} sm={12}>
-                            <DatasetsTable/>
-                        </Col>
-                    </Row>                       
-                    <Row className='justify-content-center'>
-                        <Col lg={12} md={12} sm={12}>
-                            <SourceEntityTable/>
-                        </Col>
-                    </Row>    
-                    <Row className='justify-content-center'>
-                        <Col lg={12} md={12} sm={12}>
-                            <SourceSystemTable/>
-                        </Col>
-                    </Row>   
-                    <Row className='justify-content-center'>
-                        <Col lg={12} md={12} sm={12}>
-                            <WorkflowParamsTable/>
-                        </Col>
-                    </Row>                    
-                    
-                </div>     
-
+                        <Row className='justify-content-center'>
+                            <Col lg={12} md={12} sm={12}>
+                                <StageInfoTable wf_details={wf_details}/>
+                            </Col>
+                        </Row>     
+                        <Row className='justify-content-center'>
+                            <Col lg={12} md={12} sm={12}>
+                                <DatasetsTable/>
+                            </Col>
+                        </Row>                       
+                        <Row className='justify-content-center'>
+                            <Col lg={12} md={12} sm={12}>
+                                <SourceEntityTable/>
+                            </Col>
+                        </Row>    
+                        <Row className='justify-content-center'>
+                            <Col lg={12} md={12} sm={12}>
+                                <SourceSystemTable/>
+                            </Col>
+                        </Row>   
+                        <Row className='justify-content-center'>
+                            <Col lg={12} md={12} sm={12}>
+                                <WorkflowParamsTable/>
+                            </Col>
+                        </Row>                    
+                        
+                     </div>     
+                </Animated>
             </div>
         )
     }

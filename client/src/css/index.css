@@ -15,6 +15,11 @@
     --secondary_dark : #2196F3;
 }
 
+.bg-primary 
+{
+  background-color: var(--primary_dark) !important;
+}
+
 @font-face {
     font-family: futura_bold;
     src: url('../fonts/Futura_PT/FuturaPTBook.otf');

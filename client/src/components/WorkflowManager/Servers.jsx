@@ -57,27 +57,32 @@ export default function Servers() {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
   const storeHosts = useSelector(store => store.host.hosts)  
-  const storeServerJobs = useSelector(store => store.dash.serverJobs)  
+  const storeServerJobs = useSelector(store => store.server.serverJobs)  
+  const storeServerMemUsage = useSelector(store => store.server.serverMemory)  
  
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
   
-  let host_names = Object.keys(storeHosts)
+  let host_names;
+  if(storeHosts)
+  {
+   host_names= Object.keys(storeHosts)
+  }
   let HostList = (host_names && host_names.map((host_name,index)=>{
       return (          
           <Tab label={host_name} key={'dashTab_' + index} className={classes.tab}/>
       )
   }))
-  let HostContent = (host_names && host_names.map((host_name,index) =>{
+  let HostContent = (host_names && host_names.map((host_name,index) =>{    
     return (                          
           <TabPanel value={value} key={'dashContent_'+index} index={index} style={{width:'100%'}}>
-                <HostItem host={storeHosts[host_name]} jobs={(storeServerJobs)?storeServerJobs[host_name]:undefined} />
+                <HostItem host={storeHosts[host_name]} mem={(storeServerMemUsage)?storeServerMemUsage[host_name]:undefined} jobs={(storeServerJobs)?storeServerJobs[host_name]:undefined} />
           </TabPanel>       
     )
 }))
 
-  if(HostList.length===0)
+  if(!HostList || HostList.length===0)
   {
     return (
       <div>

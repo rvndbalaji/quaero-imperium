@@ -13,7 +13,7 @@ class Search extends Component {
                     <div className="body_content">                        
                         <Container fluid>                                                       
                               <SearchOptions />                     
-                        </Container>
+                        </Container>                        
                         <SearchResults />
                     </div>                                                             
                 </Container>            

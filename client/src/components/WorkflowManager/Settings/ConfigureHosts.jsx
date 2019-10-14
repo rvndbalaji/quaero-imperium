@@ -53,7 +53,11 @@ export default function ConfigureHosts() {
     const handleChange =(e) =>
     {        
         let key = [e.target.name.trim()] 
-        let value = e.target.value.trim()  
+        let value = e.target.value.trim()
+        if(key[0]==='host')  
+        {
+            value = value.toUpperCase();
+        }
         
         //For radios, use the ID to fetch the value
         if(key[0]==='server_type')

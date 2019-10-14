@@ -3,7 +3,7 @@ var router = express.Router();
 var nodemailer = require('nodemailer');
 
 //Get HomePage
-router.get('/',function(req,res){              
+router.get('/',function(req,res){            
    res.status(200).send('Quaero Imperium API')
 });
 
@@ -13,20 +13,12 @@ router.post('/sendMail',function(req,res)
   .then(function(decodedToken) 
   {        
      transporter = nodemailer.createTransport({
-        host: "hsrelay01.quaero.com",
+        host: process.env.email_relay,
         port: 25,       
         ignoreTLS : true          
       });      
     
-      admin.auth().getUser(decodedToken.uid)
-      .then(function(userRecord) {
-        // See the UserRecord reference doc for the contents of userRecord.        
-        dispatchEmailWith(userRecord.displayName,decodedToken,req,res)
-
-      })
-      .catch(function(error) {        
-        dispatchEmailWith(undefined,decodedToken,req,res)
-      });
+      dispatchEmailWith(decodedToken.name,decodedToken.email,req,res)
 
   }).catch(function(error) 
   {   
@@ -34,12 +26,12 @@ router.post('/sendMail',function(req,res)
   });
 });
 
-function dispatchEmailWith(full_name,decodedToken,req,res)
+function dispatchEmailWith(full_name,email,req,res)
 {
   var mailOptions = {
-    from: (full_name)?(full_name + ' ' + decodedToken.email):decodedToken.email,
+    from: (full_name)?(full_name + ' ' + email):email,
     to: req.body.to,
-    cc : (req.body.cc)?(req.body.cc + decodedToken.email):decodedToken.email,
+    cc : (req.body.cc)?(email + ',' + req.body.cc ):email,
     subject: req.body.subject,
     html: req.body.html + '<br><br>Source : Imperium | ' + req.body.source
   }

@@ -461,6 +461,34 @@ router.get('/jobStatus',function(req,res)
   });
 });
 
+
+
+//Get the server stats given the servername and all the metastores
+router.get('/serverMemUsage',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in global_conn_pool)        
+        {
+          getServerMemoryUsagePercent(config,req,res,result);  
+        }
+        else{
+          reconnectAndCallback(decodedToken,req,res,config,getServerMemoryUsagePercent);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
 //Perform a search of workflows by using filters
 router.get('/search/wf',function(req,res){
   
@@ -1305,6 +1333,45 @@ var getJobStatus = async function (config,req,res,res_data)
 }
 
 
+var getServerMemoryUsagePercent = async function (config,req,res,res_data)
+{     
+    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+          //Prepare an SQL request
+          const sql_request = global_conn_pool[JSON.stringify(config)].request();          
+          var sql_result = sql_request.query(`
+          select
+            total_physical_memory_kb/1024 AS TOTAL_PHY_MEM_MB,
+            available_physical_memory_kb/1024 AS AVAIL_PHY_MEM_MB,
+            total_page_file_kb/1024 AS TOTAL_PAGE_FILE_MB,
+            available_page_file_kb/1024 AS AVAIL_PAGE_FILE_MB,
+            100 - (100 * CAST(available_physical_memory_kb AS DECIMAL(18,3))/CAST(total_physical_memory_kb AS DECIMAL(18,3))) 
+            AS 'USAGE',
+            system_memory_state_desc as INFO
+          from  sys.dm_os_sys_memory;
+          `);
+
+          //Capture the result when the query completes
+          sql_result.then(function(result)
+          {                    
+            res_data.err = 0;             
+            //Get the result and set it                
+            res_data.data = {info : result.recordset};
+            res.status(200).send(res_data);
+          }).catch(err=>{                  
+            res_data.err = 1; 
+            res_data.data = {info : err};
+            res.send(res_data);        
+          });
+      }
+      catch (err)
+      {
+        res_data.err = 1; 
+        res_data.data = {info : err};
+        res.send(res_data);               
+      }
+}
+
 var toggleJob = async function (config,req,res,res_data)
 {     
     await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1506,7 +1573,7 @@ var generateConfig = async function(req,decodedToken)
       if(!user_data.exists)        
       { 
           
-        result.data = {info : "User does not exist. Please <a href='/users/register' target='_self'>register</a>"}
+        result.data = {info : "There was an error fetching user information, please login again. ERR : GENCONF"}
         reject(result);
         return
       }        
@@ -1933,4 +2000,10 @@ var getBlockedInfo = async function (config,req,res,res_data)
       res.send(res_data);               
     }
 }
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', reason.stack || reason)
+  // Recommended: send the information to sentry.io
+  // or whatever crash reporting service you use
+})
 module.exports = router;

@@ -2,7 +2,6 @@ import React, { Component,memo } from 'react'
 import Banner from '../Elements/Banner';
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
-import {Link} from 'react-router-dom';
 import Form from 'react-bootstrap/Form'
 import Alert from 'react-bootstrap/Alert'
 import Button from 'react-bootstrap/Button'
@@ -71,8 +70,10 @@ import { Redirect} from 'react-router'
                             <Row className="ml-1 mr-1">
                                 <Button variant="primary" type="submit" >
                                     Log In
-                                </Button>                                    
-                                <Link to="register" className="btn btn-secondary ml-auto" target="_self">Register</Link>
+                                </Button>                                                                    
+                                {
+                                //<Link to="register" className="btn btn-secondary ml-auto" target="_self">Register</Link>
+                                }
                             </Row>                  
                         </Form>                                                
                     </Col>                    
@@ -84,6 +85,7 @@ import { Redirect} from 'react-router'
 
 const mapStateToProps  = (state) =>
 {       
+    console.log(state)
     return{
         alert : state.auth.alertAuth,
         authUser : state.auth.authUser,

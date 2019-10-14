@@ -49,6 +49,8 @@ export const setHostListener = () =>
     }
 }
 
+
+
 export const loadComplete = () =>
 {    
     return (dispatch,getState) =>
@@ -56,6 +58,27 @@ export const loadComplete = () =>
        dispatch({type : 'LOAD_COMPLETE'})
     }
 }
+
+
+export const fetchUserTitle = () =>
+{    
+    return (dispatch,getState) =>
+    {
+        //Fetch user's title from firebase
+        fire.doc('users').collection(authUser.uid).doc('profile').get().then(profile => {
+            if (profile.exists) {
+                dispatch({type : 'SET_USER_TITLE',title : profile.data().title})
+            } else {
+                dispatch({type : 'SET_USER_TITLE',title : undefined})
+            }            
+        })
+        .catch(function(error) {
+            dispatch({type : 'SET_USER_TITLE',title : undefined})
+        });
+      
+    }
+}
+
 
 export const deleteHost = (host_id) =>
 {    

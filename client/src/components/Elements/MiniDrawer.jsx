@@ -18,9 +18,9 @@ import Image from 'react-bootstrap/Image';
 import Search from '../WorkflowManager/Search';
 import Monitor from '../WorkflowManager/Monitor';
 import Settings from '../WorkflowManager/Settings'
-import Feedback from '../WorkflowManager/Feedback'
 import Profile from '../WorkflowManager/Profile'
 import Servers from '../WorkflowManager/Servers';
+import Support from '../WorkflowManager/Support';
 
 
 
@@ -30,7 +30,7 @@ const menu_color = '#263238'
 const logo_back_color = menu_color
 const ico_color = '#ffffff'
 const ico_text_color = ico_color
-const sections = [<Search />,<Monitor/>,<div>Reporting</div>,<div>Queries</div>,<Servers />,<Profile />,<div>Admin</div>,<Settings />,<Feedback/>];
+const sections = [<Search />,<Monitor/>,<div>Reporting</div>,<div>Queries</div>,<Servers />,<Profile />,<div>Admin</div>,<Settings />,<Support/>];
 const icon_name = [<FaSearch size={ico_size} color={ico_color}/>,<FaTachometerAlt size={ico_size} color={ico_color}/>,<FaChartPie size={ico_size} color={ico_color}/>, <FaDatabase size={ico_size} color={ico_color}/>,<FaServer size={ico_size} color={ico_color}/>,<FaUserAlt size={ico_size} color={ico_color}/>,<FaShieldAlt size={ico_size} color={ico_color}/>,<FaTools size={ico_size} color={ico_color}/>,<FaComments size={ico_size} color={ico_color}/>]        
 
 
@@ -173,7 +173,7 @@ export default function MiniDrawer() {
         </List>
         <Divider />
         <List className='ml-1' style={{color:ico_text_color}}>
-          {['Profile','Admin','Settings','Feedback'].map((text, index) => (
+          {['Profile','Admin','Settings','Support'].map((text, index) => (
             <ListItem button key={text}
                        onClick={event => handleListItemClick(event, index + 5)}
                        selected={selectedIndex === index + 5}

@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import AnimatedLoadText from '../Elements/AnimatedLoadText';
 import MiniDrawer from '../Elements/MiniDrawer';
-import { setHostListener} from '../../store/actions/hostActions'
+import { setHostListener,fetchUserTitle} from '../../store/actions/hostActions'
 import { setMonitorListener} from '../../store/actions/monitorActions'
 import { connect } from 'react-redux'
 
@@ -12,7 +12,7 @@ class WF_Main extends Component {
         //Register listener for monitors
          this.props.setHostListener()   
          this.props.setMonitorListener()                       
-       
+         this.props.fetchUserTitle()
     }
     render() {                
         if(this.props.isLoading)
@@ -41,6 +41,10 @@ const mapDispatchToProps = (dispatch)=>
         setMonitorListener : ()=>
         {
             dispatch(setMonitorListener())
+        },
+        fetchUserTitle : ()=>
+        {
+            dispatch(fetchUserTitle())
         }
     }
 }

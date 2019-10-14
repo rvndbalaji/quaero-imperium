@@ -8,6 +8,7 @@ import {getIDToken} from '../../Auth/getIDToken'
 import {  FaPlay ,FaStop} from 'react-icons/fa'
 import axios from 'axios'
 import {getJobStats} from '../../../store/actions/serverActions'
+import ProgressBar from 'react-bootstrap/ProgressBar';
 class HostItem extends Component {
 
     state = {
@@ -180,6 +181,22 @@ class HostItem extends Component {
                 )
             }))
 
+            let mem = this.props.mem;
+            let color = 'primary'
+            if(mem<=40)
+            {
+                color = 'success'
+            }            
+            else if(mem<=80)
+            {
+                color = 'primary'
+            }
+            else if(mem<=100)
+            {
+                color = 'danger'
+            }
+            let ProgressIndicator = (mem)?(<div><small>RAM</small><ProgressBar variant={color} now={mem} label={mem.toFixed(2) + '%'}/></div>):'';
+            
             let EditModeText = 'Allow me to start/stop jobs'
             if(this.state.editMode)
             {
@@ -192,14 +209,21 @@ class HostItem extends Component {
                     <Row>
                         <Col lg={3} sm={3} md={3}>
                             <b>{host.host}</b>
-                        </Col>
-                        <Col lg='auto' sm='auto' md='auto'>
-                            <div className="custom-control custom-switch" align='ef'>
-                                        <input type="checkbox" className="custom-control-input" id={'edit_mode'+host.host} style={{cursor : 'pointer'}} checked={this.state.editMode} onChange={(e)=>this.toggleEdit(e)}/>
-                                        <label className="custom-control-label" htmlFor={'edit_mode'+host.host} style={{cursor : 'pointer'}} ><div>{EditModeText}</div></label>
-                            </div>   
-                        </Col>
+                        </Col>                                                                     
                     </Row>    
+                    <Row className='mt-2 justify-content-start'>                        
+                        <Col lg={4} sm={4} md={4}>
+                            {ProgressIndicator} 
+                        </Col>                                                
+                    </Row>                   
+                    <Row>
+                        <Col lg='auto' sm='auto' md='auto' className='ml-auto'>
+                                    <div className="custom-control custom-switch" align='ef'>
+                                                <input type="checkbox" className="custom-control-input" id={'edit_mode'+host.host} style={{cursor : 'pointer'}} checked={this.state.editMode} onChange={(e)=>this.toggleEdit(e)}/>
+                                                <label className="custom-control-label" htmlFor={'edit_mode'+host.host} style={{cursor : 'pointer'}} ><div>{EditModeText}</div></label>
+                                    </div>   
+                        </Col>
+                    </Row>
                        {MetastoreJobs}                 
                 </Container>
             )

@@ -8,6 +8,7 @@
     "bootstrap": "^4.3.1",
     "firebase": "^6.6.2",
     "react": "^16.10.2",
+    "react-animated-css": "^1.2.1",
     "react-bootstrap": "^1.0.0-beta.14",
     "react-bootstrap-table-next": "^3.2.1",
     "react-bootstrap-table2-paginator": "^2.1.0",

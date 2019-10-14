@@ -1,7 +1,8 @@
 const initState = {
     hosts : undefined,
     alertHost : undefined,
-    isLoading : true
+    isLoading : true,
+    userTitle : undefined
 }
 
 const hostReducer = (state = initState,action) =>
@@ -13,6 +14,11 @@ const hostReducer = (state = initState,action) =>
                 ...state,                
                 hosts : action.host_list                
             }  
+        case 'SET_USER_TITLE' :            
+        return {
+            ...state,                
+            userTitle : action.title                
+        }  
         case 'SET_HOST_ALERT' :
             if(!action.msg)
             {

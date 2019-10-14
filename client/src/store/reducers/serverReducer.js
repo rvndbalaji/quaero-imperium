@@ -1,5 +1,6 @@
 const initState = {
-    serverJobs : {}
+    serverJobs : {},
+    serverMemory : {}
 }
 
 const hostReducer = (state = initState,action) =>
@@ -14,6 +15,14 @@ const hostReducer = (state = initState,action) =>
                     [action.serverName] : action.serverJobs
                 }
             }         
+        case 'SET_SERVER_MEM_USAGE' :              
+        return {
+            ...state,                
+            serverMemory : {
+                ...state.serverMemory,
+                [action.serverName] : action.serverMemory
+            }
+        }     
             
        default : return state;
    }   
