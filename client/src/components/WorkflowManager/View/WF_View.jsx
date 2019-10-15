@@ -55,7 +55,7 @@ refreshTimeout;
             auth : this.props.match.params.auth,
         }
         let MyToolbar = (
-                <Toolbar variant="dense" style={{backgroundColor:'#7E57C2'}}>       
+                <Toolbar variant="dense" style={{backgroundColor: 'var(--primary_dark)'}}>       
                         <Link to ='/wf_man' target='_self'>
                             <Row>
                                 <Col lg={1} md={1} sm={1} style={{padding : '0.4rem'}}>

@@ -201,7 +201,7 @@ class HostItem extends Component {
             if(this.state.editMode)
             {
                 EditModeText = (
-                    <span>Allow me to start/stop jobs<span className='text-danger font-weight-bold'> (WARNING : Dangerous action)</span></span>
+                    <span> Allow me to start/stop jobs</span>
                 )
             }
             return (
@@ -218,7 +218,8 @@ class HostItem extends Component {
                     </Row>                   
                     <Row>
                         <Col lg='auto' sm='auto' md='auto' className='ml-auto'>
-                                    <div className="custom-control custom-switch" align='ef'>
+                                    <span className='text-danger font-weight-bold' style={{opacity:(this.state.editMode)?1:0}}> (WARNING : Dangerous action)</span>
+                                    <div className="custom-control custom-switch" align='ef'>                                        
                                                 <input type="checkbox" className="custom-control-input" id={'edit_mode'+host.host} style={{cursor : 'pointer'}} checked={this.state.editMode} onChange={(e)=>this.toggleEdit(e)}/>
                                                 <label className="custom-control-label" htmlFor={'edit_mode'+host.host} style={{cursor : 'pointer'}} ><div>{EditModeText}</div></label>
                                     </div>   

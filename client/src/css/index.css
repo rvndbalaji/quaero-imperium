@@ -1,14 +1,14 @@
 :root {    
     
-    --primary_dark : #7E57C2;
+    --primary_dark : #396CB2;
     --danger_dark  : #EF5350;
     --success_dark : #4CAF50;
 
-    --primary_bright: #8072B8;
+    --primary_bright: #789dd1;
     --danger_bright: #E57373;
     --success_bright: #66BB6A;    
 
-    --primary_light : #EDE7F6;
+    --primary_light : #789dd1;
     --danger_light  : #EF9A9A;
     --success_light : #81C784;
 

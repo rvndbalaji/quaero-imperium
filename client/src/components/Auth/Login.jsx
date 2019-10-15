@@ -85,8 +85,7 @@ import { Redirect} from 'react-router'
 
 const mapStateToProps  = (state) =>
 {       
-    console.log(state)
-    return{
+        return{
         alert : state.auth.alertAuth,
         authUser : state.auth.authUser,
         tryLogin: state.auth.tryLogin 

@@ -20,11 +20,12 @@
     "nodemon": "^1.19.3"
   },
   "devDependencies": {},
-  "scripts": {
-    "start": "node app.js",
+  "scripts": {    
     "server": "nodemon server.js",
     "client": "npm start --prefix client",
-    "imp": "concurrently \"npm run server\" \"npm run client\""
+    "build" : "npm run build --prefix client",
+    "test": "concurrently \"npm run server\" \"npm run client\"",
+    "prod": "concurrently \"npm run server\""
   },
   "repository": {
     "type": "git",

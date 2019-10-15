@@ -6,7 +6,7 @@ dotenv = require('dotenv').config();
 admin = require("firebase-admin");
 crypto = require('crypto',);
 app = express();
-
+var path = require("path");
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var wf_man = require('./routes/wf_man');
@@ -40,6 +40,17 @@ app.use('/',routes);
 app.use('/users',users);
 app.use('/wf_man',wf_man);
 
+//Serve the website
+app.use(express.static('client/build'))
+
+
+app.get('/*', function(req, res) {
+  res.sendFile(path.join(__dirname, 'client/build/index.html'), function(err) {
+    if (err) {
+      res.status(500).send(err)
+    }
+  })
+})
 //Start Server and listen for requests
 var server  = app.listen(port,hostname,function(){
   console.log(`Server running at http://${hostname}:${port}/`);

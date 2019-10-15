@@ -52,7 +52,7 @@ export const performLoginWithCreds = (login_creds) =>
     return (dispatch,getState) => {     
         
         disp_LOGIN_MSG('Authenticating...','warning',dispatch);        
-        axios.post('/users/login',
+        axios.post('/users/performLogin',
         {            
             username : login_creds.username,
             password : login_creds.password,            

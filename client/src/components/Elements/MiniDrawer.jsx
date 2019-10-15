@@ -25,7 +25,7 @@ import Support from '../WorkflowManager/Support';
 
 
 const ico_size =  '1.3em'
-const bar_color = '#7E57C2'
+const bar_color = '#396CB2' //644B9E or 396CB2
 const menu_color = '#263238'
 const logo_back_color = menu_color
 const ico_color = '#ffffff'

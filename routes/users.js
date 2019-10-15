@@ -11,7 +11,7 @@ const client = new Client({
 });
 
 //Perform Login
-router.post('/login',[    
+router.post('/performLogin',[    
 ], async (req,res) => 
 {          
     var result = {

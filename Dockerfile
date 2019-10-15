@@ -1,7 +1,8 @@
-FROM node:12.4.0-alpine
+FROM node:12.11.1-buster
 WORKDIR /usr/src/app
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
 RUN npm install
+
 COPY . .
-EXPOSE 3000
-CMD [ "npm", "start" ]
+EXPOSE 5000
+CMD [ "npm", "run", "imp" ]
