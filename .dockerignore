@@ -12,3 +12,6 @@ README.md
 LICENSE
 .vscode
 build
+/client/src
+/client/node_modules
+/client/public

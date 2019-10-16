@@ -35,35 +35,63 @@ router.post('/performLogin',[
                 } = await client.search(searchDN, {
                 scope: 'sub',
                 filter: '(sAMAccountName=' + username  +')',
-                });
-
+                //filter: '(objectClass=*)',
+                });                
                 //User was found, fetch the user's DN    
                 if(searchEntries && searchEntries[0] && searchEntries[0]['dn'])
                 {
-                //Using the user's DN, authenticate him using the password he provided
-                    try 
+                    
+                    isImperiumMember = false;
+                    //First check the the user is a member of imperium group
+                    user_groups= searchEntries[0]['memberOf'];
+                    //Loop through and find all groups
+                    for(grp_index in user_groups)
                     {
-                        let userDN = searchEntries[0]['dn'];                                                
-                        await client.bind(userDN, req.body.password);
-                        
-                        //User has been verified, now update profile and send token to authenticate
-                        fetchUserDetailsAndStoreInFirebase(username,req.body.password,searchEntries[0],customToken,res)                             
-
-                    } catch (ex) 
-                    {                        
-                        if(ex.code && ex.code==49)
-                        {                        
-                            result.data.info = 'Incorrect username/password (or you got locked out)'                 
-                        }            
-                        else
-                        {                        
-                            result.data.info = 'Authentication Failed'   
-                        } 
-                        result.data.err_msg = ex.toString();           
-                        res.send(result)
-                    } finally {
-                        await client.unbind();            
+                        //Fetch the account type. It'll either be Internal or Client indicating whether
+                        //the account that is running imperium is an internal deployment or client deployment.                        
+                        //Check if the user belongs to the group which the account is running on.
+                        //Ex : ESPN users can only be auth'ed if they belong to Imperium-Client group                        
+                        if(user_groups[grp_index].split(',')[0]===process.env.ACCOUNT_TYPE)
+                        {
+                            
+                            isImperiumMember = true;
+                            break;
+                        }
                     }
+
+                    //Proceed Authenticate only if the user belongs to the correct group
+                    if(!isImperiumMember)
+                    {
+                        result.data.info = 'Authentication Failed : User does not belong to group ' + process.env.ACCOUNT_TYPE
+                        res.send(result)
+                    }
+                    else
+                    {
+                        //Using the user's DN, authenticate him using the password he provided
+                        try 
+                        {
+                            let userDN = searchEntries[0]['dn'];                                                
+                            await client.bind(userDN, req.body.password);
+                            
+                            //User has been verified, now update profile and send token to authenticate
+                            fetchUserDetailsAndStoreInFirebase(username,req.body.password,searchEntries[0],customToken,res)                             
+
+                        } catch (ex) 
+                        {                        
+                            if(ex.code && ex.code==49)
+                            {                        
+                                result.data.info = 'Incorrect username/password (or you got locked out)'                 
+                            }            
+                            else
+                            {                        
+                                result.data.info = 'Authentication Failed'   
+                            } 
+                            result.data.err_msg = ex.toString();           
+                            res.send(result)
+                        } finally {
+                            await client.unbind();            
+                        }
+                    }                   
                 }    
                 else
                 {

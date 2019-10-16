@@ -25,7 +25,7 @@
     "client": "npm start --prefix client",
     "build" : "npm run build --prefix client",
     "test": "concurrently \"npm run server\" \"npm run client\"",
-    "prod": "concurrently \"npm run server\""
+    "prod": "node app.js"
   },
   "repository": {
     "type": "git",
