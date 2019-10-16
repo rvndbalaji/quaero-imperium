@@ -1567,20 +1567,29 @@ var generateConfig = async function(req,decodedToken)
           schema = req.body.schema;
           auth_type = req.body.auth_type;          
         }
-
+    
+    if(process.env.domain_prefix)
+    {
+      servername = process.env.domain_prefix + '.' + servername
+    }
+    if(process.env.domain_suffix)
+    {
+      servername = servername + '.' + process.env.domain_suffix
+    }    
+    
     firebase.doc('users').collection(decodedToken.uid).doc('profile').get().then( user_data =>
     {      
       if(!user_data.exists)        
       { 
           
-        result.data = {info : "There was an error fetching user information, please login again. ERR : GENCONF"}
-        reject(result);
+        error =  "There was an error fetching user information, please login again. ERR : GENCONF"
+        reject(error);
         return
       }        
       var user_data = user_data.data();       
       //Prepare a connection config
       
-
+      
       var config = {
         user : decodedToken.uid,
         password : decrypt(user_data.password),
@@ -1597,9 +1606,8 @@ var generateConfig = async function(req,decodedToken)
       
       resolve(config);      
     })
-    .catch(function(error) {
-      result.data = {info : error};          
-      reject(result)
+    .catch(function(error) {      
+      reject(error)
     }); 
   });
 }
@@ -2002,7 +2010,7 @@ var getBlockedInfo = async function (config,req,res,res_data)
 }
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.log('Unhandled Rejection at:', reason.stack || reason)
+  console.log('Unhandled Rejection at:', reason.stack || reason)  
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use
 })

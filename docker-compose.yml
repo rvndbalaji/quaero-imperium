@@ -1,10 +1,10 @@
 version: '2.1'
 
 services:
-  operations:
-    image: operations
+  imperium:
+    image: imperium
     build: .
     environment:
       NODE_ENV: production
     ports:
-      - 3000:3000
+      - 5000:5000

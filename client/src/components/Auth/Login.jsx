@@ -64,9 +64,11 @@ import { Redirect} from 'react-router'
                             <Form.Group>
                                 <Form.Control required type="password" name='password' placeholder="Password" onChange={this.handleChange} />                                                                                                
                             </Form.Group>
+                            {/*
                             <Form.Group controlId="formBasicCheckbox">
                                 <Form.Check  custom type="checkbox" label="Remember password" />
                             </Form.Group>                                 
+                            */}
                             <Row className="ml-1 mr-1">
                                 <Button variant="primary" type="submit" >
                                     Log In
