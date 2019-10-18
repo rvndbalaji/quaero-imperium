@@ -3,14 +3,13 @@ var router = express.Router();
 var nodemailer = require('nodemailer');
 
 //Get HomePage
-router.get('/about',function(req,res){            
+router.get('/about',function(req,res){  
    res.status(200).send(`
    <b>Quaero Imperium API</b>
    <br>
    Version : Sapling 0.5 BETA
    `)
 });
-
 router.post('/sendMail',function(req,res)
 {  
   admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))

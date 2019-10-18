@@ -15,6 +15,8 @@ export const getJobStats = ()=>
        let host_list = getState().host.hosts           
        for(var host_index in host_list)
        {                      
+           cancellers.cancelStats && cancellers.cancelStats()
+           cancellers.canceMemCheck && cancellers.canceMemCheck()
            raiseJobStatusRequest(dispatch,getState,host_list[host_index])
            raiseServerMemUsageRequest(dispatch,getState,host_list[host_index])
        }    
@@ -24,6 +26,7 @@ export const getJobStats = ()=>
 
 const scheduleNextRefresh=(dispatch)=>
 {
+    clearTimeout(refreshTimeout)   
     refreshTimeout = setTimeout(()=>
     {                   
         dispatch(getJobStats())

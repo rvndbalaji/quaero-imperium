@@ -216,12 +216,12 @@ class HostItem extends Component {
                             {ProgressIndicator} 
                         </Col>                                                
                     </Row>                   
-                    <Row>
-                        <Col lg='auto' sm='auto' md='auto' className='ml-auto'>
+                    <Row className='mt-2 justify-content-end'>                        
+                        <Col lg='auto' sm='auto' md='auto'>
                                     <span className='text-danger font-weight-bold' style={{opacity:(this.state.editMode)?1:0}}> (WARNING : Dangerous action)</span>
                                     <div className="custom-control custom-switch" align='ef'>                                        
                                                 <input type="checkbox" className="custom-control-input" id={'edit_mode'+host.host} style={{cursor : 'pointer'}} checked={this.state.editMode} onChange={(e)=>this.toggleEdit(e)}/>
-                                                <label className="custom-control-label" htmlFor={'edit_mode'+host.host} style={{cursor : 'pointer'}} ><div>{EditModeText}</div></label>
+                                                <label className="custom-control-label" htmlFor={'edit_mode'+host.host} style={{cursor : 'pointer'}} >{EditModeText}</label>
                                     </div>   
                         </Col>
                     </Row>

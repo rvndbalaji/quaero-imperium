@@ -43,7 +43,8 @@ import { Redirect} from 'react-router'
         {
             return shouldRedirect;
         }
-        let alert_item='';                
+        let alert_item='';     
+        //console.log(this.props)           
         if(this.props.alert)
         {
             alert_item = <Alert variant={this.props.alert.color}>{this.props.alert.msg}</Alert>                       

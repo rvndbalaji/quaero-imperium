@@ -58,22 +58,23 @@ export const performLoginWithCreds = (login_creds) =>
             password : login_creds.password,            
         })        
         .then(response=> {
-            let res = response.data;                
+            let res = response.data;                            
             if(res.err===0)
             {
                 //Authentication successful. User recieves the token.
                 //Store it away for login                                
                 let custom_token = res.data.token
                 //storeToken(custom_token);
+                
                 loginWithToken(custom_token,dispatch);
                 
             }
-            else{
+            else{                
                 disp_LOGIN_MSG(res.data.info,'danger',dispatch);                     
             }
         }).catch(error =>
-        {
-            disp_LOGIN_MSG(error,'danger',dispatch);                     
+        {            
+            disp_LOGIN_MSG(error.message,'danger',dispatch);                     
         });
     }
 }

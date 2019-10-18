@@ -35,7 +35,7 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,    
     display: 'flex',
     height: '100%',
-    outline : 'none'
+    outline : 'none'    
   },  
   tabs: {
     borderRight: `1px solid ${theme.palette.divider}`,    
@@ -94,7 +94,7 @@ export default function Servers() {
     )
   }
   return (
-    <div className={classes.root}>
+    <div className={classes.root} style={{marginLeft:'-1rem'}}>
       <Tabs
         orientation="vertical"
         variant="scrollable"

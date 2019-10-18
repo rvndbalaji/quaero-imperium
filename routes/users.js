@@ -21,14 +21,16 @@ router.post('/performLogin',[
     
     var username = req.body.username;       
     
+      //Sign in attempt, immediately set undefined to the user's password
+    delete GLOBAL_FLYING_PASSWORDS[username]
+
     //User wanted to login, send them a token if credentails are valid
     admin.auth().createCustomToken(username)
         .then(async function(customToken) 
     {
         
-            try {
-                await client.bind(bindDN, password);
-            
+            try {                
+                await client.bind(bindDN, password);                
                 const {
                 searchEntries,
                 searchReferences,
@@ -167,7 +169,8 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
                 }
                 if(dec_pass===(password) && user_data.title===title)
                 {
-                    //User's details have not changed. Simply send token                                                        
+                    //User's details have not changed. Simply send token   
+                    GLOBAL_FLYING_PASSWORDS[username] = user_data.password;                                                     
                     result.err = 0;                                                        
                     result.data = {token : customToken};
                     res.send(result);                      
@@ -202,12 +205,14 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
 
 function updateAndSavePassword(userObject,password,customToken,res,mytitle)
 {
+    let encryped_pass = encrypt(password);
+    GLOBAL_FLYING_PASSWORDS[username] = encryped_pass;
     firebase.doc('users').collection(userObject.uid).doc('profile').set(
         {
             name : userObject.displayName,
             email : userObject.email,
             title : mytitle,            
-            password : encrypt(password)
+            password : encryped_pass
         }).then(()=>{
             //Sucessfully created/updated user, send token            
             res.send({

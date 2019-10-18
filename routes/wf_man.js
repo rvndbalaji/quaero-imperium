@@ -3,8 +3,13 @@ var router = express.Router();
 
 //Prepare a global hashmap of global connection pools
 //for each collection
-var global_conn_pool = {};
+var GLOBAL_CONN_POOL = {};
 
+//Prepare a global hashmap of ENCRYPTED passwords of users
+//and load them once and store them here. 
+//This is loaded once and the password is reused from here instead of the database.
+//when the database password updates, this is undefined, so it can be fetched freshly
+GLOBAL_FLYING_PASSWORDS = {};
 //Connect to SQL
 router.post('/connectSQL',function(req,res)
 { 
@@ -51,7 +56,7 @@ router.get('/wf/count',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getWorkflowCount(config,req,res,result);  
         }
@@ -78,7 +83,7 @@ router.post('/wf/act_deact',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           setWorkflowActiveFlag(config,req,res,result);  
         }
@@ -106,7 +111,7 @@ router.get('/wf/exec_details',function(req,res)
       generateConfig(req,decodedToken).then(config=>{   
         
         
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         { 
           
           getWorkflowExecutionStatus(config,req,res,result);  
@@ -133,7 +138,7 @@ router.post('/wf/modifyStatus',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           setWorkflowInstanceStatus(config,req,res,result);  
         }
@@ -160,7 +165,7 @@ router.get('/wf/error_log',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getErrorLog(config,req,res,result);  
         }
@@ -185,7 +190,7 @@ router.get('/wf/datasets',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getWFDatasets(config,req,res,result);  
         }
@@ -211,7 +216,7 @@ router.post('/wf/restage',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           restageFile(config,req,res,result);  
         }
@@ -238,7 +243,7 @@ router.get('/wf/entity',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getWFEntity(config,req,res,result);  
         }
@@ -265,7 +270,7 @@ router.post('/toggleJob',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           toggleJob(config,req,res,result);  
         }
@@ -290,7 +295,7 @@ router.get('/wf/params',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getWFParams(config,req,res,result);  
         }
@@ -316,7 +321,7 @@ router.get('/wf/source_system',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getWFSourceSystem(config,req,res,result);  
         }
@@ -342,7 +347,7 @@ router.get('/wf/blockInfo',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getBlockedInfo(config,req,res,result);  
         }
@@ -367,7 +372,7 @@ router.get('/wf/stageInfo',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getWFStageInfo(config,req,res,result);  
         }
@@ -393,7 +398,7 @@ router.get('/wf/precompile',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getPrecompile(config,req,res,result);  
         }
@@ -420,7 +425,7 @@ router.get('/wf/stats',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getWorkflowStats(config,req,res,result);  
         }
@@ -447,7 +452,7 @@ router.get('/jobStatus',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getJobStatus(config,req,res,result);  
         }
@@ -475,7 +480,7 @@ router.get('/serverMemUsage',function(req,res)
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
           getServerMemoryUsagePercent(config,req,res,result);  
         }
@@ -502,7 +507,7 @@ router.get('/search/wf',function(req,res){
   { 
     generateConfig(req,decodedToken).then(config=>{                   
         
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {           
           fetchWFDetails(config,req,res,result);          
         }
@@ -532,7 +537,7 @@ router.post('/getMetastores',function(req,res){
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {                
           getMetastores(config,req,res,result);
         }
@@ -560,7 +565,7 @@ router.post('/getColumns',function(req,res){
   .then(function(decodedToken) 
   {    
       generateConfig(req,decodedToken).then(config=>{          
-        if(JSON.stringify(config) in global_conn_pool)        
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {                
           getColumns(config,req,res,result);
         }
@@ -579,10 +584,10 @@ router.post('/getColumns',function(req,res){
 
 var getWorkflowStats = async function (config,req,res,res_data)
 {   
-  await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+  await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
       
 
       var sql_result = sql_request.query(`
@@ -626,10 +631,10 @@ var getWorkflowStats = async function (config,req,res,res_data)
 
 var getWorkflowCount = async function (config,req,res,res_data)
 {   
-  await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+  await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();     
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();     
       var sql_result;
       if(req.query.type=='running')
       {
@@ -668,10 +673,10 @@ var getWorkflowCount = async function (config,req,res,res_data)
 var fetchWFDetails = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();      
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();      
       where_list_query_part = ``;      
 
       //Dirty fix, if column name is WORKFLOW_INSTANCE_ID, prefix it with "a." alias of the following query
@@ -755,10 +760,10 @@ var fetchWFDetails = async function (config,req,res,res_data)
 
 var getWorkflowExecutionStatus = async function (config,req,res,res_data)
 {       
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
       
       sql_request.input('where_clause_val',sql.BigInt,req.query.where_val);              
       let myquery = `
@@ -837,10 +842,10 @@ var getWorkflowExecutionStatus = async function (config,req,res,res_data)
 var getErrorLog = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
       
       sql_request.input('event_group_id', req.query.event_group_id)
       var sql_result = sql_request.query("select EVENT_ID,EVENT_MSG,cast(UPDATE_DT as varchar(40)) as DATE from M_TRACK_EVENT_LOG where EVENT_GROUP_ID = @event_group_id order by EVENT_ID desc"); 
@@ -871,10 +876,10 @@ var getErrorLog = async function (config,req,res,res_data)
 
 var getWFDatasets = async function (config,req,res,res_data)
 {     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
 
       sql_request.input('workflow_id', req.query.workflow_id)      
       var query_string = `
@@ -912,10 +917,10 @@ var getWFDatasets = async function (config,req,res,res_data)
 var restageFile = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
 
       sql_request.input('ftp_id', req.body.ftp_id)                  
       var query_string = `
@@ -965,10 +970,10 @@ var restageFile = async function (config,req,res,res_data)
 var getWFEntity = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
 
       sql_request.input('workflow_id', req.query.workflow_id)                  
 
@@ -1007,10 +1012,10 @@ var getWFEntity = async function (config,req,res,res_data)
 var getWFParams = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
 
       sql_request.input('workflow_id', req.query.workflow_id)                  
 
@@ -1079,10 +1084,10 @@ function parameteriseQueryForIn(request, columnName, parameterNamePrefix, type, 
 var getWFSourceSystem = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
 
       let SS_IDs = req.query.ss_id.split(',')           
       var query_string = `
@@ -1117,10 +1122,10 @@ var getWFSourceSystem = async function (config,req,res,res_data)
 var getWFStageInfo = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
 
       
       sql_request.input('entity_id',req.query.entity_id);
@@ -1168,10 +1173,10 @@ var getWFStageInfo = async function (config,req,res,res_data)
 var getPrecompile = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
       sql_request.input('workflow_instance_id',sql.BigInt,req.query.workflow_instance_id);      
       var sql_result = sql_request.execute("USP_PRECOMPILE_WORKFLOW_PACKAGE_MANIFEST"); 
 
@@ -1182,7 +1187,7 @@ var getPrecompile = async function (config,req,res,res_data)
         temp_tbl_name = first_result.recordset[0].PRECOMPILED_TEMP_TABLE_NAME;
         
         //We can now send another request to query the PARAM_NAME and PARAM_VALUE in this temp table
-        param_request = global_conn_pool[JSON.stringify(config)].request();        
+        param_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();        
         var param_result = param_request.query(`
                     select distinct PARAM_NAME,PARAM_VALUE,WORKFLOW_PACKAGE_NAME,WORKFLOW_PACKAGE_DESC from ` + temp_tbl_name + ` A 
                     join M_WORKFLOW_PACKAGE_MAP map on a.WORKFLOW_PACKAGE_MAP_ID = map.WORKFLOW_PACKAGE_MAP_ID
@@ -1222,10 +1227,10 @@ var getPrecompile = async function (config,req,res,res_data)
 
 var getMetastores = async function (config,req,res,res_data)
 {     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
           //Prepare an SQL request
-          const sql_request = global_conn_pool[JSON.stringify(config)].request();          
+          const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();          
           var sql_result = sql_request.query("select NAME from sysdatabases where NAME like '%_metastore'");
 
           //Capture the result when the query completes
@@ -1251,10 +1256,10 @@ var getMetastores = async function (config,req,res,res_data)
 
 var getJobStatus = async function (config,req,res,res_data)
 {     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
           //Prepare an SQL request
-          const sql_request = global_conn_pool[JSON.stringify(config)].request();          
+          const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();          
           var sql_result = sql_request.query(`
           DECLARE @JOB_NAME_TEMP TABLE (
             job_names varchar(max),
@@ -1335,10 +1340,10 @@ var getJobStatus = async function (config,req,res,res_data)
 
 var getServerMemoryUsagePercent = async function (config,req,res,res_data)
 {     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
           //Prepare an SQL request
-          const sql_request = global_conn_pool[JSON.stringify(config)].request();          
+          const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();          
           var sql_result = sql_request.query(`
           select
             total_physical_memory_kb/1024 AS TOTAL_PHY_MEM_MB,
@@ -1374,10 +1379,10 @@ var getServerMemoryUsagePercent = async function (config,req,res,res_data)
 
 var toggleJob = async function (config,req,res,res_data)
 {     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
           //Prepare an SQL request
-          const sql_request = global_conn_pool[JSON.stringify(config)].request();                        
+          const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();                        
           var sql_result;                    
           //Check for both true and false, return error incase it undefined or some other value                                       
           sql_request.input('job_name',req.body.job_name)
@@ -1419,10 +1424,10 @@ var toggleJob = async function (config,req,res,res_data)
 
 var setWorkflowActiveFlag = async function (config,req,res,res_data)
 {     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
           //Prepare an SQL request
-          const sql_request = global_conn_pool[JSON.stringify(config)].request();    
+          const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();    
 
                     
           var sql_result;          
@@ -1469,10 +1474,10 @@ var setWorkflowActiveFlag = async function (config,req,res,res_data)
 
 var setWorkflowInstanceStatus = async function (config,req,res,res_data)
 {     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
           //Prepare an SQL request
-          const sql_request = global_conn_pool[JSON.stringify(config)].request();    
+          const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();    
           
           var sql_result;          
           
@@ -1503,7 +1508,7 @@ var setWorkflowInstanceStatus = async function (config,req,res,res_data)
 
 var getColumns = async function (config,req,res,res_data)
 {     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
           var REQ_COL = "COLUMN_NAME";
           var DB_NAME  = req.body.db;
@@ -1511,7 +1516,7 @@ var getColumns = async function (config,req,res,res_data)
           var TBL_NAME  = "COLUMNS";
 
           //Prepare an SQL request
-          const sql_request = global_conn_pool[JSON.stringify(config)].request();  
+          const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();  
           sql_request.input('req_col',REQ_COL);          
           sql_request.input('req_tbl_name',req.body.table_name);          
           var sql_result = sql_request.query("select @req_col from " + DB_NAME + "." + SCHEMA_NAME + "." + TBL_NAME + " where TABLE_NAME=@req_tbl_name");
@@ -1577,39 +1582,70 @@ var generateConfig = async function(req,decodedToken)
       servername = servername + '.' + process.env.domain_suffix
     }    
     
-    firebase.doc('users').collection(decodedToken.uid).doc('profile').get().then( user_data =>
+    //First check if a the user is present and a password is available,
+    let fetchFromFirestore =  false;
+    if(decodedToken.uid in GLOBAL_FLYING_PASSWORDS)
+    {
+      //If password is available, use that to prepare the config. This saves us a firestore READ.
+      //If undefined, fetch the password from the firestore and use tha
+      let enc_pass = GLOBAL_FLYING_PASSWORDS[decodedToken.uid];
+      if(enc_pass)
+      {        
+        let config = prepareConfigUsingDetails(decodedToken.uid,enc_pass,servername,database,schema,auth_type)
+        resolve(config);
+      }
+      else
+      {        
+        fetchFromFirestore = true;                
+      }
+    }
+    else
     {      
-      if(!user_data.exists)        
-      { 
-          
-        error =  "There was an error fetching user information, please login again. ERR : GENCONF"
-        reject(error);
-        return
-      }        
-      var user_data = user_data.data();       
-      //Prepare a connection config
-      
-      
-      var config = {
-        user : decodedToken.uid,
-        password : decrypt(user_data.password),
-        server : servername,        
-        database,
-        schema,
-        domain : 'QUAERO',        
-        requestTimeout : 60000,
-        options: 
-            {
-              trustedConnection: (auth_type==0)?true:false
-            },        
-        }            
-      
-      resolve(config);      
-    })
-    .catch(function(error) {      
-      reject(error)
-    }); 
+      fetchFromFirestore = true;              
+    }
+    //Password isn't available in memory, so fetch it from firestore, and prepare config        
+    if(fetchFromFirestore)
+    {
+      delete GLOBAL_FLYING_PASSWORDS[decodedToken.uid]
+      firebase.doc('users').collection(decodedToken.uid).doc('profile').get().then( user_data =>
+        {      
+          if(!user_data.exists)        
+          {                 
+            error =  "There was an error fetching user information, please login again. ERR : GENCONF"
+            reject(error);
+            return
+          }        
+          var user_data = user_data.data();      
+          //Prepare a connection config          
+          GLOBAL_FLYING_PASSWORDS[decodedToken.uid] = user_data.password;
+          let config = prepareConfigUsingDetails(decodedToken.uid,user_data.password,servername,database,schema,auth_type)                                  
+          resolve(config);      
+        })
+        .catch(function(error) {      
+          reject(error)
+        }); 
+    }
+    
   });
+}
+
+function prepareConfigUsingDetails(username,enc_pass,servername,database,schema,auth_type)
+{
+  let config = {
+    user : username,
+    password : decrypt(enc_pass),
+    server : servername,        
+    database,
+    schema,
+    domain : 'QUAERO',        
+    requestTimeout : 60000,
+    options: 
+        {
+          trustedConnection: (auth_type==0)?true:false
+        },        
+    }   
+
+  return config         
 }
 
 var connectSQL = async function (decodedToken,req)
@@ -1624,7 +1660,7 @@ var connectSQL = async function (decodedToken,req)
     
         //Once we prepare the config, we check to see if global conn pool exists
         //Check if conn pool exists               
-        if(JSON.stringify(config) in global_conn_pool)
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)
         {                       
           res_data.err = 0;      
           res_data.data = {info : "connected"};             
@@ -1636,13 +1672,13 @@ var connectSQL = async function (decodedToken,req)
           new sql.ConnectionPool(config).connect()
           .then(pool => {      
               //Save the connection in global pool
-              global_conn_pool[JSON.stringify(config)] = pool;
+              GLOBAL_CONN_POOL[JSON.stringify(config)] = pool;
               res_data.err = 0;      
               res_data.data = {info : "connected"};             
               resolve(res_data)
 
           }).catch(err => {
-              delete global_conn_pool[JSON.stringify(config)];
+              delete GLOBAL_CONN_POOL[JSON.stringify(config)];
               res_data.err = 1;
               res_data.data = {info : err.message};               
               reject(res_data)
@@ -1662,10 +1698,10 @@ var connectSQL = async function (decodedToken,req)
 var getBlockedInfo = async function (config,req,res,res_data)
 {   
     
-    await global_conn_pool[JSON.stringify(config)]; //Ensure a global sql connection exists
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
       //Prepare an SQL request
-      const sql_request = global_conn_pool[JSON.stringify(config)].request();
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
 
       sql_request.input('workflow_id', req.query.workflow_id)            
       var query_string = `

@@ -1,11 +1,13 @@
 //Declare server parameters
 express = require('express');
 sql = require('mssql');
+fs = require('fs');
 validator = require('express-validator');
 dotenv = require('dotenv').config();
 admin = require("firebase-admin");
 crypto = require('crypto',);
 app = express();
+var https = require('https');
 var path = require("path");
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -51,9 +53,18 @@ app.get('/*', function(req, res) {
     }
   })
 })
+
+const options = {
+  key : fs.readFileSync('certificates/imperium.key'),
+  cert : fs.readFileSync('certificates/imperium.crt'),
+  passphrase : process.env.https_passphrase
+}
+
+var httpsServer = https.createServer(options, app);
+
 //Start Server and listen for requests
-var server  = app.listen(port,hostname,function(){
-  console.log(`Server running at http://${hostname}:${port}/`);
+var server  = httpsServer.listen(port,hostname,function(){
+  console.log(`Server running at https://${hostname}:${port}/`);
 });
 
 //Initialize Firebase App
