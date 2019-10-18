@@ -55,8 +55,8 @@ app.get('/*', function(req, res) {
 })
 
 const options = {
-  key : fs.readFileSync('certificates/imperium.key'),
-  cert : fs.readFileSync('certificates/imperium.crt'),
+  key : fs.readFileSync('./certificates/imperium.key'),
+  cert : fs.readFileSync('./certificates/imperium.crt'),
   passphrase : process.env.https_passphrase
 }
 
