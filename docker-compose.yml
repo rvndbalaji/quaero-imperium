@@ -4,7 +4,10 @@ services:
   imperium:
     image: imperium
     build: .
+      volumes:
+        - /home/ubuntu/imperium/host:/usr/src/app/host
+        - /home/ubuntu/imperium/.env:/usr/src/app/.env
     environment:
       NODE_ENV: production
     ports:
-      - 5000:5000
+      - 443:443
