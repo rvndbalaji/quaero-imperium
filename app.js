@@ -159,3 +159,14 @@ decrypt = function(text) {
 	decrypted = Buffer.concat([decrypted, decipher.final()]);
 	return decrypted.toString();
 }
+
+
+process.on('unhandledRejection', (reason, promise) => {  
+  // Recommended: send the information to sentry.io
+  // or whatever crash reporting service you use  
+  logger.error('server\t' + 'Unhandled Rejection at : ' + reason.stack || reason);
+}).on('uncaughtException', err => {  
+  
+  logger.error('server\t' + 'Fatal Exception at : ' + err.stack || err);
+  process.exit(1);
+});

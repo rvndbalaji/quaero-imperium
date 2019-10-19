@@ -2061,9 +2061,4 @@ var getBlockedInfo = async function (config,req,res,res_data)
     }
 }
 
-process.on('unhandledRejection', (reason, promise) => {  
-  // Recommended: send the information to sentry.io
-  // or whatever crash reporting service you use  
-  logger.error('server\t' + 'Unhandled Rejection at : ' + reason.stack || reason);
-})
 module.exports = router;
