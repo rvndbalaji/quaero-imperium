@@ -25,13 +25,14 @@ Date.prototype.getMonthName = function() {
   return monthNames[this.getMonth()];
 }
 
-var logRecycler = new (DailyRotateFile)({
+var logRecycler =  new (DailyRotateFile)({
   filename: 'imperium_global_%DATE%.log',
   auditFile : 'host/logs/imperium_log_audit',
   dirname : 'host/logs/',
   datePattern: 'DDMMYYYY',  
   maxSize: '200m',
-  maxFiles: '10d'
+  maxFiles: '10d',
+  handleExceptions : true
 });
 //Create a Logger
 
@@ -61,11 +62,11 @@ logger = createLogger({
   transports: [        
     new transports.Console(),
     //new transports.File({ filename: './host/logs/imperium_global.log',/*options: { flags: 'w' }*/}),
-    logRecycler
-  ],
-  exitOnError: false, // <--- set this to false
+    logRecycler,
+  ] 
 
 });
+
 
 logger.info('server\tWelcome to Quaero Imperium');
 logger.info('server\tLogger Initialized');
@@ -167,8 +168,5 @@ process.on('unhandledRejection', (reason, promise) => {
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use  
   logger.error('server\t' + 'Unhandled Rejection at : ' + reason.stack || reason);
-}).on('uncaughtException', err => {  
-
-  logger.error('server\t' + 'Fatal Exception at : ' + err.stack || err);
-  process.exit(1);
 });
+

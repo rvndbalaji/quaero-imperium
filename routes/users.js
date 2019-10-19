@@ -6,6 +6,7 @@ const url = process.env.LDAP_url
 const bindDN = process.env.LDAP_bindDN
 const password = process.env.LDAP_password
 const searchDN = process.env.LDAP_searchDN
+
 const client = new Client({
   url,
 });
@@ -17,10 +18,9 @@ router.post('/performLogin',[
     var result = {
         err: 1,
         data : {}
-      }; 
-    
-    var username = req.body.username;       
-    
+      };     
+      
+    var username = req.body.username;           
       //Sign in attempt, immediately set undefined to the user's password
     delete GLOBAL_FLYING_PASSWORDS[username]
     logger.info(username + '\t' + 'Initiated Log In');
