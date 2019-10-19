@@ -62,7 +62,9 @@ logger = createLogger({
     new transports.Console(),
     //new transports.File({ filename: './host/logs/imperium_global.log',/*options: { flags: 'w' }*/}),
     logRecycler
-  ]
+  ],
+  exitOnError: false, // <--- set this to false
+
 });
 
 logger.info('server\tWelcome to Quaero Imperium');
@@ -166,7 +168,7 @@ process.on('unhandledRejection', (reason, promise) => {
   // or whatever crash reporting service you use  
   logger.error('server\t' + 'Unhandled Rejection at : ' + reason.stack || reason);
 }).on('uncaughtException', err => {  
-  
+
   logger.error('server\t' + 'Fatal Exception at : ' + err.stack || err);
   process.exit(1);
 });
