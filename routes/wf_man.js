@@ -88,8 +88,7 @@ router.post('/wf/act_deact',function(req,res)
           setWorkflowActiveFlag(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (SETWFAD)'}
-          res.send(result);
+          reconnectAndCallback(decodedToken,req,res,config,setWorkflowActiveFlag);
         }
     });
   }).catch(function(error) 
@@ -143,8 +142,7 @@ router.post('/wf/modifyStatus',function(req,res)
           setWorkflowInstanceStatus(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (MODWFS)'}
-          res.send(result);
+          reconnectAndCallback(decodedToken,req,res,config,setWorkflowInstanceStatus);
         }
     });
   }).catch(function(error) 
@@ -271,7 +269,7 @@ router.post('/toggleJob',function(req,res)
   {    
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
-        {
+        {          
           toggleJob(config,req,res,result);  
         }
         else{
@@ -377,8 +375,7 @@ router.get('/wf/stageInfo',function(req,res)
           getWFStageInfo(config,req,res,result);  
         }
         else{
-          result.data = {info:'Server connection does not exist. Please reload/re-login (GETSTG)'}
-          res.send(result);
+          reconnectAndCallback(decodedToken,req,res,config,getWFStageInfo);
         }
     });
   }).catch(function(error) 
@@ -570,8 +567,7 @@ router.post('/getColumns',function(req,res){
           getColumns(config,req,res,result);
         }
         else{          
-          result.data = {info:'Server connection does not exist. Please reload/re-login (GETCOL)'}
-          res.send(result);
+          reconnectAndCallback(decodedToken,req,res,config,getColumns);
         }
     });
   }).catch(function(error) 
@@ -621,9 +617,10 @@ var getWorkflowStats = async function (config,req,res,res_data)
     }
     catch (err)
     {      
-      res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.err = 1;             
+      res_data.data = {info : 'Something went wrong at (GETWFSTAT) : ' + err.toString()};      
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Workflow Stats Error : ' + err.toString());
     }
 }  
 
@@ -665,8 +662,9 @@ var getWorkflowCount = async function (config,req,res,res_data)
     catch (err)
     {      
       res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.data = {info : 'Something went wrong at (GETWFCONT) : ' + err.toString()};      
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Workflow Count Error : ' + err.toString());
     }
 }  
 
@@ -751,9 +749,10 @@ var fetchWFDetails = async function (config,req,res,res_data)
     }
     catch (error)
     {             
-      res_data.err = 1; 
-      res_data.data = {info : JSON.stringify(error)};
+      res_data.err = 1;       
+      res_data.data = {info : 'Something went wrong at (GETWFSTAT) : ' + error};      
       res.send(res_data);            
+      logger.error(config.user + '\t' + 'Workflow Fetch Error : ' + error);
     }
 }
 
@@ -825,16 +824,15 @@ var getWorkflowExecutionStatus = async function (config,req,res,res_data)
       .catch(err=>{        
         res_data.err = 1; 
         res_data.data = {info : JSON.stringify(err)};
-        res.send(res_data);               
-        
+        res.send(res_data);                       
       });
     }
     catch (err)
     {       
-      console.log(err)
-      res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.data = {info : 'Something went wrong at (GETWFSTAT) : ' + err.toString()};      
+      res_data.err = 1;       
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Workflow Fetch Error : ' + err.toString());
     }
 }
 
@@ -866,9 +864,10 @@ var getErrorLog = async function (config,req,res,res_data)
     }
     catch (err)
     { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.data = {info : 'Something went wrong at (GETERRLOG) : ' + err.toString()};      
+      res_data.err = 1;       
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Get Logs Error : ' + err.toString());
     }
 }
 
@@ -907,10 +906,11 @@ var getWFDatasets = async function (config,req,res,res_data)
       });
     }
     catch (err)
-    { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
+    {       
+      res_data.data = {info : 'Something went wrong at (GETERRLOG) : ' + err.toString()};      
+      res_data.err = 1;       
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Get WF Datasets : ' + err.toString());
     }
 }
 
@@ -959,9 +959,10 @@ var restageFile = async function (config,req,res,res_data)
     }
     catch (err)
     { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.data = {info : 'Something went wrong at (RESTGFLE) : ' + err.toString()};      
+      res_data.err = 1;       
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Restage File : ' + err.toString());
     }
 }
 
@@ -1003,9 +1004,10 @@ var getWFEntity = async function (config,req,res,res_data)
     }
     catch (err)
     { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.data = {info : 'Something went wrong at (GETWFENT) : ' + err.toString()};      
+      res_data.err = 1;       
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Workflow Entity Fetch Error : ' + err.toString());
     }
 }
 
@@ -1042,9 +1044,10 @@ var getWFParams = async function (config,req,res,res_data)
     }
     catch (err)
     { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.data = {info : 'Something went wrong at (GETWFPARAM) : ' + err.toString()};      
+      res_data.err = 1;       
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Workflow Param Error : ' + err.toString());
     }
 }
 
@@ -1112,9 +1115,10 @@ var getWFSourceSystem = async function (config,req,res,res_data)
     }
     catch (err)
     { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.data = {info : 'Something went wrong at (GETSS) : ' + err.toString()};      
+      res_data.err = 1;       
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Workflow Source System Fetch Error : ' + err.toString());
     }
 }
 
@@ -1163,9 +1167,10 @@ var getWFStageInfo = async function (config,req,res,res_data)
     }
     catch (err)
     { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.data = {info : 'Something went wrong at (GETWFSTGINF) : ' + err.toString()};      
+      res_data.err = 1;       
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Workflow Stage Info Fetch Error : ' + err.toString());
     }
 }
 
@@ -1217,9 +1222,10 @@ var getPrecompile = async function (config,req,res,res_data)
     }
     catch (err)
     { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
+      res_data.data = {info : 'Something went wrong at (GETPRCMP) : ' + err.toString()};      
+      res_data.err = 1;       
       res.send(res_data);               
+      logger.error(config.user + '\t' + 'Workflow Precompile Error : ' + err.toString());
     }
 }
 
@@ -1248,9 +1254,10 @@ var getMetastores = async function (config,req,res,res_data)
       }
       catch (err)
       {
-        res_data.err = 1; 
-        res_data.data = {info : err};
+        res_data.data = {info : 'Something went wrong at (GETMTSTR) : ' + err.toString()};      
+        res_data.err = 1;       
         res.send(res_data);               
+        logger.error(config.user + '\t' + 'Get Metastore Error : ' + err.toString());
       }
 }
 
@@ -1331,9 +1338,10 @@ var getJobStatus = async function (config,req,res,res_data)
       }
       catch (err)
       {
-        res_data.err = 1; 
-        res_data.data = {info : err};
+        res_data.data = {info : 'Something went wrong at (GEJOBSTATUS) : ' + err.toString()};      
+        res_data.err = 1;       
         res.send(res_data);               
+        logger.error(config.user + '\t' + 'Get Job Status Error : ' + err.toString());
       }
 }
 
@@ -1371,9 +1379,10 @@ var getServerMemoryUsagePercent = async function (config,req,res,res_data)
       }
       catch (err)
       {
-        res_data.err = 1; 
-        res_data.data = {info : err};
+        res_data.data = {info : 'Something went wrong at (GETMEMUSG) : ' + err.toString()};      
+        res_data.err = 1;       
         res.send(res_data);               
+        logger.error(config.user + '\t' + 'Get Server Memory Usage Error : ' + err.toString());
       }
 }
 
@@ -1389,10 +1398,12 @@ var toggleJob = async function (config,req,res,res_data)
           if(req.body.act_flag==1)    
           {
             sql_result = sql_request.execute('sp_start_job');
+            logger.info(config.user + '\tENABLED JOB : ' + req.body.job_name)
           }
           else if(req.body.act_flag==0)    
           {              
             sql_result = sql_request.execute('sp_stop_job');          
+            logger.info(config.user + '\tSTOPPED JOB : ' + req.body.job_name)
           }      
           else
           {
@@ -1416,9 +1427,10 @@ var toggleJob = async function (config,req,res,res_data)
       }
       catch (err)
       {
-        res_data.err = 1; 
-        res_data.data = {info : 'Something went wrong'};
+        res_data.data = {info : 'Something went wrong at (TGLJOB) : ' + err.toString()};      
+        res_data.err = 1;       
         res.send(res_data);               
+        logger.error(config.user + '\t' + 'Toggle Job Error : ' + err.toString());
       }
 }
 
@@ -1437,7 +1449,7 @@ var setWorkflowActiveFlag = async function (config,req,res,res_data)
           sql_request.input('workflow_id',sql.BigInt,req.body.workflow_id)
           if(req.body.act_flag==1)    
           {
-            sql_result = sql_request.execute('USP_ACTIVATE_WORKFLOW');
+            sql_result = sql_request.execute('USP_ACTIVATE_WORKFLOW');            
           }
           else if(req.body.act_flag==0)    
           {              
@@ -1466,8 +1478,9 @@ var setWorkflowActiveFlag = async function (config,req,res,res_data)
       catch (err)
       {
         res_data.err = 1; 
-        res_data.data = {info : 'Something went wrong'};
+        res_data.data = {info : 'Something went wrong at (ACTDEACT) : ' + err.toString()};        
         res.send(res_data);               
+        logger.error(config.user + '\t' + 'Workflow ActivateDeactivate Error : ' + err.toString());
       }
 }
 
@@ -1501,8 +1514,9 @@ var setWorkflowInstanceStatus = async function (config,req,res,res_data)
       catch (err)
       {
         res_data.err = 1; 
-        res_data.data = {info : 'Something went wrong'};
+        res_data.data = {info : 'Something went wrong at (SETWFINST) : ' + err.toString()};        
         res.send(res_data);               
+        logger.error(config.user + '\t' + 'Workflow Instance Status Error : ' + err.toString());
       }
 }
 
@@ -1539,8 +1553,9 @@ var getColumns = async function (config,req,res,res_data)
       catch (err)
       {
         res_data.err = 1; 
-        res_data.data = {info : err};
-        res.send(res_data);             
+        res_data.data = {info : 'Something went wrong at (GETCLMNS) : ' + err.toString()};        
+        res.send(res_data);               
+        logger.error(config.user + '\t' + 'Table Column Fetch: ' + err.toString());
       }
 }
 
@@ -2039,15 +2054,16 @@ var getBlockedInfo = async function (config,req,res,res_data)
     }
     catch (err)
     { 
-      res_data.err = 1; 
-      res_data.data = {info : err};
-      res.send(res_data);               
+        res_data.err = 1; 
+        res_data.data = {info : 'Something went wrong at (GETBLOCKINF) : ' + err.toString()};        
+        res.send(res_data);               
+        logger.error(config.user + '\t' + 'Get Blocked Info: ' + err.toString());
     }
 }
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.log('Unhandled Rejection at:', reason.stack || reason)  
+process.on('unhandledRejection', (reason, promise) => {  
   // Recommended: send the information to sentry.io
-  // or whatever crash reporting service you use
+  // or whatever crash reporting service you use  
+  logger.error('server\t' + 'Unhandled Rejection at : ' + reason.stack || reason);
 })
 module.exports = router;

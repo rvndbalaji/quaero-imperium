@@ -23,14 +23,16 @@ router.post('/performLogin',[
     
       //Sign in attempt, immediately set undefined to the user's password
     delete GLOBAL_FLYING_PASSWORDS[username]
-
+    logger.info(username + '\t' + 'Initiated Log In');
     //User wanted to login, send them a token if credentails are valid
     admin.auth().createCustomToken(username)
         .then(async function(customToken) 
     {
         
             try {                
-                await client.bind(bindDN, password);                
+                await client.bind(bindDN, password);                  
+                logger.info(username +'\t' + 'Server LDAP Bind Successful');
+
                 const {
                 searchEntries,
                 searchReferences,
@@ -63,9 +65,10 @@ router.post('/performLogin',[
 
                     //Proceed Authenticate only if the user belongs to the correct group
                     if(!isImperiumMember)
-                    {
+                    {                        
                         result.data.info = 'Authentication Failed : User does not belong to group ' + process.env.ACCOUNT_TYPE
                         res.send(result)
+                        logger.error(username + '\t' + 'Auth Failed : User does not belong to group');
                     }
                     else
                     {
@@ -82,12 +85,15 @@ router.post('/performLogin',[
                         {                        
                             if(ex.code && ex.code==49)
                             {                        
-                                result.data.info = 'Incorrect username/password (or you got locked out)'                 
+                                result.data.info = 'Incorrect username/password (or you got locked out)'                                                 
+                                logger.error(username + '\t' + 'Auth Failed : Invalid pass; Account possibly locked : ' + ex.toString());
                             }            
                             else
                             {                        
                                 result.data.info = 'Authentication Failed'   
+                                logger.error(username + '\t' + 'Auth Failed : ' + ex.toString());
                             } 
+                            
                             result.data.err_msg = ex.toString();           
                             res.send(result)
                         } finally {
@@ -97,13 +103,15 @@ router.post('/performLogin',[
                 }    
                 else
                 {
-                    result.data.info = 'Authentication Failed : User not found' 
+                    result.data.info = 'Authentication Failed : User not found'                     
                     res.send(result)
+                    logger.error(username + '\t' + 'Auth Failed : User not found');
                 }
             } catch (ex) {        
-                result.data.info = 'LDAP : Something important failed. Please report to admin'
+                result.data.info = 'LDAP : Something important failed. Please report to admin'                
                 result.data.err_msg = ex.toString();
                 res.send(result)
+                logger.error(username + '\tServer LDAP Bind FAIL : ' + ex.toString());
             } finally {
                 await client.unbind();
             }
@@ -142,13 +150,15 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
                     .then(function(userObject) {       
                         //Once profile is created, encrypt and save the password under the user's profile
                         //This will be used throughout the app for Forward-Authentication        
-                        updateAndSavePassword(userObject,password,customToken,res,title)                            
+                        updateAndSavePassword(userObject,password,customToken,res,title)        
+                        logger.info(username + '\t' + 'User created');                                            
                     })
                     .catch(function(error) {  
                         //Something seriously went wrong. Stop and send an error                
-                        result.data.info = 'There was an error while creating the user\'s profile. Please report to admin'
+                        result.data.info = 'There was an error while creating the user\'s profile. Please report to admin'                        
                         result.data.err_msg = error.toString();
                         res.send(result)
+                        logger.error(username + '\t' + 'Error creating user : ' + error.toString());
                     });
             }  
             else
@@ -158,13 +168,13 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
                 //Get the existing password and compare. If password hasnt changed, do nothing,
                 //otherwise update the entire profile
                 try {
-                    dec_pass = decrypt(user_data.password);
+                    dec_pass = decrypt(user_data.password);                    
                 } catch (error) {
                     result.data = {info : "FATAL DECRYPT ERROR : Please report to admin!",
                                    err_msg : error.toString()
-                                    };                                                            
-                    
+                                    };                                                                                                    
                     res.send(result);
+                    logger.error(username + '\t' + 'Decryption failed : ' + error.toString());
                     return;
                 }
                 if(dec_pass===(password) && user_data.title===title)
@@ -173,7 +183,8 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
                     GLOBAL_FLYING_PASSWORDS[username] = user_data.password;                                                     
                     result.err = 0;                                                        
                     result.data = {token : customToken};
-                    res.send(result);                      
+                    res.send(result);         
+                    logger.info(username + '\t' + 'Logged In');
                 }
                 else{
                     //User's data. Update the profile with new information
@@ -187,16 +198,17 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
                         .catch(function(error) {
                            result.data = {info : "The user's password failed while updating profile. Please report to admin",
                                    err_msg : error.toString()
-                                    };                                                            
-                    
+                                    };                                                         
                            res.send(result);
+                           logger.error(username + '\t' + 'Failed to update user profile : ' + error.toString());                                                  
                         });
                 }
             }
         })
         .catch(function(error) {            
-                result.data = {info : 'Oops! Something went wrong during authentication. Try again, or please report to admin', err_msg : error.toString()};                
+                result.data = {info : 'Oops! Something went wrong during authentication. Try again, or please report to admin', err_msg : error.toString()};                                
                 res.send(result);
+                logger.error(username + '\t' + 'Fatal Auth Failure : ' + error.toString());
         });   
 
 
@@ -214,11 +226,12 @@ function updateAndSavePassword(userObject,password,customToken,res,mytitle)
             title : mytitle,            
             password : encryped_pass
         }).then(()=>{
-            //Sucessfully created/updated user, send token            
+            //Sucessfully created/updated user, send token                 
             res.send({
                 err : 0,
                 data : {token : customToken}
             });  
+            logger.info(username + '\t' + 'Logged In');
         });
 }
 

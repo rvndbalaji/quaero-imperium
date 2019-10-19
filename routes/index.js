@@ -21,7 +21,7 @@ router.post('/sendMail',function(req,res)
         ignoreTLS : true          
       });      
     
-      dispatchEmailWith(decodedToken.name,decodedToken.email,req,res)
+      dispatchEmailWith(decodedToken.uid,decodedToken.name,decodedToken.email,req,res)
 
   }).catch(function(error) 
   {   
@@ -29,7 +29,7 @@ router.post('/sendMail',function(req,res)
   });
 });
 
-function dispatchEmailWith(full_name,email,req,res)
+function dispatchEmailWith(uid,full_name,email,req,res)
 {
   var mailOptions = {
     from: (full_name)?(full_name + ' ' + email):email,
@@ -47,8 +47,10 @@ function dispatchEmailWith(full_name,email,req,res)
   transporter.sendMail(mailOptions, function(error, info){
     if (error) {
       result.data.info = error;
+      logger.error(uid + '\tFailed to send a mail');
       res.send(result)
     } else {
+      logger.info(uid + '\tSent a mail');
       result.err = 0;
       result.data.info = info;
       res.status(200).send(result)

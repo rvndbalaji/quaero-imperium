@@ -1,5 +1,5 @@
 npm-debug.log
 .DS_Store
 .env
-certificates
 node_modules
+host

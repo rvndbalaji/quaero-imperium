@@ -2,7 +2,6 @@
 express = require('express');
 sql = require('mssql');
 fs = require('fs');
-validator = require('express-validator');
 dotenv = require('dotenv').config();
 admin = require("firebase-admin");
 crypto = require('crypto',);
@@ -12,7 +11,62 @@ var path = require("path");
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var wf_man = require('./routes/wf_man');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, label, printf} = format;
+const DailyRotateFile = require('winston-daily-rotate-file');
 
+const myFormat = printf(({ level, message, label, timestamp }) => {
+  return `${timestamp}\t${level}\t${message}`;
+});
+
+Date.prototype.getMonthName = function() {
+  var monthNames = [ "January", "February", "March", "April", "May", "June", 
+                     "July", "August", "September", "October", "November", "December" ];
+  return monthNames[this.getMonth()];
+}
+
+var logRecycler = new (DailyRotateFile)({
+  filename: 'imperium_global_%DATE%.log',
+  auditFile : 'host/logs/imperium_log_audit',
+  dirname : 'host/logs/',
+  datePattern: 'DDMMYYYY',  
+  maxSize: '200m',
+  maxFiles: '10d'
+});
+//Create a Logger
+
+function getTimeZone(mydate)
+{
+  zone_string = (mydate.toString().match(/\(([A-Za-z\s].*)\)/)[1]);
+  try
+  {    
+    zone_word = zone_string.split(' ');
+    return zone_word[0][0] + zone_word[1][0] + zone_word[2][0]
+  }
+  catch(err){
+    return zone_string
+  }
+  
+}
+
+
+logger = createLogger({
+  format: combine(    
+    timestamp({ format: () => { 
+      let mydate = new Date()
+      return mydate.getDate() + ' ' + mydate.getMonthName() + ' '  + mydate.getFullYear() + ' - ' + mydate.toLocaleTimeString() + ' ' + getTimeZone(mydate);
+     } }),
+    myFormat
+  ),
+  transports: [        
+    new transports.Console(),
+    //new transports.File({ filename: './host/logs/imperium_global.log',/*options: { flags: 'w' }*/}),
+    logRecycler
+  ]
+});
+
+logger.info('server\tWelcome to Quaero Imperium');
+logger.info('server\tLogger Initialized');
 //To parse JSON fields
 app.use(express.json())
 
@@ -53,10 +107,10 @@ app.get('/*', function(req, res) {
     }
   })
 })
-
+logger.info('server\tServing site');
 const options = {
-  key : fs.readFileSync('./certificates/imperium.key'),
-  cert : fs.readFileSync('./certificates/imperium.crt'),
+  key : fs.readFileSync('./host/certificates/imperium.key'),
+  cert : fs.readFileSync('./host/certificates/imperium.crt'),
   passphrase : process.env.https_passphrase
 }
 
@@ -64,7 +118,7 @@ var httpsServer = https.createServer(options, app);
 
 //Start Server and listen for requests
 var server  = httpsServer.listen(port,hostname,function(){
-  console.log(`Server running at https://${hostname}:${port}/`);
+  logger.info(`server\tServer running at https://${hostname}:${port}/`);
 });
 
 //Initialize Firebase App
@@ -72,7 +126,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: process.env.databaseURL
 });
-
+logger.info('server\tFirebase Initialized');
 //Get the current firebase database instance
 firebase = admin.firestore().collection('root');
 
