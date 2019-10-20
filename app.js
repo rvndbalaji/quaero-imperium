@@ -29,7 +29,7 @@ var logRecycler =  new (DailyRotateFile)({
   filename: 'imperium_global_%DATE%.log',
   auditFile : 'host/logs/imperium_log_audit',
   dirname : 'host/logs/',
-  datePattern: 'DDMMYYYY',  
+  datePattern: 'YYYYMMDD',  
   maxSize: '200m',
   maxFiles: '10d',
   handleExceptions : true

@@ -30,7 +30,7 @@ const menu_color = '#263238'
 const logo_back_color = menu_color
 const ico_color = '#ffffff'
 const ico_text_color = ico_color
-const sections = [<Search />,<Monitor/>,<div>Reporting</div>,<div>Queries</div>,<Servers />,<Profile />,<div>Admin</div>,<Settings />,<Support/>];
+const sections = [<Search />,<Monitor/>,<div>Reporting : Generate reports for multiple workflows, group workflows and create new reporting processes etc. <b>Coming Soon</b></div>,<div>Queries : Execute custom queries to obtain adhoc results. <b>Coming Soon</b></div>,<Servers />,<Profile />,<div>Admin : Manage Imperium Administration. <b>Coming Soon, only for admins</b></div>,<Settings />,<Support/>];
 const icon_name = [<FaSearch size={ico_size} color={ico_color}/>,<FaTachometerAlt size={ico_size} color={ico_color}/>,<FaChartPie size={ico_size} color={ico_color}/>, <FaDatabase size={ico_size} color={ico_color}/>,<FaServer size={ico_size} color={ico_color}/>,<FaUserAlt size={ico_size} color={ico_color}/>,<FaShieldAlt size={ico_size} color={ico_color}/>,<FaTools size={ico_size} color={ico_color}/>,<FaComments size={ico_size} color={ico_color}/>]        
 
 
