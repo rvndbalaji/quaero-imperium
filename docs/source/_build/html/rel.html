@@ -1,0 +1,487 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Release Notes - v4.5 April 2019 &mdash; Quaero CDP 1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/q_logo_full.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Logs, Alarms &amp; Invitations" href="lai.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #1976D2" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/q_logo_partial.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#the-metastore">The Metastore</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="host_config.html">Host Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="host_config.html#m-host">M_HOST</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_provider_config.html">Data Providers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#backend-configuration-metastore-tables">Backend Configuration &amp; Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_provider_config.html#m-source-system">M_SOURCE_SYSTEM</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#encrypting-decrypting-passwords">Encrypting &amp; Decrypting Passwords</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_entity_config.html">Datasets &amp; Data Entities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#terminology">Terminology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#dataset">Dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#dataset-instance">Dataset Instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#staging">Staging</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#front-end-configuration">Front End Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#ui-options">UI Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#dataset-operations">Dataset Operations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#modify-dataset-properties">Modify Dataset Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#restore-datasets-entities">Restore Datasets/Entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#delete-datasets-entities">Delete Datasets/Entities</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-source-entity">M_SOURCE_ENTITY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-source-entity-dataset-datatype-map">M_SOURCE_ENTITY_DATASET_DATATYPE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-datatype-regex">M_DATATYPE_REGEX</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#workflow-mappings">Workflow Mappings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#types-of-workflows">Types of Workflows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#conformance-workflows">Conformance Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#front-end-configuration">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#aggregate-workflows">Aggregate Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id1">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#custom-workflows">Custom Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id3">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#backend-configuration">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#delete-expiration-workflow">Delete/Expiration Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id4">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id5">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#extract-transfer-workflow">Extract &amp; Transfer Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-instance-status">M_WORKFLOW_INSTANCE_STATUS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow">M_WORKFLOW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-type">M_WORKFLOW_TYPE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-input">M_WORKFLOW_INPUT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-dataset">M_DATASET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package">M_WORKFLOW_PACKAGE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package-param">M_WORKFLOW_PACKAGE_PARAM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package-param-map">M_WORKFLOW_PACKAGE_PARAM_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-execution-subsystem">M_WORKFLOW_EXECUTION_SUBSYSTEM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-conformance">M_TABLE_CONFORMANCE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-conformance-map">M_TABLE_CONFORMANCE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-aggregation">M_TABLE_AGGREGATION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-aggregation-map">M_TABLE_AGGREGATION_MAP</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exec_seq.html">Execution Sequence</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exec_seq.html#cdp-daemons">CDP Daemons</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#jobs">Jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#daemon">Daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#id1">CDP Daemons</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="exec_seq.html#the-qcdp-execution-system">The QCDP Execution System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#file-ingestion-subsystem">File Ingestion Subsystem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#workflow-dispatch-system">Workflow Dispatch System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#id2">Workflow Dispatch System</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debugging Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sproc.html">Stored Procedures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lai.html">Logs, Alarms &amp; Invitations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Release Notes v4.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#api-n-point-framework">API N Point Framework</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#facebook-integration">Facebook Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#salesforce-integration">Salesforce Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#other-improvements">Other Improvements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ui-improvements">UI Improvements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#system-upgrades-and-improvements">System upgrades and improvements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#minor-features-added">Minor features added</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#bugs-issues-fixed">Bugs &amp; Issues fixed</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Quaero CDP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Release Notes - v4.5 April 2019</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="release-notes-v4-5-april-2019">
+<h1>Release Notes - v4.5 April 2019<a class="headerlink" href="#release-notes-v4-5-april-2019" title="Permalink to this headline">¶</a></h1>
+<p>CDP Internal Product Release v4.5 April 2019</p>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="api-n-point-framework">
+<h3>API N Point Framework<a class="headerlink" href="#api-n-point-framework" title="Permalink to this headline">¶</a></h3>
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Venenatis tellus in metus vulputate eu scelerisque felis imperdiet proin. Cras adipiscing enim eu turpis egestas pretium.
+Aliquam vestibulum morbi blandit cursus risus at. Nisi lacus sed viverra tellus in hac habitasse platea. Tortor consequat id porta nibh
+venenatis cras. Euismod nisi porta lorem mollis aliquam. Dolor morbi non arcu risus quis varius quam quisque id. Ut diam quam nulla
+porttitor massa id neque. Elementum facilisis leo vel fringilla est ullamcorper eget. Eleifend mi in nulla posuere sollicitudin aliquam.</p>
+<div class="line-block">
+<div class="line">Link to technical documentation <span class="xref std std-doc">description</span></div>
+<div class="line">Link to product sheet <span class="xref std std-doc">description</span></div>
+</div>
+</div>
+<div class="section" id="facebook-integration">
+<h3>Facebook Integration<a class="headerlink" href="#facebook-integration" title="Permalink to this headline">¶</a></h3>
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Venenatis tellus in metus vulputate eu scelerisque felis imperdiet proin. Cras adipiscing enim eu turpis egestas pretium.
+Aliquam vestibulum morbi blandit cursus risus at. Nisi lacus sed viverra tellus in hac habitasse platea. Tortor consequat id porta nibh
+venenatis cras. Euismod nisi porta lorem mollis aliquam. Dolor morbi non arcu risus quis varius quam quisque id. Ut diam quam nulla
+porttitor massa id neque. Elementum facilisis leo vel fringilla est ullamcorper eget. Eleifend mi in nulla posuere sollicitudin aliquam.</p>
+<p>Link to technical documentation <span class="xref std std-doc">description</span></p>
+</div>
+<div class="section" id="salesforce-integration">
+<h3>Salesforce Integration<a class="headerlink" href="#salesforce-integration" title="Permalink to this headline">¶</a></h3>
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Venenatis tellus in metus vulputate eu scelerisque felis imperdiet proin. Cras adipiscing enim eu turpis egestas pretium.
+Aliquam vestibulum morbi blandit cursus risus at. Nisi lacus sed viverra tellus in hac habitasse platea. Tortor consequat id porta nibh
+venenatis cras. Euismod nisi porta lorem mollis aliquam. Dolor morbi non arcu risus quis varius quam quisque id. Ut diam quam nulla
+porttitor massa id neque. Elementum facilisis leo vel fringilla est ullamcorper eget. Eleifend mi in nulla posuere sollicitudin aliquam.</p>
+<p>Link to technical documentation <span class="xref std std-doc">description</span></p>
+</div>
+</div>
+<div class="section" id="other-improvements">
+<h2>Other Improvements<a class="headerlink" href="#other-improvements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ui-improvements">
+<h3>UI Improvements<a class="headerlink" href="#ui-improvements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Improvement</th>
+<th class="head">Link</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-odd"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-odd"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="system-upgrades-and-improvements">
+<h3>System upgrades and improvements<a class="headerlink" href="#system-upgrades-and-improvements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Upgrade/Improvement</th>
+<th class="head">Link</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-odd"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-odd"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="minor-features-added">
+<h3>Minor features added<a class="headerlink" href="#minor-features-added" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Feature</th>
+<th class="head">Link</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-odd"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-odd"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="bugs-issues-fixed">
+<h2>Bugs &amp; Issues fixed<a class="headerlink" href="#bugs-issues-fixed" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Issue</th>
+<th class="head">Link</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-odd"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-odd"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+<tr class="row-even"><td>Lorem ipsum dolor sit amet</td>
+<td><a class="reference external" href="http://www.example.com/">http://www.example.com/</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="lai.html" class="btn btn-neutral float-left" title="Logs, Alarms &amp; Invitations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Quaero 3 LLC
+      <span class="lastupdated">
+        Last updated on 23 April, 2019.
+      </span>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

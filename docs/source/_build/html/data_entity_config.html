@@ -1,0 +1,658 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Datasets &amp; Data Entities &mdash; Quaero CDP 1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/q_logo_full.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Workflows" href="workflows.html" />
+    <link rel="prev" title="Data Providers" href="data_provider_config.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #1976D2" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/q_logo_partial.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#the-metastore">The Metastore</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="host_config.html">Host Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="host_config.html#m-host">M_HOST</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_provider_config.html">Data Providers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#backend-configuration-metastore-tables">Backend Configuration &amp; Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_provider_config.html#m-source-system">M_SOURCE_SYSTEM</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#encrypting-decrypting-passwords">Encrypting &amp; Decrypting Passwords</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Datasets &amp; Data Entities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#terminology">Terminology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataset">Dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataset-instance">Dataset Instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#staging">Staging</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#front-end-configuration">Front End Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ui-options">UI Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dataset-operations">Dataset Operations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#modify-dataset-properties">Modify Dataset Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#restore-datasets-entities">Restore Datasets/Entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#delete-datasets-entities">Delete Datasets/Entities</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#m-source-entity">M_SOURCE_ENTITY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-source-entity-dataset-datatype-map">M_SOURCE_ENTITY_DATASET_DATATYPE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-datatype-regex">M_DATATYPE_REGEX</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#workflow-mappings">Workflow Mappings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#types-of-workflows">Types of Workflows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#conformance-workflows">Conformance Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#front-end-configuration">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#aggregate-workflows">Aggregate Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id1">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#custom-workflows">Custom Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id3">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#backend-configuration">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#delete-expiration-workflow">Delete/Expiration Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id4">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id5">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#extract-transfer-workflow">Extract &amp; Transfer Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-instance-status">M_WORKFLOW_INSTANCE_STATUS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow">M_WORKFLOW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-type">M_WORKFLOW_TYPE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-input">M_WORKFLOW_INPUT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-dataset">M_DATASET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package">M_WORKFLOW_PACKAGE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package-param">M_WORKFLOW_PACKAGE_PARAM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package-param-map">M_WORKFLOW_PACKAGE_PARAM_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-execution-subsystem">M_WORKFLOW_EXECUTION_SUBSYSTEM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-conformance">M_TABLE_CONFORMANCE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-conformance-map">M_TABLE_CONFORMANCE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-aggregation">M_TABLE_AGGREGATION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-aggregation-map">M_TABLE_AGGREGATION_MAP</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exec_seq.html">Execution Sequence</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exec_seq.html#cdp-daemons">CDP Daemons</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#jobs">Jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#daemon">Daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#id1">CDP Daemons</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="exec_seq.html#the-qcdp-execution-system">The QCDP Execution System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#file-ingestion-subsystem">File Ingestion Subsystem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#workflow-dispatch-system">Workflow Dispatch System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#id2">Workflow Dispatch System</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debugging Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sproc.html">Stored Procedures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lai.html">Logs, Alarms &amp; Invitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rel.html">Release Notes v4.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rel.html#features">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#api-n-point-framework">API N Point Framework</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#facebook-integration">Facebook Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#salesforce-integration">Salesforce Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rel.html#other-improvements">Other Improvements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#ui-improvements">UI Improvements</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Quaero CDP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Datasets &amp; Data Entities</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="datasets-data-entities">
+<h1>Datasets &amp; Data Entities<a class="headerlink" href="#datasets-data-entities" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="terminology">
+<h2>Terminology<a class="headerlink" href="#terminology" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dataset">
+<h3>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h3>
+<p><strong>A dataset can be thought of as an entity that contains a set of related data elements.</strong>
+For example, a table or file containing records, or a file containing a stream of related data with a natural start and end point, such as an image.
+It can be either structured or unstructured. Structured datasets are usually presented in tabular form with each column representing a particular variable.
+Each row may represent a given member of the dataset in question and would describe the various variables which represent that member.
+A dataset can be a file that is ingested from an external source or a table containing data that is derived after performing various operations on other datasets</p>
+</div>
+<div class="section" id="dataset-instance">
+<h3>Dataset Instance<a class="headerlink" href="#dataset-instance" title="Permalink to this headline">¶</a></h3>
+<p>Strictly speaking, the term dataset represents the definition of a dataset; the type and structure of the data but not the data itself.
+A dataset instance is a specific “chunk” of data. For example, a table dataset defines a structure of records with certain fields, each with its own data type and intended content.
+A dataset instance represents the actual data that populates the fields within the records of the table. This follows the object-oriented class and object instance model where many instances of the same class are generated.
+In fact, the term “type” is often used to distinguish between datasets and dataset instances, conversationally; one might refer to an instance of a particular dataset type. For example, a set of related rows in a particular table would be considered as an instance of the dataset represented by that table.
+Another example would a type of file that is received by an external source on a repeating basis.
+The type of file is the dataset; the actual file delivered on any given day is the dataset instance</p>
+<div class="line-block">
+<div class="line">Once you have created a Data Provider, you need to add a Data Entity (or entities) to it.</div>
+</div>
+</div>
+<div class="section" id="staging">
+<h3>Staging<a class="headerlink" href="#staging" title="Permalink to this headline">¶</a></h3>
+<p>Staging is defined as the action of loading a dataset from a file and creating a “workspace table”.
+This table is the starting point of all future workflows, transformations and operations. A staging table is created automatically when a data entity is added.
+All staging tables are present in the STAGING database named <code class="docutils literal notranslate"><span class="pre">EnvironmentName_staging</span></code>.
+For example, <code class="docutils literal notranslate"><span class="pre">CDPTraining01_staging</span></code> database contains all databases loaded for training under the CDPTraining01 environment. All staging tables after being loaded are appended with the prefix <code class="docutils literal notranslate"><span class="pre">STG_</span></code> before the table name.</p>
+<div class="admonition-primary-tables admonition">
+<p class="first admonition-title">PRIMARY TABLES</p>
+<p class="last"><a class="reference internal" href="workflows.html#m-dataset"><span class="std std-ref">M_DATASET</span></a> , <a class="reference internal" href="#m-source-entity"><span class="std std-ref">M_SOURCE_ENTITY</span></a></p>
+</div>
+</div>
+</div>
+<div class="section" id="front-end-configuration">
+<h2>Front End Configuration<a class="headerlink" href="#front-end-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Select any Data Provider and click :<span class="guilabel">Add Data Entity</span> to configure an Entity</p>
+<img alt="_images/ds_1.png" class="align-center" src="_images/ds_1.png" />
+<div class="section" id="ui-options">
+<h3>UI Options<a class="headerlink" href="#ui-options" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="analyze-sample-file">
+<h4>ANALYZE SAMPLE FILE<a class="headerlink" href="#analyze-sample-file" title="Permalink to this headline">¶</a></h4>
+<p>This function allows you to choose a source file sample from which the data fields, the header rows and the basic table definitions can be read.
+Remember that this file is only a sample from which a structure must be read, not the data itself.
+QCDP does not read the data or ingest it at this point, but merely requires the table definition before it can begin ingestion
+(Extract process in ETL).</p>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>When you select the file to be analyzed, QCDP downloads the sample file and only then begins reading it.
+Therefore, providing a large dataset as a sample file will take very long to read and it is best to provide only a subset of the dataset,
+keeping in mind the following scenarios :</p>
+<ul class="simple">
+<li>If you choose the select the first 10-15 rows as a sample subset, remember that there may be a column with only 0 in the first 1000
+rows and floating-point numbers later. If you proceed with sampling the first 10-15 rows,
+then QCDP may assign BIGINT datatype instead of FLOAT or DOUBLE because it is not aware of the actual datatype of the column</li>
+<li>If you choose to select very few rows, QCDP may not have enough data to identify the appropriate data types of all the fields
+(a special case of the first scenario)</li>
+</ul>
+<p class="last">It is best to select a sample of data that contains the datatypes representing the normal distribution of the entire dataset.</p>
+</div>
+</div>
+<div class="section" id="data-fields">
+<h4>DATA FIELDS<a class="headerlink" href="#data-fields" title="Permalink to this headline">¶</a></h4>
+<p>Data fields are column specifications that are either entered manually or automatically by analyzing a sample file.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>The following points must be kept in mind when entering data fields</p>
+<ul class="last">
+<li><p class="first">SQL Server has reserved keywords that are NOT ALLOWED to be used as column names.
+If an entity is created for Staging, then any reserved keyword is appended with the <code class="docutils literal notranslate"><span class="pre">_</span></code> underscore suffix.
+For example, a column named <code class="docutils literal notranslate"><span class="pre">date</span></code> will become <code class="docutils literal notranslate"><span class="pre">date_</span></code> during staging.
+Please do note that this appending is done only for STAGING tables and not for MASTERING or MART tables.
+Using reserved keywords in mastering tables will throw an error during the creation of workflows.
+You can find all the reserved keywords in the metastore table <code class="docutils literal notranslate"><span class="pre">M_RESERVED_KEYWORD</span></code></p>
+</li>
+<li><p class="first">The length of the datatype is selected automatically, when you choose the datatype.
+Pease note that for <code class="docutils literal notranslate"><span class="pre">VARCHAR</span></code> datatype, length SHOULD NOT EXCEED 4000, due to SQL Server limitations.
+Despite 4000 being the limit, it is necessary to only set a length that is sufficient to solve the business problem,
+because at times when more than one primary key must be specified for a table, the following exception is thrown if the
+primary key size exceeds 900 bytes (if PK is of <code class="docutils literal notranslate"><span class="pre">VARCHAR</span></code> type)</p>
+<div class="admonition error">
+<p class="first admonition-title">Error</p>
+<p class="last">Total size of an index or primary key cannot exceed 900 bytes.</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="file-mask">
+<h4>FILE MASK<a class="headerlink" href="#file-mask" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">This option represents the name of the file that is to be loaded or staged.
+But filenames do not stay constant and change usually based on a given pattern.</div>
+<div class="line">For example, a dataset named <code class="docutils literal notranslate"><span class="pre">employees.csv</span></code> is meant to be loaded and staged every 2 hours.
+In such cases the date or a timestamp is appended as a suffix after the file name, <code class="docutils literal notranslate"><span class="pre">employees_2018_12_07_11_15.csv</span></code>.
+In this case, we have a file that was placed on 2018-12-07 at 11:15am.</div>
+</div>
+<div class="line-block">
+<div class="line">For such files we define a file mask - <code class="docutils literal notranslate"><span class="pre">employees_%</span></code>, where the <code class="docutils literal notranslate"><span class="pre">%</span></code> indicates zero or more characters following <code class="docutils literal notranslate"><span class="pre">employees_</span></code>.
+In the backend, a <code class="docutils literal notranslate"><span class="pre">LIKE</span></code> operator is used against this expression to read these files. It is the same as saying Load and stage all files starting with <code class="docutils literal notranslate"><span class="pre">employees_</span></code>.</div>
+<div class="line">Please note, that new files are added each time fresh data is available and so each file can be uniquely identified,
+and previous files either remain or get deleted during routine cleanup.</div>
+</div>
+</div>
+<div class="section" id="column-delimiter">
+<h4>COLUMN DELIMITER<a class="headerlink" href="#column-delimiter" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Represents how the columns are separated inside the file.</div>
+<div class="line">For example, you need to import a text file that is comma delimited (commas separate the different fields that will be placed in adjacent cells). Assume that this file also has a field that has a comma in it</div>
+<div class="line">To handle cases where you need to import a comma delimited file (commas separate the different fields that will be placed in adjacent cells),
+and the fields themselves contain commas as part of their data, we use column delimiter as <code class="docutils literal notranslate"><span class="pre">,</span></code> (comma)</div>
+</div>
+</div>
+<div class="section" id="text-qualifier">
+<h4>TEXT QUALIFIER<a class="headerlink" href="#text-qualifier" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">In some source files, text is enclosed within single or double quotes. A text qualifier is a symbol that lets Excel/CDP know where text begins and ends.
+It is used specifically while importing data.</div>
+<div class="line">If a file has such quotes or any other character representing strings,
+we specify them as a <code class="docutils literal notranslate"><span class="pre">TEXT_QUALIFIER</span></code>. CDP gets rid of the quotes and loads the text directly to the target tables.
+By default, the datatype is STRING and is defined in <code class="docutils literal notranslate"><span class="pre">M_SOURCE_ENTITY_DATASET_DATATYPE_MAP</span></code>.</div>
+<div class="line">In the following sample table, the TEXT_QUALIFIER is <code class="docutils literal notranslate"><span class="pre">&quot;</span></code> (double quote)</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="45%" />
+<col width="34%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Index</th>
+<th class="head">First Name</th>
+<th class="head">Last Name</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1001</td>
+<td>“Aravind”</td>
+<td>“Balaji”</td>
+</tr>
+<tr class="row-odd"><td>1002</td>
+<td>“Vaishnavi”</td>
+<td>“Gururaj”</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="row-delimiter">
+<h4>ROW DELIMITER<a class="headerlink" href="#row-delimiter" title="Permalink to this headline">¶</a></h4>
+<p>Represents how the rows are separated inside the file</p>
+</div>
+<div class="section" id="include-header">
+<h4>INCLUDE HEADER<a class="headerlink" href="#include-header" title="Permalink to this headline">¶</a></h4>
+<p>If enabled, first line in a file is considered a header (column names) and if disabled, they’re considered as first-row data.</p>
+<div class="admonition-tables-involved admonition">
+<p class="first admonition-title">TABLES INVOLVED</p>
+<p class="last"><a class="reference internal" href="#m-source-entity-dataset-datatype-map"><span class="std std-ref">M_SOURCE_ENTITY_DATASET_DATATYPE_MAP</span></a> , <code class="xref any docutils literal notranslate"><span class="pre">M_RESERVED_KEYWORD</span></code></p>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="dataset-operations">
+<h2>Dataset Operations<a class="headerlink" href="#dataset-operations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="modify-dataset-properties">
+<h3>Modify Dataset Properties<a class="headerlink" href="#modify-dataset-properties" title="Permalink to this headline">¶</a></h3>
+<p>If you wish to modify the datatype, name, length or any table properties after its creation,
+you must do so from the backend by using the tables below and following the steps.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="49%" />
+<col width="19%" />
+<col width="31%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Required Tables</th>
+<th class="head">Modify Staging</th>
+<th class="head">Modify Mastering &amp; Mart</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>M_DATASET</td>
+<td>Req</td>
+<td>Req.</td>
+</tr>
+<tr class="row-odd"><td>M_SOURCE_ENTITY</td>
+<td>Req.</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td>M_DATATYPE_REGEX</td>
+<td>Reference</td>
+<td>Reference.</td>
+</tr>
+<tr class="row-odd"><td>M_DATASET_DATATYPE_MAP</td>
+<td>Req.</td>
+<td>Req.</td>
+</tr>
+<tr class="row-even"><td>M_SOURCE_ENTITY_DATASET_DATATYPE_MAP</td>
+<td>Req.</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<ol class="arabic simple">
+<li>Obtain the <code class="docutils literal notranslate"><span class="pre">DATASET_ID</span></code> from the <code class="docutils literal notranslate"><span class="pre">M_DATASET</span></code> table whose data fields you wish to modify.</li>
+<li>The <code class="docutils literal notranslate"><span class="pre">M_DATATYPE_REGEX</span></code> contains all available datatypes, their regular expression and their ID. Note down the datatype and the ID that you wish to convert to. If you’re not modifying datatypes, skip this step.</li>
+<li><code class="docutils literal notranslate"><span class="pre">M_DATASET_DATATYPE_MAP</span></code> contains details of all the columns, their datatypes, length, scale, primary keys, etc. for any given dataset. This table maybe either mastering or even mart.</li>
+<li><code class="docutils literal notranslate"><span class="pre">M_SOURCE_ENTITY_DATASET_DATATYPE_MAP</span></code> contains the mapping of all columns, datatypes, length scale, primary keys, etc. for staging tables. This table is used to map from source file to the staging table. For example, this is where the <code class="docutils literal notranslate"><span class="pre">_</span></code> is appended to all columns that are reserved keywords</li>
+<li>Modify the primary key and data columns in the <code class="docutils literal notranslate"><span class="pre">M_DATASET</span></code> using the same ID, if required</li>
+<li>Use <code class="docutils literal notranslate"><span class="pre">UPDATE</span></code> command to make the required changes.</li>
+<li>After performing the above, navigate to STAGING or MASTERING database and change the properties manually. The above tables merely modify the entries, but the actual table present in staging or mastering database must also be changed without fail.</li>
+</ol>
+<div class="admonition-tables-involved admonition">
+<p class="first admonition-title">TABLES INVOLVED</p>
+<p class="last"><code class="xref any docutils literal notranslate"><span class="pre">M_DATASET_DATATYPE_MAP</span></code> , <a class="reference internal" href="#m-datatype-regex"><span class="std std-ref">M_DATATYPE_REGEX</span></a></p>
+</div>
+</div>
+<div class="section" id="restore-datasets-entities">
+<h3>Restore Datasets/Entities<a class="headerlink" href="#restore-datasets-entities" title="Permalink to this headline">¶</a></h3>
+<p>If you accidently delete a dataset or entity from the front end, the tables will merely be deactivated,
+and their <code class="docutils literal notranslate"><span class="pre">ACTIVE_FLG</span></code> set to <code class="docutils literal notranslate"><span class="pre">0</span></code>. The actual tables with all the data will still exist in the backend.
+This is to prevent accidental deletions. If you delete a table or entity by mistake, you can restore
+them by setting <code class="docutils literal notranslate"><span class="pre">ACTIVE_FLG</span></code> to <code class="docutils literal notranslate"><span class="pre">1</span></code>, by executing the following query.  For staging tables, you’ll have to
+update even the <code class="docutils literal notranslate"><span class="pre">M_SOURCE_ENTITY</span></code> table along with <code class="docutils literal notranslate"><span class="pre">M_DATASET</span></code></p>
+<div class="highlight-SQL notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">declare</span> <span class="o">@</span><span class="n">dataset_id</span> <span class="nb">bigint</span>
+<span class="k">set</span> <span class="o">@</span><span class="n">dataset_id</span> <span class="o">=</span> <span class="mi">1</span><span class="o">******</span><span class="mi">25</span>     <span class="c1">--INSERT YOUR DATASET_ID</span>
+<span class="k">update</span> <span class="n">M_DATASET</span> <span class="k">set</span> <span class="n">ACTIVE_FLG</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">where</span> <span class="n">DATASET_ID</span> <span class="o">=</span> <span class="o">@</span><span class="n">dataset_id</span>
+
+<span class="c1">--For staging datasets, also execute the following</span>
+<span class="k">update</span> <span class="n">M_SOURCE_ENTITY</span> <span class="k">set</span> <span class="n">ACTIVE_FLG</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">where</span> <span class="n">DATASET_ID</span> <span class="o">=</span> <span class="o">@</span><span class="n">dataset_id</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="delete-datasets-entities">
+<h3>Delete Datasets/Entities<a class="headerlink" href="#delete-datasets-entities" title="Permalink to this headline">¶</a></h3>
+<p>If you wish to delete a table permanently, use the following table requirements.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="49%" />
+<col width="19%" />
+<col width="31%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Required Tables</th>
+<th class="head">Delete Staging</th>
+<th class="head">Delete Mastering &amp; Mart</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>M_DATASET</td>
+<td>Req</td>
+<td>Req.</td>
+</tr>
+<tr class="row-odd"><td>M_SOURCE_ENTITY</td>
+<td>Req.</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td colspan="3">Any workflows connected to your table must also be deleted</td>
+</tr>
+</tbody>
+</table>
+<p>Perform the following steps carefully, if you wish to delete the tables permanently.</p>
+<ol class="arabic simple">
+<li>Obtain the <code class="docutils literal notranslate"><span class="pre">DATASET_ID</span></code> of the dataset that you wish to delete.</li>
+<li>Delete all rows with the above <code class="docutils literal notranslate"><span class="pre">DATASET_ID</span></code> from the table <code class="docutils literal notranslate"><span class="pre">M_DATASET</span></code>. If you’re deleting a staging table, you must additionally delete the rows present in <code class="docutils literal notranslate"><span class="pre">M_SOURCE_ENTITY</span></code> with the <code class="docutils literal notranslate"><span class="pre">DATASET_ID</span></code></li>
+<li>Additionally, if your table was connected to any workflows, these must also be deleted, since the workflow will fail because of the absence of the table. Depending on how many workflows are connected, either to or from the table, you must identify the any workflows and delete them correspond to the <code class="docutils literal notranslate"><span class="pre">DATASET_ID</span></code> that you’re deleting on. You can use the following stored procedure to delete a workflow. ‘n’ represents debug mode which simply displays the changes without deletion.</li>
+</ol>
+<blockquote>
+<div><div class="highlight-SQL notranslate"><div class="highlight"><pre><span></span><span class="k">EXEC</span> <span class="n">USP_DELETE_WORKFLOW_CONFIG</span> <span class="mi">100000</span><span class="n">xxxx</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span>  <span class="c1">--Provide Workflow_ID</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>Once the entries have been deleted, you must go to the STAGING or MASTERING database and delete the fact table from there as well. Without this, the original data will still be present, without the entries, thereby taking up space.</li>
+</ol>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you fail to perform all the above-mentioned steps for deletion, the “Lineage” section for
+your datasets will not load and will appear blank. If you notice this happening, it is caused due
+to incomplete deletion of either workflows or datasets. In such cases, attempt to re-delete properly
+using all required tables</p>
+</div>
+<div class="admonition-tables-involved admonition">
+<p class="first admonition-title">TABLES INVOLVED</p>
+<p class="last"><a class="reference internal" href="#m-source-entity"><span class="std std-ref">M_SOURCE_ENTITY</span></a></p>
+</div>
+</div>
+</div>
+<div class="section" id="metastore-tables">
+<h2>Metastore Tables<a class="headerlink" href="#metastore-tables" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/ds_2.png" class="align-center" src="_images/ds_2.png" />
+<div class="section" id="m-source-entity">
+<span id="id1"></span><h3>M_SOURCE_ENTITY<a class="headerlink" href="#m-source-entity" title="Permalink to this headline">¶</a></h3>
+<p>When a file is being staged, an ENTITY must be created from the front end. When an entity is created a record is inserted into this table.
+This table contains details such as the source file name, Dataset ID, description, header option, frequency of scan, file source mask, and other features.</p>
+<dl class="docutils">
+<dt><code class="xref any docutils literal notranslate"><span class="pre">SOURCE_FILE_MASK</span></code></dt>
+<dd>Contains the <span class="xref std std-ref">file mask</span> of the source file</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">COLUMN_DELIMITER</span></code></dt>
+<dd>Specifies the column delimiter</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">TEXT_QUALIFIER</span></code></dt>
+<dd>Specifies the text qualifier</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">ROW_DELIMITER</span></code></dt>
+<dd>Specifies the row delimiter</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">UNZIP_FILE_FLAG</span></code></dt>
+<dd>If set to 1, then the file is considered to be a zipped file and is automatically unzipped.
+If set to 0, it does not perform the unzipping and directly attempts to read the file.</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">HEADER_EXCLUDE_EXPRESSION</span></code></dt>
+<dd>If <code class="docutils literal notranslate"><span class="pre">INCLUDE_HEADER</span></code> is set to 0 or if <code class="docutils literal notranslate"><span class="pre">NUM_HEADER_ROWS</span></code> is 0, then this expression represents the pattern of the header row and is excluded while loading the file.
+If a header is included, this attribute is NULL.</dd>
+</dl>
+</div>
+<div class="section" id="m-source-entity-dataset-datatype-map">
+<span id="id2"></span><h3>M_SOURCE_ENTITY_DATASET_DATATYPE_MAP<a class="headerlink" href="#m-source-entity-dataset-datatype-map" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">During staging, it becomes necessary to identify the datatypes in the file and map them to the datatypes in the staging table.</div>
+<div class="line">In the user interface, when you select an entity, the table details are displayed, with attributes, datatypes their length etc. and these details are obtained from <span class="guilabel">Analyzing Sample File</span></div>
+<div class="line">So, for every attribute in the dataset a <code class="docutils literal notranslate"><span class="pre">DATATYPE_ID</span></code> is assigned. Along with this, other properties such as the length of the datatype, scale, creation timestamp are also present.</div>
+</div>
+</div>
+<div class="section" id="m-datatype-regex">
+<span id="id3"></span><h3>M_DATATYPE_REGEX<a class="headerlink" href="#m-datatype-regex" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">During the usage of CDP, the file maybe staged into various platforms such as SQL, Hive etc. and these may have various equivalent datatypes corresponding to the input file.</div>
+<div class="line">Every datatype can be represented as a Regular Expression and therefore a table of all datatypes, their regular expressions, along with their equivalent datatypes in other platforms is necessary and thus the <code class="docutils literal notranslate"><span class="pre">M_DATATYPE_REGEX</span></code> table contains all those details. The <code class="docutils literal notranslate"><span class="pre">DATATYPE_ID</span></code> uniquely identifies each datatype and is used when performing the datatype mapping during staging as explained above.</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="workflows.html" class="btn btn-neutral float-right" title="Workflows" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="data_provider_config.html" class="btn btn-neutral float-left" title="Data Providers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Quaero 3 LLC
+      <span class="lastupdated">
+        Last updated on 23 April, 2019.
+      </span>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

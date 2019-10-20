@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var path = require("path");
 var nodemailer = require('nodemailer');
 
 //Get HomePage
@@ -10,6 +11,8 @@ router.get('/about',function(req,res){
    Version : Sapling 0.5 BETA
    `)
 });
+
+
 router.post('/sendMail',function(req,res)
 {  
   admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))

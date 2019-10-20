@@ -101,7 +101,7 @@ app.use('/wf_man',wf_man);
 
 //Serve the website
 app.use(express.static('client/build'))
-
+app.use('/docs',express.static('docs/build/html'))
 
 app.get('/*', function(req, res) {
   res.sendFile(path.join(__dirname, 'client/build/index.html'), function(err) {

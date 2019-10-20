@@ -1,0 +1,436 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Index &mdash; Quaero CDP 1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/q_logo_full.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #1976D2" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/q_logo_partial.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#the-metastore">The Metastore</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="host_config.html">Host Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="host_config.html#m-host">M_HOST</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_provider_config.html">Data Providers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#backend-configuration-metastore-tables">Backend Configuration &amp; Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_provider_config.html#m-source-system">M_SOURCE_SYSTEM</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#encrypting-decrypting-passwords">Encrypting &amp; Decrypting Passwords</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_entity_config.html">Datasets &amp; Data Entities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#terminology">Terminology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#dataset">Dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#dataset-instance">Dataset Instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#staging">Staging</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#front-end-configuration">Front End Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#ui-options">UI Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#dataset-operations">Dataset Operations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#modify-dataset-properties">Modify Dataset Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#restore-datasets-entities">Restore Datasets/Entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#delete-datasets-entities">Delete Datasets/Entities</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-source-entity">M_SOURCE_ENTITY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-source-entity-dataset-datatype-map">M_SOURCE_ENTITY_DATASET_DATATYPE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-datatype-regex">M_DATATYPE_REGEX</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#workflow-mappings">Workflow Mappings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#types-of-workflows">Types of Workflows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#conformance-workflows">Conformance Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#front-end-configuration">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#aggregate-workflows">Aggregate Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id1">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#custom-workflows">Custom Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id3">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#backend-configuration">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#delete-expiration-workflow">Delete/Expiration Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id4">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id5">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#extract-transfer-workflow">Extract &amp; Transfer Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-instance-status">M_WORKFLOW_INSTANCE_STATUS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow">M_WORKFLOW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-type">M_WORKFLOW_TYPE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-input">M_WORKFLOW_INPUT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-dataset">M_DATASET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package">M_WORKFLOW_PACKAGE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package-param">M_WORKFLOW_PACKAGE_PARAM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package-param-map">M_WORKFLOW_PACKAGE_PARAM_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-execution-subsystem">M_WORKFLOW_EXECUTION_SUBSYSTEM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-conformance">M_TABLE_CONFORMANCE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-conformance-map">M_TABLE_CONFORMANCE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-aggregation">M_TABLE_AGGREGATION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-aggregation-map">M_TABLE_AGGREGATION_MAP</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exec_seq.html">Execution Sequence</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exec_seq.html#cdp-daemons">CDP Daemons</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#jobs">Jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#daemon">Daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#id1">CDP Daemons</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="exec_seq.html#the-qcdp-execution-system">The QCDP Execution System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#file-ingestion-subsystem">File Ingestion Subsystem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#workflow-dispatch-system">Workflow Dispatch System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#id2">Workflow Dispatch System</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debugging Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sproc.html">Stored Procedures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lai.html">Logs, Alarms &amp; Invitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rel.html">Release Notes v4.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rel.html#features">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#api-n-point-framework">API N Point Framework</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#facebook-integration">Facebook Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#salesforce-integration">Salesforce Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rel.html#other-improvements">Other Improvements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#ui-improvements">UI Improvements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#system-upgrades-and-improvements">System upgrades and improvements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#minor-features-added">Minor features added</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rel.html#bugs-issues-fixed">Bugs &amp; Issues fixed</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Quaero CDP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Index</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ 
+</div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-alias"><strong>ALIAS</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-code-script"><strong>CODE SCRIPT</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="exec_seq.html#term-condition-evaluator"><strong>Condition Evaluator</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-data-connection-type"><strong>DATA CONNECTION TYPE</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-de-duplicate-rows"><strong>DE-DUPLICATE ROWS</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-incremental"><strong>INCREMENTAL</strong></a>
+</li>
+      <li><a href="workflows.html#term-11"><strong>Incremental</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-insert"><strong>INSERT</strong></a>
+</li>
+      <li><a href="workflows.html#term-insert-update"><strong>INSERT &amp; UPDATE</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-m-workflow"><strong>M_WORKFLOW</strong></a>
+</li>
+      <li><a href="workflows.html#term-m-workflow-input-m-workflow-output"><strong>M_WORKFLOW_INPUT/ M_WORKFLOW_OUTPUT</strong></a>
+</li>
+      <li><a href="workflows.html#term-m-workflow-package"><strong>M_WORKFLOW_PACKAGE</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-m-workflow-package-map"><strong>M_WORKFLOW_PACKAGE_MAP</strong></a>
+</li>
+      <li><a href="workflows.html#term-m-workflow-package-param"><strong>M_WORKFLOW_PACKAGE_PARAM</strong></a>
+</li>
+      <li><a href="workflows.html#term-maintenance-strategy"><strong>MAINTENANCE STRATEGY</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-partition"><strong>PARTITION</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-13"><strong>Partition</strong></a>
+</li>
+      <li><a href="workflows.html#term-primary-table"><strong>PRIMARY TABLE</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-rebuild"><strong>REBUILD</strong></a>
+</li>
+      <li><a href="workflows.html#term-12"><strong>Rebuild</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-replace-with-alias"><strong>REPLACE WITH ALIAS</strong></a>
+</li>
+      <li><a href="workflows.html#term-runtime"><strong>RUNTIME</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="workflows.html#term-source-output-datasets"><strong>SOURCE &amp; OUTPUT DATASETS</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Quaero 3 LLC
+      <span class="lastupdated">
+        Last updated on 23 April, 2019.
+      </span>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

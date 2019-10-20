@@ -1,0 +1,460 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Execution Sequence &mdash; Quaero CDP 1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/q_logo_full.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Debugging Techniques" href="debug.html" />
+    <link rel="prev" title="Workflows" href="workflows.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #1976D2" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/q_logo_partial.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#the-metastore">The Metastore</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="host_config.html">Host Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="host_config.html#m-host">M_HOST</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_provider_config.html">Data Providers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#backend-configuration-metastore-tables">Backend Configuration &amp; Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_provider_config.html#m-source-system">M_SOURCE_SYSTEM</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#encrypting-decrypting-passwords">Encrypting &amp; Decrypting Passwords</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_entity_config.html">Datasets &amp; Data Entities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#terminology">Terminology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#dataset">Dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#dataset-instance">Dataset Instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#staging">Staging</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#front-end-configuration">Front End Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#ui-options">UI Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#dataset-operations">Dataset Operations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#modify-dataset-properties">Modify Dataset Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#restore-datasets-entities">Restore Datasets/Entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#delete-datasets-entities">Delete Datasets/Entities</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-source-entity">M_SOURCE_ENTITY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-source-entity-dataset-datatype-map">M_SOURCE_ENTITY_DATASET_DATATYPE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-datatype-regex">M_DATATYPE_REGEX</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#workflow-mappings">Workflow Mappings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#types-of-workflows">Types of Workflows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#conformance-workflows">Conformance Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#front-end-configuration">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#aggregate-workflows">Aggregate Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id1">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#custom-workflows">Custom Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id3">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#backend-configuration">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#delete-expiration-workflow">Delete/Expiration Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id4">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#id5">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#extract-transfer-workflow">Extract &amp; Transfer Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-instance-status">M_WORKFLOW_INSTANCE_STATUS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow">M_WORKFLOW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-type">M_WORKFLOW_TYPE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-input">M_WORKFLOW_INPUT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-dataset">M_DATASET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package">M_WORKFLOW_PACKAGE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package-param">M_WORKFLOW_PACKAGE_PARAM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-package-param-map">M_WORKFLOW_PACKAGE_PARAM_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-workflow-execution-subsystem">M_WORKFLOW_EXECUTION_SUBSYSTEM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-conformance">M_TABLE_CONFORMANCE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-conformance-map">M_TABLE_CONFORMANCE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-aggregation">M_TABLE_AGGREGATION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflows.html#m-table-aggregation-map">M_TABLE_AGGREGATION_MAP</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Execution Sequence</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cdp-daemons">CDP Daemons</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#jobs">Jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#daemon">Daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">CDP Daemons</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-qcdp-execution-system">The QCDP Execution System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#file-ingestion-subsystem">File Ingestion Subsystem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-dispatch-system">Workflow Dispatch System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Workflow Dispatch System</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debugging Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sproc.html">Stored Procedures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lai.html">Logs, Alarms &amp; Invitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rel.html">Release Notes v4.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rel.html#features">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#api-n-point-framework">API N Point Framework</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#facebook-integration">Facebook Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#salesforce-integration">Salesforce Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rel.html#other-improvements">Other Improvements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#ui-improvements">UI Improvements</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Quaero CDP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Execution Sequence</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="execution-sequence">
+<h1>Execution Sequence<a class="headerlink" href="#execution-sequence" title="Permalink to this headline">¶</a></h1>
+<p>We shall now see how Quaero CDP executes workflows and performs operations on data and also how the entire system works together
+by orchestrating the various components</p>
+<div class="section" id="cdp-daemons">
+<h2>CDP Daemons<a class="headerlink" href="#cdp-daemons" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="jobs">
+<h3>Jobs<a class="headerlink" href="#jobs" title="Permalink to this headline">¶</a></h3>
+<p>In database engineering terms, a job is a background process that is executed by an SQL Agent in SQL Server.
+The agent is responsible for scheduling jobs and handles other automated tasks. Jobs may involve the running of queries or
+execution of SSIS packages.</p>
+</div>
+<div class="section" id="daemon">
+<h3>Daemon<a class="headerlink" href="#daemon" title="Permalink to this headline">¶</a></h3>
+<p>In database engineering terms, a job is a background process that is executed by an SQL Agent in SQL Server. The agent is responsible
+for scheduling jobs and handles other automated tasks. Jobs may involve the running of queries or execution of SSIS packages.</p>
+</div>
+<div class="section" id="id1">
+<h3>CDP Daemons<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The CDP Environment also has multiple daemons and jobs running in the background.
+The following figure shows a snapshot of Job Activity Monitor in the CDP Environment. It can be viewed through SQL Server Management Studio.</p>
+<a class="reference internal image-reference" href="_images/es_1.png"><img alt="_images/es_1.png" class="align-center" src="_images/es_1.png" style="width: 45em;" /></a>
+<table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="83%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Daemon Job</th>
+<th class="head">Purpose</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>FTP Scanner</td>
+<td>Checks for file availability and inserts tacking data</td>
+</tr>
+<tr class="row-odd"><td>FTP Manager</td>
+<td>Downloads (ingests) the “Ready” files into RECEIVE folder</td>
+</tr>
+<tr class="row-even"><td>File Manager</td>
+<td>Performs operations like zipping/unzipping, moving files into work folder, inserting metadata for processing the file.</td>
+</tr>
+<tr class="row-odd"><td>Manifest Queue Manager</td>
+<td>Manifests are queued for execution after being built</td>
+</tr>
+<tr class="row-even"><td>Workflow Dispatcher</td>
+<td>Constantly evaluates dispatch condition of all “READY” workflows and executes (dispatches) them when conditions are met.</td>
+</tr>
+<tr class="row-odd"><td>Notification Manager</td>
+<td>Responsible for sending mails, error logs, and other notifications</td>
+</tr>
+<tr class="row-even"><td>Dataset Expiration Manager</td>
+<td>Drops/Truncates tables that are expired during routine cleanup</td>
+</tr>
+<tr class="row-odd"><td>Manifest Garbage Collector</td>
+<td>Deletes manifests of workflows whose status is “PendingCleanup”</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="the-qcdp-execution-system">
+<h2>The QCDP Execution System<a class="headerlink" href="#the-qcdp-execution-system" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/es_2.png" class="align-center" src="_images/es_2.png" />
+<p>There are three main subsystems that make up the whole of QCDP:</p>
+<ol class="arabic simple">
+<li>File Ingestion Subsystem</li>
+<li>Workflow Dispatch Subsystem</li>
+<li>Workflow Execution Subsystem</li>
+</ol>
+<div class="section" id="file-ingestion-subsystem">
+<h3>File Ingestion Subsystem<a class="headerlink" href="#file-ingestion-subsystem" title="Permalink to this headline">¶</a></h3>
+<div class="admonition danger">
+<p class="first admonition-title">Danger</p>
+<p class="last">This section (File Ingestion Subsystem) is yet to be reviewed by technical experts and
+so any information here may be fully or partially incorrect. It is therefore advised that this information should not be used in Project implementation and other actions that depend
+on the accuracy of this information</p>
+</div>
+<p>The purpose of this subsystem is to recognize the availability of new data files and ingest them into the QCDP workflow system.
+This includes operations such as interacting with internal and external FTP sites, AWS, Google Cloud Store or even External API ,
+downloading, decrypting, decompressing (e.g. unzipping) files and cataloging them in the workflow metadata as datasets (or dataset instances
+to be precise).</p>
+<div class="section" id="ftp-scanner">
+<h4>FTP Scanner<a class="headerlink" href="#ftp-scanner" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>This job periodically checks for the availability of the new files in the specified FTP/FTPS/SFTP site.</li>
+<li>The interval is specified by <code class="docutils literal notranslate"><span class="pre">SOURCE_SYSTEM_TIME_BETWEEN_SCAN_SECS</span></code>.</li>
+<li>Location of the FTP server such as host name username, password and other attributes are specified in the  <code class="docutils literal notranslate"><span class="pre">M_SOURCE_SYSTEM</span></code> metastore table and at every interval performs a login and scans the folders</li>
+<li>The FTP Scanner iterates through all the files and adds the tracking information in the <code class="docutils literal notranslate"><span class="pre">M_TRACK_FTP</span></code> table.</li>
+<li>If a file was already ingested, the corresponding file’s STATUS attribute is set to <code class="docutils literal notranslate"><span class="pre">Previously</span> <span class="pre">Received</span></code>. If the file is new and it is about to be ingested, it is set to <code class="docutils literal notranslate"><span class="pre">Ready</span></code>. After ingestion, the status is set to <code class="docutils literal notranslate"><span class="pre">Preparation</span> <span class="pre">Complete</span></code></li>
+<li>If the file has already been ingested the scanner adds another record, sets status to <code class="docutils literal notranslate"><span class="pre">Previously</span> <span class="pre">Received</span></code> and proceeds to read the next file, or the job “sleeps” until the next scheduled run.</li>
+</ul>
+</div>
+<div class="section" id="ftp-manager">
+<h4>FTP Manager<a class="headerlink" href="#ftp-manager" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>The FTP manager constantly checks the <code class="docutils literal notranslate"><span class="pre">M_TRACK_FTP</span></code> table for any new files that are in the <code class="docutils literal notranslate"><span class="pre">Ready</span></code> Status.</li>
+<li>The FTP manager then performs the downloading of the ready files into the RECEIVED folder. It later adds metadata record about the file into the <code class="docutils literal notranslate"><span class="pre">M_TRACK_FILE</span></code> table, such as creation date, file name, file size and status.</li>
+<li>When the download completes successfully the <code class="docutils literal notranslate"><span class="pre">M_TRACK_FILE</span> <span class="pre">STATUS</span></code> attribute is set to <code class="docutils literal notranslate"><span class="pre">Received</span></code> and <code class="docutils literal notranslate"><span class="pre">M_TRACK_FTP</span> <span class="pre">STATUS</span></code> is set to <code class="docutils literal notranslate"><span class="pre">Preparation</span> <span class="pre">Complete</span></code></li>
+</ul>
+</div>
+<div class="section" id="file-manager">
+<h4>File Manager<a class="headerlink" href="#file-manager" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>The file manager job constantly checks the received folder for any files that were downloaded.</li>
+<li>If any files were found, the <code class="docutils literal notranslate"><span class="pre">M_SOURCE_ENTITY</span></code> table is checked for the <code class="docutils literal notranslate"><span class="pre">UNIZIP_FILE_FLG</span></code>. If its set to 1, unzipping is performed by the file manager using the password specified in <code class="docutils literal notranslate"><span class="pre">UNZIP_FILE_PASSWORD</span></code>, unless it is <code class="docutils literal notranslate"><span class="pre">NULL</span></code>.</li>
+<li>If any file manager operation fails such as unzipping or wrong password, log entries are made whose location is specified in <code class="docutils literal notranslate"><span class="pre">LOG_FILE_DIRECTORY</span></code> attribute of <code class="docutils literal notranslate"><span class="pre">M_SOURCE_SYSTEM</span></code> table</li>
+<li>After extraction is complete (if required), the final file is moved to the WORK directory whose path is specified by the WORK_DIRECTORY attribute in <code class="docutils literal notranslate"><span class="pre">M_SOURCE_SYSTEM</span></code> table.</li>
+<li>Finally, metadata about the file is added to <code class="docutils literal notranslate"><span class="pre">M_TRACK_DATASET_INSTANCE</span></code> for processing</li>
+</ul>
+</div>
+</div>
+<div class="section" id="workflow-dispatch-system">
+<h3>Workflow Dispatch System<a class="headerlink" href="#workflow-dispatch-system" title="Permalink to this headline">¶</a></h3>
+<p>The purpose of this subsystem is to evaluate workflow conditions and dispatch workflows to the appropriate workflow execution subsystem
+when they meet the pre-defined conditions.  This involves evaluation of schedule and dataset state conditions, packaging and
+transmission of workflow definition files and optionally, data files to the target workflow execution subsystem.</p>
+<dl class="glossary docutils">
+<dt id="term-condition-evaluator">Condition Evaluator</dt>
+<dd><div class="first last line-block">
+<div class="line">The condition evaluator component is responsible for constantly checking workflows’ conditions.</div>
+<div class="line">Example, the condition evaluator checks all Active workflows to see if their dispatch conditions are met. If they return true, the workflow execution subsystem begins the execution of the workflow</div>
+<div class="line">The conditional evaluator also has other condition types such as System Conditions, time window conditions, and custom user-conditions.</div>
+</div>
+</dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">This</span> <span class="pre">section</span> <span class="pre">will</span> <span class="pre">be</span> <span class="pre">updated</span> <span class="pre">when</span> <span class="pre">further</span> <span class="pre">information</span> <span class="pre">is</span> <span class="pre">available.</span> <span class="pre">Please</span> <span class="pre">check</span> <span class="pre">back</span> <span class="pre">later</span></code></p>
+</div>
+<div class="section" id="id2">
+<h3>Workflow Dispatch System<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>The purpose of this subsystem is to execute workflows, consuming input datasets and creating output datasets, both
+of taking the form of files or tables.  It is also responsible for synchronizing datasets between disparate data storage
+environments; for example, Hadoop Hive, Netezza and SQL Server</p>
+<p><code class="docutils literal notranslate"><span class="pre">This</span> <span class="pre">section</span> <span class="pre">will</span> <span class="pre">be</span> <span class="pre">updated</span> <span class="pre">when</span> <span class="pre">further</span> <span class="pre">information</span> <span class="pre">is</span> <span class="pre">available.</span> <span class="pre">Please</span> <span class="pre">check</span> <span class="pre">back</span> <span class="pre">later</span></code></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="debug.html" class="btn btn-neutral float-right" title="Debugging Techniques" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="workflows.html" class="btn btn-neutral float-left" title="Workflows" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Quaero 3 LLC
+      <span class="lastupdated">
+        Last updated on 23 April, 2019.
+      </span>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

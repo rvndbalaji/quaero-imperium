@@ -34,13 +34,13 @@ class Home extends React.Component
                         link = ''
                          />     
                              */
-                         }                                             
-                         
+                         }                                                
                          <MenuCard 
                         title='Documentation'
                         desc = 'Learn everything there is to know about Quaero CDP'                        
                         bg = 'linear-gradient( 135deg, #CE9FFC 10%, #7367F0 100%)'
-                        link = ''
+                        link = {'https://' + window.location.hostname + '/docs/'}
+                        target = '_blank'
                          />     
                     </Row>
                 </Container>

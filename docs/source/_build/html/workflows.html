@@ -1,0 +1,980 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Workflows &mdash; Quaero CDP 1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/q_logo_full.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Execution Sequence" href="exec_seq.html" />
+    <link rel="prev" title="Datasets &amp; Data Entities" href="data_entity_config.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #1976D2" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/q_logo_partial.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#the-metastore">The Metastore</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="host_config.html">Host Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="host_config.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="host_config.html#m-host">M_HOST</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_provider_config.html">Data Providers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#front-end-configuration">Front End Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#backend-configuration-metastore-tables">Backend Configuration &amp; Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_provider_config.html#m-source-system">M_SOURCE_SYSTEM</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider_config.html#encrypting-decrypting-passwords">Encrypting &amp; Decrypting Passwords</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_entity_config.html">Datasets &amp; Data Entities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#terminology">Terminology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#dataset">Dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#dataset-instance">Dataset Instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#staging">Staging</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#front-end-configuration">Front End Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#ui-options">UI Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#dataset-operations">Dataset Operations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#modify-dataset-properties">Modify Dataset Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#restore-datasets-entities">Restore Datasets/Entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#delete-datasets-entities">Delete Datasets/Entities</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_entity_config.html#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-source-entity">M_SOURCE_ENTITY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-source-entity-dataset-datatype-map">M_SOURCE_ENTITY_DATASET_DATATYPE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_entity_config.html#m-datatype-regex">M_DATATYPE_REGEX</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-mappings">Workflow Mappings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#types-of-workflows">Types of Workflows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#conformance-workflows">Conformance Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#front-end-configuration">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#aggregate-workflows">Aggregate Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Front End Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-workflows">Custom Workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#backend-configuration">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#delete-expiration-workflow">Delete/Expiration Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Front End Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Backend Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#extract-transfer-workflow">Extract &amp; Transfer Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#metastore-tables">Metastore Tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#m-workflow-instance-status">M_WORKFLOW_INSTANCE_STATUS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-workflow">M_WORKFLOW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-workflow-type">M_WORKFLOW_TYPE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-workflow-input">M_WORKFLOW_INPUT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-dataset">M_DATASET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-workflow-package">M_WORKFLOW_PACKAGE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-workflow-package-param">M_WORKFLOW_PACKAGE_PARAM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-workflow-package-param-map">M_WORKFLOW_PACKAGE_PARAM_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-workflow-execution-subsystem">M_WORKFLOW_EXECUTION_SUBSYSTEM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-table-conformance">M_TABLE_CONFORMANCE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-table-conformance-map">M_TABLE_CONFORMANCE_MAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-table-aggregation">M_TABLE_AGGREGATION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#m-table-aggregation-map">M_TABLE_AGGREGATION_MAP</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exec_seq.html">Execution Sequence</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exec_seq.html#cdp-daemons">CDP Daemons</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#jobs">Jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#daemon">Daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#id1">CDP Daemons</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="exec_seq.html#the-qcdp-execution-system">The QCDP Execution System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#file-ingestion-subsystem">File Ingestion Subsystem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#workflow-dispatch-system">Workflow Dispatch System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exec_seq.html#id2">Workflow Dispatch System</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debugging Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sproc.html">Stored Procedures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lai.html">Logs, Alarms &amp; Invitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rel.html">Release Notes v4.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rel.html#features">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#api-n-point-framework">API N Point Framework</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#facebook-integration">Facebook Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#salesforce-integration">Salesforce Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rel.html#other-improvements">Other Improvements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rel.html#ui-improvements">UI Improvements</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Quaero CDP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Workflows</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="workflows">
+<h1>Workflows<a class="headerlink" href="#workflows" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line"><strong>A workflow is a well-defined sequence of components that allow</strong> <a class="reference external" href="https://en.wikipedia.org/wiki/Extract,_transform,_load">Extract, Transform and Load</a> <strong>operations on a dataset.</strong></div>
+<div class="line">It is a Directed Acyclic Graph; whose input and output are both datasets.
+A workflow allows you to visualize the data flow throughout the system. A workflow is a fundamental entity
+in the QCDP architecture. It represents a data management process which operates on dataset instances.
+A workflow takes one or more dataset instances as input, operates on the input dataset instances and
+creates (or updates) one or more dataset instances as output.</div>
+</div>
+<div class="line-block">
+<div class="line"><strong>Workflow Instance</strong></div>
+<div class="line">Strictly speaking, the term workflow represents the definition of a workflow; the instructions, tasks,
+parameters and types of datasets that the workflow accepts as input and creates as output.
+A workflow instance is a specific, running instance of a workflow. For example, a workflow might define a
+particular sequence of processes that are to be executed upon rows in a particular database table.
+A workflow instance is a specific and discreet execution of that workflow executing against a specific
+set of data, say the latest set of rows resulting from the import of an external file into a staging table.
+This follows the object-oriented class and object instance model where many instances
+of the same class are generated</div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For more information about workflow execution, see <a class="reference internal" href="exec_seq.html"><span class="doc">Execution Sequence</span></a></p>
+</div>
+<a class="reference internal image-reference" href="_images/wf_7.png"><img alt="_images/wf_7.png" class="align-center" src="_images/wf_7.png" style="width: 50em;" /></a>
+<div class="admonition-primary-tables admonition">
+<p class="first admonition-title">PRIMARY TABLES</p>
+<p class="last"><a class="reference internal" href="#m-workflow"><span class="std std-ref">M_WORKFLOW</span></a> , <a class="reference internal" href="#m-workflow-instance-status"><span class="std std-ref">M_WORKFLOW_INSTANCE_STATUS</span></a> , <a class="reference internal" href="#m-workflow-type"><span class="std std-ref">M_WORKFLOW_TYPE</span></a> , <a class="reference internal" href="#m-workflow-input"><span class="std std-ref">M_WORKFLOW_INPUT</span></a> , <a class="reference internal" href="#m-workflow-execution-subsystem"><span class="std std-ref">M_WORKFLOW_EXECUTION_SUBSYSTEM</span></a></p>
+</div>
+<div class="section" id="workflow-mappings">
+<span id="wf-map"></span><h3>Workflow Mappings<a class="headerlink" href="#workflow-mappings" title="Permalink to this headline">¶</a></h3>
+<p>Every workflow takes a dataset as input and produces another dataset as output.
+After we create the source and destination tables, during the creation of workflows, we need
+to specify the source to destination column mappings similar to SSIS table mappings.</p>
+<a class="reference internal image-reference" href="_images/wf_1.png"><img alt="_images/wf_1.png" class="align-center" src="_images/wf_1.png" style="width: 30em;" /></a>
+<div class="admonition-tables-involved admonition">
+<p class="first admonition-title">TABLES INVOLVED</p>
+<p class="last"><a class="reference internal" href="#m-table-conformance-map"><span class="std std-ref">M_TABLE_CONFORMANCE_MAP</span></a> , <a class="reference internal" href="#m-table-aggregation-map"><span class="std std-ref">M_TABLE_AGGREGATION_MAP</span></a></p>
+</div>
+<p>In the following figure, we can see that the left side :<span class="guilabel">Output Column</span> is the column name of the destination table and
+the right side <span class="guilabel">Expression</span> is the SQL expression to be applied on the source column. We can use any valid aggregate
+functions such as sum, count etc for Aggregate workflow and functions like cast, concat, substring for conformance workflows.
+We can also use a function or variable within <code class="docutils literal notranslate"><span class="pre">${</span> <span class="pre">}</span></code> to evaluate it during runtime. Example, <code class="docutils literal notranslate"><span class="pre">${ROWNUM();}</span></code> evaluates the row number
+during run time and sets the value to the destination column. Specifying only the source column name will simply perform a 1:1
+mapping from source to destination.</p>
+<a class="reference internal image-reference" href="_images/wf_4.png"><img alt="_images/wf_4.png" class="align-center" src="_images/wf_4.png" style="width: 25em;" /></a>
+</div>
+<div class="section" id="types-of-workflows">
+<h3>Types of Workflows<a class="headerlink" href="#types-of-workflows" title="Permalink to this headline">¶</a></h3>
+<p>The following are the different types of workflows:</p>
+<ol class="arabic simple">
+<li><a class="reference internal" href="#conf-wf"><span class="std std-ref">Conformance Workflow</span></a></li>
+<li><a class="reference internal" href="#agg-wf"><span class="std std-ref">Aggregate Workflow</span></a></li>
+<li><a class="reference internal" href="#cust-wf"><span class="std std-ref">Custom Workflows</span></a></li>
+<li><a class="reference internal" href="#del-wf"><span class="std std-ref">Delete/Expiration Workflows</span></a></li>
+<li><a class="reference internal" href="#et-wf"><span class="std std-ref">Extract &amp; Transfer Workflows</span></a></li>
+</ol>
+</div>
+</div>
+<div class="section" id="conformance-workflows">
+<span id="conf-wf"></span><h2>Conformance Workflows<a class="headerlink" href="#conformance-workflows" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">A conformance workflow is one where one-to-one transformations take place from source column to destination column.</div>
+<div class="line">Examples include, typcasting, uppercase, lower case, substring operations etc..</div>
+</div>
+<div class="section" id="front-end-configuration">
+<h3>Front End Configuration<a class="headerlink" href="#front-end-configuration" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">In the user interface, we can create conformance workflows by</div>
+<div class="line"><span class="guilabel">Selecting a dataset &gt; Lineage &gt; Add Workflow &gt; Conformance</span></div>
+</div>
+<div class="section" id="maintenance-strategy">
+<span id="maint-strat"></span><h4>Maintenance Strategy<a class="headerlink" href="#maintenance-strategy" title="Permalink to this headline">¶</a></h4>
+<p>QCDP was designed to allow the creation of workflows
+and automate ETL operations at specified intervals. New and fresh data is constantly ingested and staged.
+There are a few strategies we can have, that resolves the problem of dealing with old data that is
+already staged and how the new data must be inserted into the existing tables. Let us discuss the few maintenance
+strategies available in the QCDP</p>
+<a class="reference internal image-reference" href="_images/wf_2.png"><img alt="_images/wf_2.png" class="align-center" src="_images/wf_2.png" style="width: 45em;" /></a>
+<dl class="glossary docutils">
+<dt id="term-de-duplicate-rows">DE-DUPLICATE ROWS</dt>
+<dd>This option removes any duplicate rows in the table.
+<strong>A row is considered duplicate if and only if there exist two or more rows where ALL column values are identical</strong>
+If any one of the column values are different, then the row is not identical and will not be removed.
+It is usually safe for this option to be turned off if primary keys are specified.</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-insert">INSERT</dt>
+<dd>When fresh data is available, selecting this option allows any new rows to be “inserted”
+and appended to the end of the table. The previous data remains and so the number of rows increases.
+<strong>This option requires that NO PRIMARY KEYS be set in this table</strong>. Any new data which contains rows with duplicate
+column values, when inserted into a table with primary keys will violate the primary key constraint
+and this option will fail the conformance workflow. We can conclude that enabling this option has the possibility
+of containing duplicate rows on insertion of new data. This can be avoided by enabling <code class="docutils literal notranslate"><span class="pre">Deduplicate</span> <span class="pre">Rows</span></code> if necessary.</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-insert-update">INSERT &amp; UPDATE</dt>
+<dd>This option allows insertion of rows with new data to the end of the table. For rows with duplicate column values,
+the existing row is updated instead. To make this possible, <strong>we need to MAKE SURE PRIMARY KEYS EXIST in the table</strong> so
+that duplicate values are updated instead of being appended at the end. If the new row is unique, it is simply appended.</dd>
+</dl>
+<div class="admonition-only-for-nerds admonition">
+<p class="first admonition-title">ONLY FOR NERDS…</p>
+<p class="last">In SQL Server backend, all primary key tables are stored using Indexes.
+These indexes are basically <a class="reference external" href="https://en.wikipedia.org/wiki/Hash_table">hash tables</a>, in the form of “key-value pairs”, whose <code class="docutils literal notranslate"><span class="pre">key</span></code>
+is derived by applying a <a class="reference external" href="https://en.wikipedia.org/wiki/Hash_function">Hash Function</a> to the primary key. The <code class="docutils literal notranslate"><span class="pre">value</span></code> contains the column names of the table.
+We know that hash tables are the fastest data structure with an access time of <code class="docutils literal notranslate"><span class="pre">O(1)</span></code> time complexity.
+So, hashing a primary key allows direct insertion of data without performing a search.</p>
+</div>
+<p>Let us consider the insertion of new rows from fresh data into a table with this option enabled.
+In such cases, the primary key of the new row is obtained.
+We use a hashing function on this primary key, <code class="xref any docutils literal notranslate"><span class="pre">${HASHKEY(colname_or_expression)}</span></code>.
+The destination table’s index is found, and the corresponding column values are updated. If the hash-key is not present in the existing table,
+a new row is inserted at the end.</p>
+<p>If composite keys are in the table, the HASHKEY function can be applied to any one of the primary keys that constitute the composite key.
+This is because a hash table is a two-dimensional structure with a key-value pair and requires the hashing of at-least one column in the table.
+During creation of workflows, we can define the mappings as shown in figure :</p>
+<a class="reference internal image-reference" href="_images/wf_3.png"><img alt="_images/wf_3.png" class="align-center" src="_images/wf_3.png" style="width: 25em;" /></a>
+<p>If you fail to specify a HASHKEY function in the conformance expression, you will be greeted with the following error</p>
+<div class="admonition error">
+<p class="first admonition-title">Error</p>
+<p class="last">Executing the query “hashkey colummn required when &#64;target_table_update…” failed with the following error: “Incorrect syntax near
+‘required’.”. Possible failure reasons: Problems with the query, “ResultSet” property not set correctly,
+parameters not set correctly, or connection not established correctly.</p>
+</div>
+<div class="admonition-tables-involved admonition">
+<p class="first admonition-title">TABLES INVOLVED</p>
+<p class="last"><a class="reference internal" href="#m-table-conformance"><span class="std std-ref">M_TABLE_CONFORMANCE</span></a> , <a class="reference internal" href="#m-table-conformance-map"><span class="std std-ref">M_TABLE_CONFORMANCE_MAP</span></a></p>
+</div>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">For a more thorough understanding of maintenance strategy, <span class="xref std std-doc">see this experiment</span></p>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="aggregate-workflows">
+<span id="agg-wf"></span><h2>Aggregate Workflows<a class="headerlink" href="#aggregate-workflows" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">Aggregation workflow is used to change the grain of data by aggregating the incoming data on a filter expression
+(basically a key that consists of a column or set of columns) so that there is one output record for every corresponding key.
+Ideally the output dataset should be a Fact Aggregate table but in certain circumstances a Fact table would be acceptable.</div>
+<div class="line">Examples include, typcasting, uppercase, lower case, substring operations etc..</div>
+</div>
+<div class="section" id="id1">
+<h3>Front End Configuration<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">In the user interface, we can create conformance workflows by</div>
+<div class="line"><span class="guilabel">Selecting a dataset &gt; Lineage &gt; Add Workflow &gt; Aggregation</span></div>
+</div>
+<div class="section" id="id2">
+<h4>Maintenance Strategy<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference internal" href="#maint-strat"><span class="std std-ref">Similar to Conformance Workflow</span></a>, there are a few strategies we can have, that resolves the problem of dealing with old data that is
+already staged and how the new data must be inserted into the existing tables. Let us discuss the few maintenance
+strategies available for Aggregate Workflows</p>
+<a class="reference internal image-reference" href="_images/wf_5.png"><img alt="_images/wf_5.png" class="align-center" src="_images/wf_5.png" style="width: 25em;" /></a>
+<dl class="glossary docutils">
+<dt id="term-incremental">INCREMENTAL</dt>
+<dd>When fresh data is available, selecting this option allows any new rows to be aggregated and appended to the end of the table. The previous data, along with the new rows are aggregated together</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-rebuild">REBUILD</dt>
+<dd>Every time the workflow executes, and fresh data is available, the table is truncated, and later aggregation is performed. This truncation of data followed by the aggregation is called “rebuild”</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-partition">PARTITION</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">Intentionally</span> <span class="pre">left</span> <span class="pre">blank</span> <span class="pre">due</span> <span class="pre">to</span> <span class="pre">insufficient</span> <span class="pre">information.</span> <span class="pre">Please</span> <span class="pre">check</span> <span class="pre">back</span> <span class="pre">later</span></code></dd>
+</dl>
+<div class="admonition-tables-involved admonition">
+<p class="first admonition-title">TABLES INVOLVED</p>
+<p class="last"><a class="reference internal" href="#m-table-aggregation"><span class="std std-ref">M_TABLE_AGGREGATION</span></a> , <a class="reference internal" href="#m-table-aggregation-map"><span class="std std-ref">M_TABLE_AGGREGATION_MAP</span></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="custom-workflows">
+<span id="cust-wf"></span><h2>Custom Workflows<a class="headerlink" href="#custom-workflows" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Front End Configuration<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Oftentimes, there may be scenarios where complex aggregation and conformance operations may need to be performed that
+are tedious to do using the user interface. It may become necessary to handle such complex operations by handing
+off the data to a program outside the CDP Environment, performing the required operations and handing the resultant data back to CDP.
+We can manipulate data using several languages, including SQL, Python, SAS, R etc. We design a “Specialized Workflow” that takes a
+dataset as input and begins the execution of an external script (written in the above languages). This script extracts data from the
+CDP tables, and performs data transformations, complex aggregation and conformance. Later, the resultant data is written back to the
+preconfigured destination table in CDP. This specialized workflow is one of the most useful features when it comes to users or developers
+who might not be familiar with the languages supported by CDP and who wish to perform complex ETL operations.</p>
+<p>We shall now look at the parts of a custom workflow and how it can be configured.</p>
+<a class="reference internal image-reference" href="_images/wf_9.png"><img alt="_images/wf_9.png" class="align-center" src="_images/wf_9.png" style="width: 50em;" /></a>
+<div class="line-block">
+<div class="line">In the user interface, we can create custom workflows by</div>
+<div class="line"><span class="guilabel">Selecting a dataset &gt; Lineage &gt; Add Workflow &gt; Custom</span></div>
+</div>
+<dl class="glossary docutils">
+<dt id="term-data-connection-type">DATA CONNECTION TYPE</dt>
+<dd>Specifies the environment where the source/destination tables are present</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-source-output-datasets">SOURCE &amp; OUTPUT DATASETS</dt>
+<dd>A custom workflow can have many input datasets and a single output dataset.
+If more output datasets are required, it can be included within the script</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-alias">ALIAS</dt>
+<dd>Because CDP hands over the datasets or tables to a script in an external environment,
+the data is expose and is therefore less secure. CDP prepares an ALIAS that can be replaced within the script to refer to
+the actual table. An alias acts as a virtual name that allows CDP to point to the actual table without having to hard-code
+it within the script, thus making sure the script code stays constant, even if table names change, making a custom workflow more flexible.
+<strong>For every maintenance strategy, an appropriate alias is to be used.</strong></dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-primary-table">PRIMARY TABLE</dt>
+<dd><p class="first">Specifies the primary table used as a source table. Non primary tables are inner joined to the primary table
+This is equivalent to performing the following</p>
+<div class="last highlight-SQL notranslate"><div class="highlight"><pre><span></span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="o">&lt;</span><span class="n">primary_table</span><span class="o">&gt;</span> <span class="k">join</span> <span class="o">&lt;</span><span class="n">non_prim_1</span><span class="o">&gt;</span> <span class="k">join</span> <span class="o">&lt;</span><span class="n">non_prim_2</span><span class="o">&gt;</span> <span class="c1">--and so on..</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-maintenance-strategy">MAINTENANCE STRATEGY</dt>
+<dd><dl class="glossary docutils">
+<dt id="term-11">Incremental</dt>
+<dd>When fresh data is available, selecting this option allows any new rows to be aggregated and appended to the end of the table.
+The previous data, along with the new rows are aggregated together</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-12">Rebuild</dt>
+<dd>Every time the workflow executes, and fresh data is available, the table is truncated, and later aggregation is performed.
+This truncation of data followed by the aggregation is called “rebuild”</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-13">Partition</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">Intentionally</span> <span class="pre">left</span> <span class="pre">blank</span> <span class="pre">due</span> <span class="pre">to</span> <span class="pre">insufficient</span> <span class="pre">information.</span> <span class="pre">Please</span> <span class="pre">check</span> <span class="pre">back</span> <span class="pre">later</span></code></dd>
+</dl>
+</dd>
+</dl>
+<a class="reference internal image-reference" href="_images/wf_11.png"><img alt="_images/wf_11.png" class="align-center" src="_images/wf_11.png" style="width: 50em;" /></a>
+<dl class="glossary docutils">
+<dt id="term-runtime">RUNTIME</dt>
+<dd>As mentioned previously, we can handle complex aggregations and ETL operations through external scripts
+that are executed when the workflow starts. Theses scripts can be in any one of these currently supported languages:
+<code class="docutils literal notranslate"><span class="pre">SQL,</span> <span class="pre">Python,</span> <span class="pre">Ruby,</span> <span class="pre">Scala</span> <span class="pre">on</span> <span class="pre">Spark,</span> <span class="pre">Pig,</span> <span class="pre">PySpark,</span> <span class="pre">R,</span> <span class="pre">HQL</span></code>. This can be specified in the <span class="guilabel">RUNTIME</span> dropdown menu,
+but please note that you CANNOT CHANGE this once the workflow has been customized.</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-code-script">CODE SCRIPT</dt>
+<dd><p class="first">We can prepare a script that reads data from the source tables and writes back to the destination table.
+In the script, you must always make sure you use only the libraries that are available in the installation environment.
+You can check this by hovering over the <span class="guilabel">(i)</span> information icon beside the runtime name</p>
+<a class="last reference internal image-reference" href="_images/wf_12.png"><img alt="_images/wf_12.png" class="align-center" src="_images/wf_12.png" style="width: 25em;" /></a>
+</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-replace-with-alias">REPLACE WITH ALIAS</dt>
+<dd><p class="first">During testing purposes, you may use the actual table name and hard code it. While pasting the code during workflow creation
+(or alternatively uploading), you can use the <span class="guilabel">Replace with Alias</span> function to automatically substitute the table
+names with their alias. The alias works well when the fully qualified table name is specified <code class="docutils literal notranslate"><span class="pre">(dbname.schemaname.tblname)</span></code></p>
+<a class="last reference internal image-reference" href="_images/wf_13.png"><img alt="_images/wf_13.png" class="align-center" src="_images/wf_13.png" style="width: 50em;" /></a>
+</dd>
+</dl>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<ol class="last arabic simple">
+<li>It is important to place appropriate comments within the code, so its easier to debug in production during script failures.</li>
+<li>Please use ONLY the libraries specified, by hovering over the info icon.</li>
+<li>It is important to use the same version of the scripting language as specified in the user interface.
+Many functions may be added or deprecated in various versions, so please use non-volatile functions that are usually not bound to change during the language’s lifetime.</li>
+<li>DO NOT hard code the Server connection details such as server name, username, password. There are Aliases
+provided for these too, for use in scripts. Please see the sample code.</li>
+</ol>
+</div>
+<div class="admonition-info admonition">
+<p class="first admonition-title">Info</p>
+<div class="last line-block">
+<div class="line">You can read more in <a class="reference external" href="http://ec2-34-205-146-140.compute-1.amazonaws.com/helpdoc/docs/tutorial/#set-up-a-specialized-python-workflow">QCDP Help Docs</a></div>
+<div class="line">You can get a sample <a class="reference external" href="https://gist.github.com/rvndbalaji/dee3c026bbc1a290ba639f7a92aa67ab">Python script from here</a>   (Sample dataset source link inside script)</div>
+</div>
+</div>
+</div>
+<div class="section" id="backend-configuration">
+<h3>Backend Configuration<a class="headerlink" href="#backend-configuration" title="Permalink to this headline">¶</a></h3>
+<p>We can configure custom workflow from the backend by adding entries to a number of metastore tables</p>
+<p>Querying the following tables after creation of a custom workflow can give us useful
+insights and what entries are required. We’ll show only the custom workflow related entries
+required for each table so as to remain concise.</p>
+<dl class="glossary docutils">
+<dt id="term-m-workflow"><a class="reference internal" href="#m-workflow"><span class="std std-ref">M_WORKFLOW</span></a></dt>
+<dd><div class="first last line-block">
+<div class="line">WORKFLOW_TYPE_ID                                -   (13) SPECIALIZED</div>
+<div class="line">WORKFLOW_EXECUTION_SUBSYSTEM_ID         -   (4)  Java Local (A local JVM installation executes the scripts)</div>
+</div>
+</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-m-workflow-input-m-workflow-output"><a class="reference internal" href="#m-workflow-input"><span class="std std-ref">M_WORKFLOW_INPUT</span></a>/ M_WORKFLOW_OUTPUT</dt>
+<dd>A specialized workflow may or may not have input and output datasets. This is optional,
+and a custom workflow can simply run or execute a script directly WITHOUT input or output datasets.
+To perform just the execution of scripts, simply make no entries into these tables during creation.</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-m-workflow-package"><a class="reference internal" href="#m-workflow-package"><span class="std std-ref">M_WORKFLOW_PACKAGE</span></a></dt>
+<dd><p class="first">Custom workflows work by executing scripts written in one of the supported languages (Python, HQL etc..)
+For each language, CDP provides predefined packages that are responsible for executing the scripts. All packages can be referred
+in <code class="docutils literal notranslate"><span class="pre">M_WORKFLOW_PACKAGE</span></code> table by querying for the respective language.</p>
+<div class="highlight-SQL notranslate"><div class="highlight"><pre><span></span>select … PACKAGE_NAME like ‘%PYTHON%’, select … PACKAGE_NAME like ‘%SPARK%’
+</pre></div>
+</div>
+<a class="last reference internal image-reference" href="_images/wf_14.png"><img alt="_images/wf_14.png" class="align-center" src="_images/wf_14.png" style="width: 45em;" /></a>
+</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-m-workflow-package-map"><a class="reference internal" href="#m-workflow-package-map"><span class="std std-ref">M_WORKFLOW_PACKAGE_PARAM_MAP</span></a></dt>
+<dd>Once we’ve decided which packages are used, we must map each package to our custom workflow using the workflow ID.
+This is easy to do as we just do a one to many mapping from WORKFLOW_ID to PACKAGE_ID.
+For example, a custom workflow having WF_ID 1000010860 for executing Python script will have the mappings
+shown in the figure (shown at end of section).</dd>
+</dl>
+<dl class="glossary docutils">
+<dt id="term-m-workflow-package-param"><a class="reference internal" href="#m-workflow-package-param"><span class="std std-ref">M_WORKFLOW_PACKAGE_PARAM</span></a></dt>
+<dd>Before executing any script, we may have to pass parameters such as variables, execution options etc similar
+to how we do it in a command line or terminal. Since we’re creating a custom workflow by also specifying the code, we pass the
+entire code as a parameter to the packages which are responsible for executing the code. These packages each have parameters that
+it can accept as a key value pair or a parameter name and parameter value. We can find these parameters defined in this table,
+<code class="docutils literal notranslate"><span class="pre">M_WORKFLOW_PACKAGE_PARAM</span></code></dd>
+</dl>
+<p>Following are common package params:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="49%" />
+<col width="51%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">PARAM_NAME</th>
+<th class="head">PARAM_VALUE</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>SWF_CUSTOM_TBL_MAINT_STRATEGY</td>
+<td>Incremental</td>
+</tr>
+<tr class="row-odd"><td>SWF_CUSTOM_FILE_CONTENT</td>
+<td><code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">pandas..</span></code></td>
+</tr>
+<tr class="row-even"><td>SWF_EXEC_QUERY_SQL</td>
+<td><code class="docutils literal notranslate"><span class="pre">insert</span> <span class="pre">into</span> <span class="pre">table()</span></code></td>
+</tr>
+<tr class="row-odd"><td>SWF_EXEC_QUERY_HOST_CONNECTION_PROTOCOL</td>
+<td>OLEDB</td>
+</tr>
+<tr class="row-even"><td>SWF_EXEC_QUERY_HOST_ID</td>
+<td>1005xx</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>See the following figure to see how all the tables fit together</p>
+<a class="reference internal image-reference" href="_images/wf_15.png"><img alt="_images/wf_15.png" class="align-center" src="_images/wf_15.png" style="width: 50em;" /></a>
+</div>
+</div>
+<div class="section" id="delete-expiration-workflow">
+<span id="del-wf"></span><h2>Delete/Expiration Workflow<a class="headerlink" href="#delete-expiration-workflow" title="Permalink to this headline">¶</a></h2>
+<p>It is often necessary to delete data that is old, or which is not in use, to make room for fresh data.
+We can set conditions for a dataset to “expire” to perform the act of labelling data that is no longer being used.
+To perform expiration of a dataset, we create a Delete Workflow that executes when a certain “Expiration Condition” is met.
+When we set a dataset’s expiration condition, the Dataset Expiration Manager daemon job immediately drops such tables during routine cleanup</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<div class="line-block">
+<div class="line"><strong>Delete Workflow</strong> is NOT to be confused with the act of <strong>Deleting a workflow</strong></div>
+<div class="line">A <strong>Delete Workflow</strong>, also called an <strong>Expiration workflow</strong> drops a table after a certain period.</div>
+<div class="line">If you wish to delete an existing workflow run then run::</div>
+</div>
+<blockquote class="last">
+<div><div class="highlight-SQL notranslate"><div class="highlight"><pre><span></span><span class="k">EXEC</span> <span class="n">USP_DELETE_WORKFLOW_CONFIG</span> <span class="mi">100000</span><span class="n">xxxx</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span>  <span class="c1">--Provide Workflow_ID</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="id4">
+<h3>Front End Configuration<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>In the user interface, we can configure expiration by <span class="guilabel">Selecting a dataset &gt; Update</span></p>
+<a class="reference internal image-reference" href="_images/wf_16.png"><img alt="_images/wf_16.png" class="align-center" src="_images/wf_16.png" style="width: 30em;" /></a>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<div class="last line-block">
+<div class="line">This feature is still under development in the front end</div>
+<div class="line">Meanwhile, it can still be configured from the backend (next section)</div>
+<div class="line">Please check back later for updates.</div>
+</div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>Backend Configuration<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>Perform the following steps to create a delete workflow</p>
+<ol class="arabic simple">
+<li><code class="xref any docutils literal notranslate"><span class="pre">EXEC</span> <span class="pre">USP_ADD_WORKFLOW</span></code> to insert a record to <code class="docutils literal notranslate"><span class="pre">M_WORKFLOW</span></code></li>
+<li>Set the expiration condition to your dataset using the <code class="docutils literal notranslate"><span class="pre">DATASET_ID</span></code>. The example shows the query needed to perform a daily delete. You can change the <code class="docutils literal notranslate"><span class="pre">where</span></code> clause to change the interval.</li>
+<li>Set the expiration status ID to 5 (Expired). You can view the various statuses in <code class="xref any docutils literal notranslate"><span class="pre">M_DATASET_INSTANCE_SATUS</span></code></li>
+<li>Activate the delete workflow by setting the <code class="docutils literal notranslate"><span class="pre">ACTIVE_FLG</span></code> to <code class="docutils literal notranslate"><span class="pre">1</span></code></li>
+</ol>
+<div class="highlight-SQL notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span> <span class="c1">--Set Expiration condition for Daily Delete | Available in the User Interface</span>
+ <span class="k">declare</span> <span class="o">@</span><span class="n">dataset_id</span> <span class="nb">bigint</span>
+ <span class="k">set</span> <span class="o">@</span><span class="n">dataset_id</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*****</span><span class="mi">231</span>         <span class="c1">--Insert your DATASET_ID</span>
+
+ <span class="k">SELECT</span> <span class="n">a</span><span class="p">.</span><span class="n">DATASET_INSTANCE_ID</span> <span class="k">FROM</span> <span class="n">M_TRACK_DATASET_INSTANCE</span> <span class="n">a</span>
+ <span class="k">JOIN</span> <span class="n">M_DATASET_INSTANCE_STATUS</span> <span class="n">b</span> <span class="k">ON</span> <span class="n">a</span><span class="p">.</span><span class="n">STATUS_ID</span><span class="o">=</span><span class="n">b</span><span class="p">.</span><span class="n">STATUS_ID</span>
+ <span class="k">WHERE</span> <span class="n">DATASET_ID</span> <span class="o">=</span> <span class="o">@</span><span class="n">dataset_id</span> <span class="k">AND</span> <span class="n">b</span><span class="p">.</span><span class="n">STATUS</span> <span class="o">=</span> <span class="s1">&#39;READY&#39;</span> <span class="k">AND</span> <span class="n">DATEDIFF</span><span class="p">(</span><span class="k">DAY</span><span class="p">,</span><span class="n">a</span><span class="p">.</span><span class="n">CREATE_DT</span><span class="p">,</span><span class="n">GETDATE</span><span class="p">())</span><span class="o">&gt;=</span><span class="mi">1</span>
+
+ <span class="k">update</span> <span class="n">M_TRACK_DATASET_INSTANCE</span> <span class="k">set</span> <span class="n">status_id</span> <span class="o">=</span> <span class="mi">5</span> <span class="k">where</span> <span class="n">DATASET_ID</span> <span class="o">=</span>  <span class="o">@</span><span class="n">dataset_id</span>
+</pre></div>
+</td></tr></table></div>
+<p>If you wish to remove the expiration conditions and retain the data, set the expiration condition to <code class="docutils literal notranslate"><span class="pre">null</span></code>,
+set dataset status to 2 (READY) and deactivate the delete workflow</p>
+<div class="highlight-SQL notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1">--Remove expiration condition</span>
+<span class="k">declare</span> <span class="o">@</span><span class="n">dataset_id</span> <span class="nb">bigint</span>
+<span class="k">set</span> <span class="o">@</span><span class="n">dataset_id</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*****</span><span class="mi">231</span>          <span class="c1">--Insert your DATASET_ID</span>
+
+<span class="k">update</span> <span class="n">M_DATASET</span> <span class="k">set</span> <span class="n">expiration_condition</span> <span class="o">=</span> <span class="k">null</span><span class="p">,</span> <span class="n">expiration_status_id</span> <span class="o">=</span> <span class="k">null</span> <span class="k">where</span> <span class="n">DATASET_ID</span> <span class="o">=</span> <span class="o">@</span><span class="n">dataset_id</span>
+<span class="k">update</span> <span class="n">M_TRACK_DATASET_INSTANCE</span> <span class="k">set</span> <span class="n">status_id</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">where</span> <span class="n">DATASET_ID</span> <span class="o">=</span>  <span class="o">@</span><span class="n">dataset_id</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="extract-transfer-workflow">
+<span id="et-wf"></span><h2>Extract &amp; Transfer Workflow<a class="headerlink" href="#extract-transfer-workflow" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">This</span> <span class="pre">section</span> <span class="pre">will</span> <span class="pre">be</span> <span class="pre">updated</span> <span class="pre">soon.</span> <span class="pre">Please</span> <span class="pre">check</span> <span class="pre">back</span> <span class="pre">again</span> <span class="pre">later</span></code></p>
+<hr class="docutils" />
+</div>
+<hr class="docutils" />
+<div class="section" id="metastore-tables">
+<h2>Metastore Tables<a class="headerlink" href="#metastore-tables" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="m-workflow-instance-status">
+<span id="id6"></span><h3>M_WORKFLOW_INSTANCE_STATUS<a class="headerlink" href="#m-workflow-instance-status" title="Permalink to this headline">¶</a></h3>
+<p>A workflow can be treated as a <a class="reference external" href="https://en.wikipedia.org/wiki/Deterministic_finite_automaton">deterministic finite automaton (state machine)</a> that contains a number of
+states that the workflow can be in, at any given time during the execution.
+This table contains the list of all possible statuses the workflow can be in at any point in time during execution.
+The following table contains the statuses and the corresponding description.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="20%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">STATUS_ID</th>
+<th class="head">STATUS</th>
+<th class="head">STATUS_DESC</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>READY</td>
+<td>Workflow is ready to have manifest built</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>MANIFESTBUILDING</td>
+<td>Workflow’s manifest is being built</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>MANIFESTQUEUED</td>
+<td>Workflow’s manifest is built and is queued for processing</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>MANIFESTPROCESSING</td>
+<td>Workflow’s manifest is being transferred to the processing location</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>EXECUTING</td>
+<td>Workflow is currently being executed</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td>COMPLETE-PENDINGCLEANUP</td>
+<td>Workflow execution completed successfully but manifest cleaned up failed</td>
+</tr>
+<tr class="row-even"><td>7</td>
+<td>COMPLETE-CLEANUPFAILED</td>
+<td>Workflow execution completed successfully and manifest needs to be cleaned up</td>
+</tr>
+<tr class="row-odd"><td>8</td>
+<td>COMPLETE</td>
+<td>Workflow execution and manifest cleanup completed successfully</td>
+</tr>
+<tr class="row-even"><td>9</td>
+<td>FAILED</td>
+<td>Workflow execution failed</td>
+</tr>
+<tr class="row-odd"><td>10</td>
+<td>COMPLETE-PENDINGINSPECTION</td>
+<td>Workflow execution completed successfully but there is some question as to the validity of the results</td>
+</tr>
+<tr class="row-even"><td>11</td>
+<td>FAILED-CLEANUPFAILED</td>
+<td>Workflow execution failed and manifest cleaned up failed</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="m-workflow">
+<span id="id7"></span><h3>M_WORKFLOW<a class="headerlink" href="#m-workflow" title="Permalink to this headline">¶</a></h3>
+<p>When a new workflow is created to manipulate data or perform operations,
+a record is added in this table for each and uniquely identifies that Workflow.</p>
+<dl class="docutils">
+<dt><code class="xref any docutils literal notranslate"><span class="pre">WORKFLOW_ID</span></code></dt>
+<dd>It contains <code class="docutils literal notranslate"><span class="pre">Workflow_ID</span></code> that uniquely identifies each workflow.
+The existing convention is that all workflow IDs created manually are numbered starting from 1000000000, and all other entries
+less than that are WFs created automatically during environment setup and installation.
+These standard WFs are inbuilt usually used for operations such as identity resolution and other CDP features.</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">CLIENT_ID</span></code></dt>
+<dd>Represents which Client created the workflow</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">M_WORKFLOW_EXECUTION_SUBSYSTEM_ID</span></code></dt>
+<dd>See <a class="reference internal" href="#m-workflow-execution-subsystem"><span class="std std-ref">M_WORKFLOW_EXECUTION_SUBSYSTEM</span></a></dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">WOKFLOW_NAME,</span> <span class="pre">WORKFLOW_DESC</span></code></dt>
+<dd>Name and description given to the workflow</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">WORKFLOW_TYPE_ID</span></code></dt>
+<dd>See <a class="reference internal" href="#m-workflow-type"><span class="std std-ref">M_WORKFLOW_TYPE</span></a></dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">REACTIVATE_FAILED_WORKFLOW_FLAG</span></code></dt>
+<dd>If set to 1, it indicates whether the workflow must be reactivated automatically after a failure.</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">MAX_CONSECUTIVE_FAILED_WORKFLOW_REACTIVATIONS</span></code></dt>
+<dd>Indicates the maximum number of reactivations allowed after consecutive failures.</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">REACTIVATE_FAILED_WORKFLOW_DELAY_SECS</span></code></dt>
+<dd>The delay in seconds before a failed workflow reactivates.</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">ACTIVE_FLG</span></code></dt>
+<dd>If set to 1, indicates if the workflow is active. It is otherwise considered to be deactivated.</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">DISPATCH_CONDITION</span></code></dt>
+<dd><p class="first">The dispatch condition specifies on what condition the workflow must be executed.
+The Workflow Dispatcher Daemon Job constantly evaluates the dispatch condition and only when the condition is satisfied
+the workflow begins execution.</p>
+<div class="last admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For more information on Workflow Dispatcher, see <a class="reference internal" href="exec_seq.html"><span class="doc">Execution Sequence</span></a></p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="m-workflow-type">
+<span id="id8"></span><h3>M_WORKFLOW_TYPE<a class="headerlink" href="#m-workflow-type" title="Permalink to this headline">¶</a></h3>
+<p>This table contains the list of all workflow types and their ID which is used during creation of a workflow.
+Examples are <code class="docutils literal notranslate"><span class="pre">STAGING</span></code>, <code class="docutils literal notranslate"><span class="pre">DOWNLOAD</span></code>, <code class="docutils literal notranslate"><span class="pre">EXTRACT</span></code> etc. More information about each type is provided in the
+<code class="docutils literal notranslate"><span class="pre">WORKFLOW_TYPE_DESC</span></code> attribute in this table. Every workflow type comes with a default <code class="docutils literal notranslate"><span class="pre">DISPATCH_CONDITION</span></code>.</p>
+</div>
+<div class="section" id="m-workflow-input">
+<span id="id9"></span><h3>M_WORKFLOW_INPUT<a class="headerlink" href="#m-workflow-input" title="Permalink to this headline">¶</a></h3>
+<p>Any input that is to be provided to the Workflow before beginning the execution is provided here.
+The input and output for any given workflow is always a <code class="docutils literal notranslate"><span class="pre">DATASET</span></code>. However, a custom workflow can be created without
+any input or output, or any one of them. For example, a workflow to send a mail or notification does not require
+any dataset as input, nor does it produce any output.</p>
+<dl class="docutils">
+<dt><code class="xref any docutils literal notranslate"><span class="pre">DATASET_SCOPE</span></code></dt>
+<dd>The type of data that is being given as input to the workflow. Types include <code class="docutils literal notranslate"><span class="pre">File</span></code>, <code class="docutils literal notranslate"><span class="pre">DATASET</span></code>, <code class="docutils literal notranslate"><span class="pre">TABLE</span></code> etc.</dd>
+</dl>
+</div>
+<div class="section" id="m-dataset">
+<span id="id10"></span><h3>M_DATASET<a class="headerlink" href="#m-dataset" title="Permalink to this headline">¶</a></h3>
+<p>Specifies the details of the input/output dataset for the workflow. <code class="docutils literal notranslate"><span class="pre">OBJECT_TYPE</span></code> attribute values can be <code class="docutils literal notranslate"><span class="pre">File</span></code>, <code class="docutils literal notranslate"><span class="pre">Query</span></code>, <code class="docutils literal notranslate"><span class="pre">Table</span></code> etc.</p>
+</div>
+<div class="section" id="m-workflow-package">
+<span id="id11"></span><h3>M_WORKFLOW_PACKAGE<a class="headerlink" href="#m-workflow-package" title="Permalink to this headline">¶</a></h3>
+<p>During staging, workflow execution or any other operation, many pre-built packages must be executed, and the details of
+these packages are present in this table. If you create your own workflow package, a record is added to this table along
+with a unique ID. As shown in the below picture, the package ID, name, description and their installation path is provided.</p>
+</div>
+<div class="section" id="m-workflow-package-param">
+<span id="id12"></span><h3>M_WORKFLOW_PACKAGE_PARAM<a class="headerlink" href="#m-workflow-package-param" title="Permalink to this headline">¶</a></h3>
+<p>All the parameters required for the execution of the workflow packages are recorded here for each package.
+They’re uniquely identified with <code class="docutils literal notranslate"><span class="pre">WORKFLOW_PACKAGE_PARAM_ID</span></code> and <code class="docutils literal notranslate"><span class="pre">WORKFLOW_PACKAGE_MAP_ID</span></code>.</p>
+</div>
+<div class="section" id="m-workflow-package-param-map">
+<span id="m-workflow-package-map"></span><h3>M_WORKFLOW_PACKAGE_PARAM_MAP<a class="headerlink" href="#m-workflow-package-param-map" title="Permalink to this headline">¶</a></h3>
+<p>This table provides the mapping that binds the three workflow tables,
+namely <code class="docutils literal notranslate"><span class="pre">M_WORKFLOW_PACKAGE_PARAM</span></code>, <code class="docutils literal notranslate"><span class="pre">M_WORKFLOW_PACKAGE`,</span> <span class="pre">and</span> <span class="pre">``M_WORKFLOW</span></code></p>
+</div>
+<div class="section" id="m-workflow-execution-subsystem">
+<span id="id13"></span><h3>M_WORKFLOW_EXECUTION_SUBSYSTEM<a class="headerlink" href="#m-workflow-execution-subsystem" title="Permalink to this headline">¶</a></h3>
+<p>This table contains all details about where the execution of the workflows takes place in the environment.
+For example, if you wish to execute SSIS packages (<code class="docutils literal notranslate"><span class="pre">WORKFLOW_EXECUTOR_TYPE</span></code>) then it is done using SQL Server
+(which will be the <code class="docutils literal notranslate"><span class="pre">WORKFLOW_EXECUTION_SUBSYSTEM_NAME</span></code>). So, in the front end, during creation of a workflow when one of
+the options is selected, the corresponding <code class="docutils literal notranslate"><span class="pre">WORKFLOW_EXECUTION_SUBSYSTEM_ID</span></code> is added to the table M_WORKFLOW.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For more information on Workflow Execution Subsystem, see <a class="reference internal" href="exec_seq.html"><span class="doc">Execution Sequence</span></a></p>
+</div>
+</div>
+<div class="section" id="m-table-conformance">
+<span id="id14"></span><h3>M_TABLE_CONFORMANCE<a class="headerlink" href="#m-table-conformance" title="Permalink to this headline">¶</a></h3>
+<p>When <a class="reference internal" href="#conf-wf"><span class="std std-ref">Conformance Workflow</span></a> is created an entry is made to this table.
+It contains the Conformance workflow ID, input dataset and a unique output DATASET_ID is created.</p>
+</div>
+<div class="section" id="m-table-conformance-map">
+<span id="id15"></span><h3>M_TABLE_CONFORMANCE_MAP<a class="headerlink" href="#m-table-conformance-map" title="Permalink to this headline">¶</a></h3>
+<p>During one to one transformations (conformance), this table provides the column mappings from source table to the destination table.</p>
+<dl class="docutils">
+<dt><code class="xref any docutils literal notranslate"><span class="pre">SOURCE_COLUMN_EXPRESSION</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">This column accepts an expression that represents what operation/transformation is performed on the source column.</div>
+<div class="line">For example, if we wish to concatenate first and last names, then the expression will be <code class="docutils literal notranslate"><span class="pre">concat(FirstName,LastName)</span></code> and destination column name will be <code class="docutils literal notranslate"><span class="pre">Full</span> <span class="pre">Name</span></code></div>
+<div class="line">All SQL built-in functions are valid expressions. Other operations include, <code class="docutils literal notranslate"><span class="pre">cast</span></code>, <code class="docutils literal notranslate"><span class="pre">substring</span></code>,``upper``,``lower`` etc.</div>
+</div>
+</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">TARGET_COLUMN_NAME</span></code></dt>
+<dd>Specifies the column name in the destination table where the mapping from source column takes place during conformance.</dd>
+</dl>
+</div>
+<div class="section" id="m-table-aggregation">
+<span id="id16"></span><h3>M_TABLE_AGGREGATION<a class="headerlink" href="#m-table-aggregation" title="Permalink to this headline">¶</a></h3>
+<p>When <a class="reference internal" href="#agg-wf"><span class="std std-ref">Aggregation Workflow</span></a> is created, an entry is made to this table.
+It contains the aggregate workflow ID, input dataset and a unique <code class="docutils literal notranslate"><span class="pre">AGGREGATE_DATASET_ID</span></code> is created.</p>
+<dl class="docutils">
+<dt><code class="xref any docutils literal notranslate"><span class="pre">AGGREGATE_MAINTENANCE_STRATEGY</span></code></dt>
+<dd>It is a load strategy and indicates whether the dataset load will be incremental (insert new records) or rebuild (full truncate and load).</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">FILTER_EXPRESSION</span></code></dt>
+<dd>Filter_Expression column is to add filter to the aggregation query.
+For eg. you want to select a subset of data from source table in case of a rebuild aggregate WF then you can add filter expression</dd>
+</dl>
+<div class="highlight-SQL notranslate"><div class="highlight"><pre><span></span><span class="n">TO_DATE</span><span class="p">(</span><span class="n">PAGE_VIEW_DATE_TIME</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">DATE_SUB</span><span class="p">(</span><span class="n">TO_DATE</span><span class="p">(</span><span class="n">FROM_UNIXTIME</span><span class="p">(</span><span class="n">UNIX_TIMESTAMP</span><span class="p">())),</span><span class="mi">395</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="m-table-aggregation-map">
+<span id="id17"></span><h3>M_TABLE_AGGREGATION_MAP<a class="headerlink" href="#m-table-aggregation-map" title="Permalink to this headline">¶</a></h3>
+<p>During aggregation, this table provides the column mappings from source table to the destination table.
+This table is linked to the TABLE_AGGREGATION_ID column of the <a class="reference internal" href="#m-table-aggregation"><span class="std std-ref">M_TABLE_AGGREGATION</span></a> table</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">See also <a class="reference internal" href="#wf-map"><span class="std std-ref">Workflow Mappings</span></a></p>
+</div>
+<dl class="docutils">
+<dt><code class="xref any docutils literal notranslate"><span class="pre">SOURCE_COLUMN_EXPRESSION</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">This column accepts an expression that represents what aggregation is performed on the source column.</div>
+<div class="line">For example, if we find the sum of all salaries in a column, then the expression will be <code class="docutils literal notranslate"><span class="pre">sum(SALARY)</span></code></div>
+<div class="line">All SQL aggregation functions are valid expressions.</div>
+</div>
+</dd>
+<dt><code class="xref any docutils literal notranslate"><span class="pre">TARGET_COLUMN_NAME</span></code></dt>
+<dd>Specifies the column name in the destination table where the mapping from source column takes place during aggregation.</dd>
+</dl>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="exec_seq.html" class="btn btn-neutral float-right" title="Execution Sequence" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="data_entity_config.html" class="btn btn-neutral float-left" title="Datasets &amp; Data Entities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Quaero 3 LLC
+      <span class="lastupdated">
+        Last updated on 23 April, 2019.
+      </span>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

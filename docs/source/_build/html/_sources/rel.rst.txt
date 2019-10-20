@@ -1,0 +1,96 @@
+Release Notes - v4.5 April 2019
+###############################
+
+CDP Internal Product Release v4.5 April 2019
+
+Features
+********
+
+API N Point Framework
+=====================
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Venenatis tellus in metus vulputate eu scelerisque felis imperdiet proin. Cras adipiscing enim eu turpis egestas pretium.
+Aliquam vestibulum morbi blandit cursus risus at. Nisi lacus sed viverra tellus in hac habitasse platea. Tortor consequat id porta nibh 
+venenatis cras. Euismod nisi porta lorem mollis aliquam. Dolor morbi non arcu risus quis varius quam quisque id. Ut diam quam nulla 
+porttitor massa id neque. Elementum facilisis leo vel fringilla est ullamcorper eget. Eleifend mi in nulla posuere sollicitudin aliquam.
+
+|   Link to technical documentation :doc:`description <doc_path>`
+|   Link to product sheet :doc:`description <doc_path>`
+
+Facebook Integration
+====================
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Venenatis tellus in metus vulputate eu scelerisque felis imperdiet proin. Cras adipiscing enim eu turpis egestas pretium.
+Aliquam vestibulum morbi blandit cursus risus at. Nisi lacus sed viverra tellus in hac habitasse platea. Tortor consequat id porta nibh 
+venenatis cras. Euismod nisi porta lorem mollis aliquam. Dolor morbi non arcu risus quis varius quam quisque id. Ut diam quam nulla 
+porttitor massa id neque. Elementum facilisis leo vel fringilla est ullamcorper eget. Eleifend mi in nulla posuere sollicitudin aliquam.
+
+Link to technical documentation :doc:`description <doc_path>`
+
+Salesforce Integration
+====================
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Venenatis tellus in metus vulputate eu scelerisque felis imperdiet proin. Cras adipiscing enim eu turpis egestas pretium.
+Aliquam vestibulum morbi blandit cursus risus at. Nisi lacus sed viverra tellus in hac habitasse platea. Tortor consequat id porta nibh 
+venenatis cras. Euismod nisi porta lorem mollis aliquam. Dolor morbi non arcu risus quis varius quam quisque id. Ut diam quam nulla 
+porttitor massa id neque. Elementum facilisis leo vel fringilla est ullamcorper eget. Eleifend mi in nulla posuere sollicitudin aliquam.
+
+Link to technical documentation :doc:`description <doc_path>`
+
+
+Other Improvements
+*******************
+
+UI Improvements
+================
+
+================================================= =================================================
+Improvement						                  Link
+================================================= =================================================
+Lorem ipsum dolor sit amet			              `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet				          `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet					      `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet	                      `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet				          `<http://www.example.com/>`_
+================================================= =================================================
+
+
+System upgrades and improvements
+================================
+
+================================================= =================================================
+Upgrade/Improvement						          Link
+================================================= =================================================
+Lorem ipsum dolor sit amet			              `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet				          `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet					      `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet	                      `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet				          `<http://www.example.com/>`_
+================================================= =================================================
+
+
+Minor features added
+====================
+
+================================================= =================================================
+Feature						                      Link
+================================================= =================================================
+Lorem ipsum dolor sit amet			              `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet				          `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet					      `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet	                      `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet				          `<http://www.example.com/>`_
+================================================= =================================================
+
+Bugs & Issues fixed
+*******************
+
+================================================= =================================================
+Issue						                      Link
+================================================= =================================================
+Lorem ipsum dolor sit amet			              `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet				          `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet					      `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet	                      `<http://www.example.com/>`_
+Lorem ipsum dolor sit amet				          `<http://www.example.com/>`_
+================================================= =================================================
