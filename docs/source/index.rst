@@ -35,7 +35,7 @@ This document is intended for developers/users who wish to use the product in tr
 
 |   *Currently developed and maintained by*
 |   **Aravind Balaji**    
-|   *Associate Data Engineer*
+|   *Data Engineer*
 |   `aravind.balaji@quaero.com <aravind.balaji@quaero.com>`_
 
 :raw-html:`</div>`
