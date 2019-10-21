@@ -106,7 +106,8 @@ app.use('/docs',express.static('docs/build/'))
 app.get('/*', function(req, res) {
   res.sendFile(path.join(__dirname, 'client/build/index.html'), function(err) {
     if (err) {
-      res.status(500).send(err)
+      logger.error('server\t' + err.toString())
+      res.status(500).send('Oops something went wrong on our end! :\\ Please report this to admin')      
     }
   })
 })

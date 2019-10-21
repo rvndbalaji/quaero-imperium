@@ -3,6 +3,7 @@ import Banner from '../Elements/Banner';
 import Row from 'react-bootstrap/Row'
 import Container from 'react-bootstrap/Container';
 import MenuCard from '../Elements/MenuCard';
+import Footer from '../Elements/Footer';
 
 class Home extends React.Component
 {       
@@ -44,9 +45,7 @@ class Home extends React.Component
                          />     
                     </Row>
                 </Container>
-                <div className='footer'>
-                    © Quaero 3 LLC, {new Date().getFullYear()}
-                </div>
+                <Footer />
             </div>
             
         );

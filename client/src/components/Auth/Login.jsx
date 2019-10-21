@@ -8,6 +8,7 @@ import Button from 'react-bootstrap/Button'
 import { connect } from 'react-redux'
 import { performLoginWithCreds } from '../../store/actions/authActions'
 import { Redirect} from 'react-router'
+import Footer from '../Elements/Footer'
  class LogIn extends Component {    
 
     state = {
@@ -81,6 +82,7 @@ import { Redirect} from 'react-router'
                         </Form>                                                
                     </Col>                    
                 </Row>
+                <Footer />
             </div>                
         )
     }
