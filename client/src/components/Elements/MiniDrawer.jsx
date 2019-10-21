@@ -161,29 +161,29 @@ export default function MiniDrawer() {
           <Link className='ml-2' to="/" target="_self"><Image id="logo" src={quaero_logo} width="125rem" fluid  /></Link>                            
         </div>
         <Divider />
-        <List className='ml-1' style={{color:ico_text_color}}>        
+        <List style={{color:ico_text_color}}>        
           {['Search','Monitor','Reporting','Queries','Servers'].map((text, index) => (            
-            <Tooltip title={text} placement='right'>                                            
-              <ListItem button key={text}
+            <Tooltip title={text} placement='right' key={text}>                                            
+              <ListItem button
                   onClick={event => handleListItemClick(event, index)}
                   selected={selectedIndex === index}
               >
                 
-                  <ListItemIcon>{icon_name[index]}</ListItemIcon>                                
+                  <ListItemIcon className='pl-1'>{icon_name[index]}</ListItemIcon>                                
                   <span className='p-1' style={{fontFamily: 'futura_bold', fontSize : '1rem'}}>{text}</span>              
               </ListItem>     
             </Tooltip>                               
           ))}
         </List>
         <Divider />
-        <List className='ml-1' style={{color:ico_text_color}}>
+        <List  style={{color:ico_text_color}}>
           {['Profile','Admin','Settings','Support'].map((text, index) => (
-            <Tooltip title={text} placement='right'>                                            
-            <ListItem button key={text}
+            <Tooltip title={text} placement='right' key={text}>                                            
+            <ListItem button 
                        onClick={event => handleListItemClick(event, index + 5)}
                        selected={selectedIndex === index + 5}
                        >
-              <ListItemIcon>{icon_name[index + 5]}</ListItemIcon>
+              <ListItemIcon className='pl-1'>{icon_name[index + 5]}</ListItemIcon>
               <span className='p-1' style={{fontFamily: 'futura_bold', fontSize : '1rem'}}>{text}</span>
             </ListItem>
             </Tooltip>

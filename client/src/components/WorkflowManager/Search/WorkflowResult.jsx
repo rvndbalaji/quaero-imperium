@@ -109,10 +109,15 @@ class WorkflowResult extends PureComponent {
             workflow.WORKFLOW_INSTANCE_STATUS = (workflow.WORKFLOW_INSTANCE_STATUS)?workflow.WORKFLOW_INSTANCE_STATUS:'DID NOT RUN'
             let wf_color = this.computeWorkflowColors(workflow.WORKFLOW_INSTANCE_STATUS)            
 
+            let SERVER_NAME = workflow.SERVER_NAME;                            
+            if(this.props.host_list && this.props.host_list[SERVER_NAME] && this.props.host_list[SERVER_NAME].nickname)
+            {                                
+                SERVER_NAME = this.props.host_list[SERVER_NAME].nickname
+            }
             let ServerDetails = (
                 <Row>
-                    <Col lg='auto' md='auto'><span className='gray_text'>SERVER </span>
-                        {workflow.SERVER_NAME}
+                    <Col lg='auto' md='auto'><span className='gray_text'>SERVER </span>                                            
+                        {SERVER_NAME}
                     </Col>
                     <Col lg='auto' md='auto'><span className='gray_text'>METASTORE </span>
                         {workflow.METASTORE_NAME}
@@ -210,6 +215,7 @@ class WorkflowResult extends PureComponent {
 const mapStateToProps =(state)=>
 {       
     return {
+       host_list : state.host.hosts,
        registeredMonitors : state.monitor.registeredMonitors
     }
     

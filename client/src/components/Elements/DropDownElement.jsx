@@ -32,11 +32,20 @@ import { changeOption} from '../../store/actions/searchActions'
     var reg_exp = (this.props.replaceRegex)?new RegExp(this.props.replaceRegex,'i'):undefined;
     
     let itemList = this.props.item_list     
+    let itemListAltNames = this.props.item_list_altname
     
-    let Items = itemList && itemList.map((item)=>
-    {               
-        let visible_name = this.applyRegexIfExists(reg_exp,item);             
-             
+    let Items = itemList && itemList.map((item,index)=>
+    {   
+        let visible_name = item            
+        if(itemListAltNames)
+        {
+            visible_name = itemListAltNames[index]
+        }
+        else
+        {
+            visible_name = this.applyRegexIfExists(reg_exp,item);                          
+        }
+        
         
         if(itemList.length===1 && this.props.text.startsWith('Select'))
         {            

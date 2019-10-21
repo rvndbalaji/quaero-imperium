@@ -25,10 +25,19 @@ import { connect } from 'react-redux'
     render() 
     {           
         let host_names = []        
+        let host_nicknames = []        
         let serverDisplayText = this.props.options.selectedServer;      
         if(this.props.host_list)
         {
-            host_names = Object.keys(this.props.host_list);                         
+            host_names = Object.keys(this.props.host_list);  
+            host_names.forEach(element => {
+                let nickname = this.props.host_list[element].nickname
+                host_nicknames.push(nickname)
+                if(element===this.props.options.selectedServer)
+                {
+                    serverDisplayText = nickname
+                }
+            });            
         }
         if(host_names.length<1)
         {
@@ -41,7 +50,7 @@ import { connect } from 'react-redux'
         return (
             <Row style={{ zoom:'0.9'}}>
                 <Col lg="auto" md="auto" sm="auto" xd="auto" align="left">                                            
-                    <DropDownElement option_name='selectedServer' caption="Select" item_list={host_names} text={serverDisplayText} onOptionChanged={this.changeSelectedOption} DisableCondition={(host_names.length<1)}></DropDownElement>                                    
+                    <DropDownElement option_name='selectedServer' caption="Select" item_list={host_names} item_list_altname={host_nicknames} text={serverDisplayText} onOptionChanged={this.changeSelectedOption} DisableCondition={(host_names.length<1)}></DropDownElement>                                    
                 </Col>
                 <Col lg="auto" md="auto" sm="auto" xd="auto" align="left">                                            
                     <DropDownElement replaceRegex='_metastore$' option_name='selectedMetastore' caption="using" item_list={metastore_list} text={this.props.options.selectedMetastore} onOptionChanged={this.changeSelectedOption} DisableCondition={(this.props.options.selectedServer==='Select server' || this.props.metastoreList.length<1)} ></DropDownElement>

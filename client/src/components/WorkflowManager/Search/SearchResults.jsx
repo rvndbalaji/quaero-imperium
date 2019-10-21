@@ -22,14 +22,20 @@ class SearchResults extends Component {
                 </Animated>
             )            
         }        
+        let InfoText = 'Search for workflows and filter them from above'                
+        if(!this.props.host_list || Object.keys(this.props.host_list).length===0)
+        {
+            InfoText = 'No hosts have been configured. Add a host in Settings'        
+        }        
         if(!this.props.workflowResults)
         {
             return (                        
                 <div className='mt-5'> 
-                    Search for workflows and filter them from above                                                                                                                                                                                      
+                    {InfoText}
                 </div>
             )
         }
+     
         else{           
             let timeTaken = ((this.props.timeTaken)/1000).toFixed(2);
             let len = this.props.workflowResults.length;
@@ -53,6 +59,7 @@ class SearchResults extends Component {
 const mapStateToProps =(state)=>
 {       
     return {
+        host_list : state.host.hosts,
         alert : state.search.alertSearch,
         workflowResults : state.search.workflowResults,
         timeTaken : state.search.timeTaken
