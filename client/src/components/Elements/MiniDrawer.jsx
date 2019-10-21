@@ -10,6 +10,7 @@ import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItem from '@material-ui/core/ListItem';
+import Tooltip from '@material-ui/core/Tooltip';
 import {FaServer,FaTachometerAlt,FaShieldAlt, FaTools, FaSearch,FaUserAlt,FaChartPie, FaDatabase,FaChevronRight, FaChevronLeft,FaComments} from "react-icons/fa";
 
 import {Link} from 'react-router-dom'
@@ -38,8 +39,8 @@ const icon_name = [<FaSearch size={ico_size} color={ico_color}/>,<FaTachometerAl
 const drawerWidth = 200;
 const useStyles = makeStyles(theme => ({
   root: {
-    display: 'flex'
-  },  
+    display: 'flex'   
+  },   
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
     transition: theme.transitions.create(['width', 'margin'], {
@@ -64,14 +65,14 @@ const useStyles = makeStyles(theme => ({
   drawer: {
     width: drawerWidth,
     flexShrink: 0,    
-    whiteSpace: 'nowrap',      
+    whiteSpace: 'nowrap'    
   },
   drawerOpen: {
     width: drawerWidth,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
-    }),
+    }),    
     background : menu_color,    
   },
   drawerClose: {
@@ -84,7 +85,7 @@ const useStyles = makeStyles(theme => ({
     width: theme.spacing(7) + 1,
     [theme.breakpoints.up('sm')]: {
       width: theme.spacing(7) + 1,
-    },
+    }    
   },
   toolbar: {
     display: 'flex',
@@ -160,20 +161,24 @@ export default function MiniDrawer() {
           <Link className='ml-2' to="/" target="_self"><Image id="logo" src={quaero_logo} width="125rem" fluid  /></Link>                            
         </div>
         <Divider />
-        <List className='ml-1' style={{color:ico_text_color}}>
-          {['Search','Monitor','Reporting','Queries','Servers'].map((text, index) => (
-             <ListItem button key={text}
-                onClick={event => handleListItemClick(event, index)}
-                selected={selectedIndex === index}
-             >
-              <ListItemIcon>{icon_name[index]}</ListItemIcon>
-              <span className='p-1' style={{fontFamily: 'futura_bold', fontSize : '1rem'}}>{text}</span>
-            </ListItem>
+        <List className='ml-1' style={{color:ico_text_color}}>        
+          {['Search','Monitor','Reporting','Queries','Servers'].map((text, index) => (            
+            <Tooltip title={text} placement='right'>                                            
+              <ListItem button key={text}
+                  onClick={event => handleListItemClick(event, index)}
+                  selected={selectedIndex === index}
+              >
+                
+                  <ListItemIcon>{icon_name[index]}</ListItemIcon>                                
+                  <span className='p-1' style={{fontFamily: 'futura_bold', fontSize : '1rem'}}>{text}</span>              
+              </ListItem>     
+            </Tooltip>                               
           ))}
         </List>
         <Divider />
         <List className='ml-1' style={{color:ico_text_color}}>
           {['Profile','Admin','Settings','Support'].map((text, index) => (
+            <Tooltip title={text} placement='right'>                                            
             <ListItem button key={text}
                        onClick={event => handleListItemClick(event, index + 5)}
                        selected={selectedIndex === index + 5}
@@ -181,6 +186,7 @@ export default function MiniDrawer() {
               <ListItemIcon>{icon_name[index + 5]}</ListItemIcon>
               <span className='p-1' style={{fontFamily: 'futura_bold', fontSize : '1rem'}}>{text}</span>
             </ListItem>
+            </Tooltip>
           ))}
         </List>
       </Drawer>
