@@ -19,6 +19,7 @@ import SourceSystemTable from './SourceSystemTable';
 import ActivateWorkflow from './ActivateWorkflow';
 import WorkflowParamsTable from './WorkflowParamsTable';
 import {Animated} from "react-animated-css";
+import { Tooltip } from '@material-ui/core';
 class WF_View extends PureComponent {
 refreshTimeout;
 
@@ -55,7 +56,8 @@ refreshTimeout;
             auth : this.props.match.params.auth,
         }
         let MyToolbar = (
-                <Toolbar variant="dense" style={{backgroundColor: 'var(--primary_dark)'}}>       
+                <Toolbar variant="dense" style={{backgroundColor: 'var(--primary_dark)'}}>     
+                    <Tooltip title='Go back to Workflow Manager' placement='bottom'>
                         <Link to ='/wf_man' target='_self'>
                             <Row>
                                 <Col lg={1} md={1} sm={1} style={{padding : '0.4rem'}}>
@@ -66,6 +68,7 @@ refreshTimeout;
                                 </Col>                                
                             </Row>
                         </Link>             
+                    </Tooltip>
                 </Toolbar>
         );
 

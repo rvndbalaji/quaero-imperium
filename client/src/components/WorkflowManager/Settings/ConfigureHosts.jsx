@@ -98,7 +98,7 @@ export default function ConfigureHosts() {
     }
     let ConfiguredHostList = host_names && host_names.map((hostname,index)=>(        
             <Button  variant='secondary' onClick={()=>handleShow('Edit',hostname)}  key={uuid()} className='m-2'> 
-                {hostname}
+                {store.hosts[hostname].nickname}
             </Button>                                                        
         ));
     let alert_item='';             
