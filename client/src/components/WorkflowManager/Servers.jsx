@@ -71,7 +71,7 @@ export default function Servers() {
   }
   let HostList = (host_names && host_names.map((host_name,index)=>{
       return (          
-          <Tab label={host_name} key={'dashTab_' + index} className={classes.tab}/>
+          <Tab label={storeHosts[host_name].nickname} key={'dashTab_' + index} className={classes.tab}/>
       )
   }))
   let HostContent = (host_names && host_names.map((host_name,index) =>{    
