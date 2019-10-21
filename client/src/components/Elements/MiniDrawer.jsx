@@ -159,7 +159,9 @@ export default function MiniDrawer() {
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'rtl' ? <FaChevronRight size='0.8em' color = {ico_color}/> : <FaChevronLeft size='0.8em' color =  {ico_color}/>}
           </IconButton>
+          <Tooltip title='Homepage' placement='right'>                                            
           <Link className='ml-2' to="/" target="_self"><Image id="logo" src={quaero_logo} width="125rem" fluid  /></Link>                            
+          </Tooltip>
         </div>
         <Divider />
         <List style={{color:ico_text_color,marginTop:'-0.5rem'}}>        
