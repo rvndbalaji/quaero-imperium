@@ -14,6 +14,21 @@
 
     --secondary_dark : #2196F3;
 }
+.footer
+{
+  
+  background: linear-gradient( 135deg, #396CB2 10%, #00C1FF 100%);
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  font-size: 85%;
+  padding: 0.1rem;
+  padding-left: 0.5rem;
+  width: 100%;  
+  color: white;
+  text-align: left;
+  
+}
 
 .bg-primary 
 {

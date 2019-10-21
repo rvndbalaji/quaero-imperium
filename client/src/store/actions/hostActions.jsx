@@ -10,6 +10,14 @@ export const cancellers = {
     cancelTest : undefined
 };
 
+export const clearHostListener = () =>
+{
+    return(dispatch,getState) =>
+    {        
+        unsubscribeHost && unsubscribeHost();        
+    }
+}
+
 export const setHostListener = () =>
 {    
     return (dispatch,getState) =>

@@ -24,6 +24,15 @@ export const getJobStats = ()=>
 }
 
 
+export const clearServerRefresh = () =>
+{
+    return(dispatch,getState) =>
+    {
+        clearTimeout(refreshTimeout)                        
+    }
+}
+
+
 const scheduleNextRefresh=(dispatch)=>
 {
     clearTimeout(refreshTimeout)   

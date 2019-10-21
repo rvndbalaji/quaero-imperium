@@ -7,9 +7,16 @@ const bindDN = process.env.LDAP_bindDN
 const password = process.env.LDAP_password
 const searchDN = process.env.LDAP_searchDN
 
+//Verify if .env is present by checking if url is defined.
+if(!url)
+{
+  console.log('server\tFATAL ERROR : The .env file is either not present or does not contain all the required variables. Process was killed.')
+  process.exit(1)
+}
+
 const client = new Client({
-  url,
-});
+    url,
+ });
 
 //Perform Login
 router.post('/performLogin',[    

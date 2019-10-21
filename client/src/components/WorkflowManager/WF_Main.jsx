@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
 import AnimatedLoadText from '../Elements/AnimatedLoadText';
 import MiniDrawer from '../Elements/MiniDrawer';
-import { setHostListener,fetchUserTitle} from '../../store/actions/hostActions'
-import { setMonitorListener} from '../../store/actions/monitorActions'
+import { setHostListener,fetchUserTitle, clearHostListener} from '../../store/actions/hostActions'
+import { setMonitorListener,clearMonitorListener} from '../../store/actions/monitorActions'
+import { clearViewRefresh } from '../../store/actions/viewActions'
+import { clearServerRefresh } from '../../store/actions/serverActions'
 import { connect } from 'react-redux'
 
 class WF_Main extends Component {    
@@ -13,6 +15,14 @@ class WF_Main extends Component {
          this.props.setHostListener()   
          this.props.setMonitorListener()                       
          this.props.fetchUserTitle()
+    }
+    componentWillUnmount()
+    {
+        //Stop all listeners, and refresh timers
+        this.props.clearHostListener()
+        this.props.clearMonitorListener()
+        this.props.clearViewRefresh()
+        this.props.clearServerRefresh()
     }
     render() {                
         if(this.props.isLoading)
@@ -37,6 +47,22 @@ const mapDispatchToProps = (dispatch)=>
         setHostListener : ()=>
         {
             dispatch(setHostListener())
+        },
+        clearHostListener : ()=>
+        {
+            dispatch(clearHostListener())
+        },
+        clearViewRefresh : ()=>
+        {
+            dispatch(clearViewRefresh())
+        },
+        clearServerRefresh : ()=>
+        {
+            dispatch(clearServerRefresh())
+        },
+        clearMonitorListener : ()=>
+        {
+            dispatch(clearMonitorListener())
         },
         setMonitorListener : ()=>
         {

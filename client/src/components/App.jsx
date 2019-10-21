@@ -26,7 +26,7 @@ class App extends PureComponent {
           <Route path='/users/login' component={LogIn}></Route>                    
           <Route path="*" component={NotFound} />
         </Switch>
-      </div>
+      </div>      
       </BrowserRouter>
     );
   }

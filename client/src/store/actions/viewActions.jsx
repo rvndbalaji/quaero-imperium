@@ -22,6 +22,14 @@ let master_workflow_details = {};
 //var t0;
 //var t1;
 
+
+export const clearViewRefresh = () =>
+{
+    return(dispatch,getState) =>
+    {
+        clearTimeout(refreshTimeout)                        
+    }
+}
 export const setViewMonitor = (wf_details_p)=>
 {   
     return (dispatch,getState) =>

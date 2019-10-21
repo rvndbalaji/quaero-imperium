@@ -11,6 +11,16 @@ export const cancellers = {
 
 let refreshTimeout;
 let full_results
+
+export const clearMonitorListener = () =>
+{
+    return(dispatch,getState) =>
+    {
+        clearTimeout(refreshTimeout)        
+        unsubscribeMonitor && unsubscribeMonitor();        
+        cancellers.cancelMonitor && cancellers.cancelMonitor();
+    }
+}
 export const setMonitorListener = () =>
 {    
     return (dispatch,getState) =>

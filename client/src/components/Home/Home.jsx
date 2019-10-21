@@ -44,6 +44,9 @@ class Home extends React.Component
                          />     
                     </Row>
                 </Container>
+                <div className='footer'>
+                    © Quaero 3 LLC, {new Date().getFullYear()}
+                </div>
             </div>
             
         );
