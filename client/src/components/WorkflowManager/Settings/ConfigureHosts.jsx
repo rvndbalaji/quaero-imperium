@@ -148,11 +148,11 @@ export default function ConfigureHosts() {
             {alert_item}
                 <Form>
                     <Form.Group>
-                         <Form.Label><b>Server/Hostname (Ex. HSCSQL02T)</b></Form.Label>
+                         <Form.Label><b>Server/Hostname (Ex. HSPSQL02T)</b></Form.Label>
                          <Form.Control type="text" className='text-uppercase' name='host' onChange={(e)=>handleChange(e)} disabled={modalDetails.modal_type==='Edit'} defaultValue={modalDetails.host_details.host}/>
                     </Form.Group>
                     <Form.Group>
-                         <Form.Label><b>Nickname</b></Form.Label>
+                         <Form.Label><b>Nickname (Ex. Acme Prod)</b></Form.Label>
                          <Form.Control type="text"  name='nickname' onChange={(e)=>handleChange(e)} defaultValue={(modalDetails.host_details)?modalDetails.host_details.nickname:null}/>
                     </Form.Group>
                     <Form.Group  controlId="serverRadio">

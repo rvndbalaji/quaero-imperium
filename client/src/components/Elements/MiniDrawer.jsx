@@ -84,7 +84,7 @@ const useStyles = makeStyles(theme => ({
     overflowX: 'hidden',
     width: theme.spacing(7) + 1,
     [theme.breakpoints.up('sm')]: {
-      width: theme.spacing(7) + 1,
+      width: theme.spacing(7) + 2,
     }    
   },
   toolbar: {
@@ -161,7 +161,7 @@ export default function MiniDrawer() {
           <Link className='ml-2' to="/" target="_self"><Image id="logo" src={quaero_logo} width="125rem" fluid  /></Link>                            
         </div>
         <Divider />
-        <List style={{color:ico_text_color}}>        
+        <List style={{color:ico_text_color,marginTop:'-0.5rem'}}>        
           {['Search','Monitor','Reporting','Queries','Servers'].map((text, index) => (            
             <Tooltip title={text} placement='right' key={text}>                                            
               <ListItem button
