@@ -133,7 +133,7 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
         err: 1,
         data : {}
       }; 
-      
+    
     let full_name = userRecord['displayName'];
     let email = userRecord['proxyAddresses'][0].split(':')[1].toLowerCase();    
     let title = JSON.stringify(userRecord['title']).replace(/['"]+/g, '')
@@ -161,6 +161,7 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
                         logger.info(username + '\t' + 'User created');                                            
                     })
                     .catch(function(error) {  
+                        console.log(error)
                         //Something seriously went wrong. Stop and send an error                
                         result.data.info = 'There was an error while creating the user\'s profile. Please report to admin'                        
                         result.data.err_msg = error.toString();
@@ -225,7 +226,7 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
 function updateAndSavePassword(userObject,password,customToken,res,mytitle)
 {
     let encryped_pass = encrypt(password);
-    GLOBAL_FLYING_PASSWORDS[username] = encryped_pass;
+    GLOBAL_FLYING_PASSWORDS[userObject.uid] = encryped_pass;
     firebase.doc('users').collection(userObject.uid).doc('profile').set(
         {
             name : userObject.displayName,
@@ -238,7 +239,7 @@ function updateAndSavePassword(userObject,password,customToken,res,mytitle)
                 err : 0,
                 data : {token : customToken}
             });  
-            logger.info(username + '\t' + 'Logged In');
+            logger.info(userObject.uid + '\t' + 'Logged In');
         });
 }
 
