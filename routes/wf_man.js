@@ -257,6 +257,33 @@ router.get('/wf/entity',function(req,res)
 
 
 
+router.get('/wf/dispatch_window',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
+        {
+          getDispatchWindow(config,req,res,result);  
+        }
+        else{
+          reconnectAndCallback(decodedToken,req,res,config,getDispatchWindow);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
+
+
 router.post('/toggleJob',function(req,res)
 {  
   var result = {
@@ -577,6 +604,31 @@ router.post('/getColumns',function(req,res){
 });
 
 
+//Get columns for a given table name
+router.post('/wf/setDispCond',function(req,res){
+  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
+        {                
+          setDispatchCondition(config,req,res,result);
+        }
+        else{          
+          reconnectAndCallback(decodedToken,req,res,config,setDispatchCondition);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  }); 
+});
 
 var getWorkflowStats = async function (config,req,res,res_data)
 {   
@@ -785,7 +837,8 @@ var getWorkflowExecutionStatus = async function (config,req,res,res_data)
               h.FILE_NM,              
               c1.STATUS as DSI_IN_STATUS,
               d1.STATUS as DSI_OUT_STATUS,
-              a.EVENT_GROUP_ID
+              a.EVENT_GROUP_ID,
+              w.DISPATCH_CONDITION
           from  M_TRACK_WORKFLOW_INSTANCE a
           join m_workflow w on w.WORKFLOW_ID=a.WORKFLOW_ID
           left join (SELECT  b.WORKFLOW_DATASET_INSTANCE_MAP_ID,coalesce(a.WORKFLOW_INSTANCE_ID,b.WORKFLOW_INSTANCE_ID) WORKFLOW_INSTANCE_ID
@@ -873,6 +926,60 @@ var getErrorLog = async function (config,req,res,res_data)
 
 
 
+var setDispatchCondition = async function (config,req,res,res_data)
+{   
+    
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
+      
+      
+      let disp_cond = req.body.dispatch_condition;
+      if(!req.body.workflow_id || req.body.workflow_id.trim()==='')
+      {
+        throw 'No Workflow ID was specified'        
+      }
+      
+      if(!disp_cond || disp_cond.trim()==='')
+      {
+        disp_cond = 'NULL'        
+      }            
+      else
+      {
+        //Here check if statement is a delete or update or drop statement  
+        
+      }
+
+      //Replace single quotes with double-single quotes
+      disp_cond = disp_cond.replace(/\'/g,"''")      
+      let myquery = `update M_WORKFLOW set DISPATCH_CONDITION = '` + disp_cond +`' where WORKFLOW_ID = @workflow_id`      
+      
+      sql_request.input('workflow_id', req.body.workflow_id)   
+      sql_request.query(myquery, (err, result) =>
+      {
+        if(err)
+        {
+          res_data.err = 1; 
+          res_data.data = {info : JSON.stringify(err)};
+          res.send(res_data);     
+        }
+        else
+        {
+          res_data.err = 0; 
+          res_data.data = {info : JSON.stringify(result)};
+          res.send(res_data);
+        }
+      });
+    }
+    catch (err)
+    { 
+      res_data.data = {info : 'Something went wrong at (SETDISPCOND) : ' + err.toString()};      
+      res_data.err = 1;       
+      res.send(res_data);               
+      logger.error(config.user + '\t' + 'Set Disp Cond : ' + err.toString());
+    }
+}
 var getWFDatasets = async function (config,req,res,res_data)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1008,6 +1115,44 @@ var getWFEntity = async function (config,req,res,res_data)
       res_data.err = 1;       
       res.send(res_data);               
       logger.error(config.user + '\t' + 'Workflow Entity Fetch Error : ' + err.toString());
+    }
+}
+
+
+var getDispatchWindow = async function (config,req,res,res_data)
+{   
+    
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
+
+      sql_request.input('workflow_id', req.query.workflow_id)                  
+
+      var query_string = `
+      select * from M_WORKFLOW_DISPATCH_WINDOW where WORKFLOW_ID = @workflow_id`;
+      var sql_result = sql_request.query(query_string); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.data = {info : 'Something went wrong at (GETDISPWIN) : ' + err.toString()};      
+      res_data.err = 1;       
+      res.send(res_data);               
+      logger.error(config.user + '\t' + 'Workflow Dispatch Window Error : ' + err.toString());
     }
 }
 

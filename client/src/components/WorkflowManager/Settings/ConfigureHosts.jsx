@@ -148,7 +148,7 @@ export default function ConfigureHosts() {
             {alert_item}
                 <Form>
                     <Form.Group>
-                         <Form.Label><b>Server/Hostname (Ex. HSPSQL02T)</b></Form.Label>
+                         <Form.Label><b>Server/Hostname (Ex. HSPSQL02T.quaero.com)</b></Form.Label>
                          <Form.Control type="text" className='text-uppercase' name='host' onChange={(e)=>handleChange(e)} disabled={modalDetails.modal_type==='Edit'} defaultValue={modalDetails.host_details.host}/>
                     </Form.Group>
                     <Form.Group>

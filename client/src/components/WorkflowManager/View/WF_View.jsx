@@ -9,7 +9,7 @@ import Row from 'react-bootstrap/Row';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import ReactDOMServer from 'react-dom/server';
 import ReviewRequestModal from './ReviewRequestModal';
-import { FaChevronLeft } from 'react-icons/fa';
+import { FaChevronLeft,FaTerminal} from 'react-icons/fa';
 import {Link} from 'react-router-dom'
 import ViewInstanceTable from './ViewInstanceTable';
 import StageInfoTable from './StageInfoTable';
@@ -17,9 +17,12 @@ import DatasetsTable from './DatasetsTable';
 import SourceEntityTable from './SourceEntityTable';
 import SourceSystemTable from './SourceSystemTable';
 import ActivateWorkflow from './ActivateWorkflow';
+import DispatchWindowTable from './DispatchWindowTable';
 import WorkflowParamsTable from './WorkflowParamsTable';
 import {Animated} from "react-animated-css";
 import { Tooltip } from '@material-ui/core';
+import Button from 'react-bootstrap/Button';
+import UpdateDispatchCondModal from './UpdateDispatchCondModal';
 class WF_View extends PureComponent {
 refreshTimeout;
 
@@ -213,6 +216,37 @@ refreshTimeout;
                                 <SourceSystemTable/>
                             </Col>
                         </Row>   
+
+                        <Row className='justify-content-start mt-3'>
+                            <Col lg={12} md={12} sm={12}>
+                                <div align='left'  style={{color : 'var(--secondary_dark)',marginLeft : '0.4rem'}}> 
+                                    <h4>Dispatch Condition</h4>                                      
+                                    <Row className='justify-content-start' style={{marginLeft:'-0.3rem'}}>
+                                        <Col lg='auto' md='auto' sm='auto'>                                            
+                                            <UpdateDispatchCondModal wf_details={wf_details} wf_result={this.props.workflowResult} />
+                                        </Col>
+                                        <Col lg='auto' md='auto' sm='auto'>
+                                         <Button size='sm' variant='info' disabled={true} style={{opacity:0}}>
+                                            <FaTerminal className='mb-1' size='1rem'/>
+                                            <span style={{whiteSpace : 'pre'}}> Evaluate</span>                    
+                                        </Button>      
+                                        </Col>
+                                    </Row>    
+                                    <Row className='ml-2'>
+                                        <div className='black_text mt-2 p-1 border'>
+                                            <span>{this.props.workflowResult && this.props.workflowResult[0].DISPATCH_CONDITION}</span>
+                                        </div>                                        
+                                    </Row>                                                                         
+                                        
+                                </div>
+                                
+                            </Col>
+                        </Row>    
+                        <Row className='justify-content-center mt-2'>
+                            <Col lg={12} md={12} sm={12}>
+                                <DispatchWindowTable/>
+                            </Col>
+                        </Row>    
                         <Row className='justify-content-center'>
                             <Col lg={12} md={12} sm={12}>
                                 <WorkflowParamsTable/>

@@ -9,7 +9,7 @@ function SystemSelect(){
         return (
             <Row>
                 <Col lg='auto' md='auto' sm='auto'>
-                    <Button size='sm' variant='info' disabled={true}>                                        
+                    <Button size='sm' variant='info' disabled={true} style={{opacity:0}}>                                        
                         <FaPlay className='mb-1'/>
                         <span style={{whiteSpace : 'pre'}}>  Scan Now</span>                    
                     </Button>                

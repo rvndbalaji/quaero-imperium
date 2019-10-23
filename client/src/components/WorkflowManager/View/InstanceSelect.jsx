@@ -26,7 +26,7 @@ function InstanceSelect(props){
                         </Button>                                    
                 </Col>                
                 <Col lg='auto' md='auto' sm='auto'>
-                    <Button  size='sm' variant='info' disabled={true}>
+                    <Button  size='sm' variant='info' disabled={true} style={{opacity:0}}>
                         <FaLayerGroup className='mb-1'/>
                         <span style={{whiteSpace : 'pre'}}>  Bulk Status Change</span>                    
                     </Button>                

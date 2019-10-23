@@ -11,11 +11,12 @@ export const cancellers = {
     cancelParams : undefined,
     cancelBlock : undefined,
     cancelDatasets : undefined,
-    cancelStageInfo : undefined
+    cancelStageInfo : undefined,
+    cancelDispatchWindow : undefined
 };
 
 let refreshTimeout;
-let total_responses = 6;
+let total_responses = 7;
 let loaded_responses = 0;
 let wf_details;
 let master_workflow_details = {};
@@ -52,6 +53,9 @@ export const setViewMonitor = (wf_details_p)=>
 
         //Get Source Entity
         fetchSourceEntity(dispatch,getState);
+
+        //Fetch Workflow Dispatch Window
+        fetchDispatchWindow(dispatch,getState);
 
         //Fetch Datasets
         fetchDatasets(dispatch,getState);
@@ -152,6 +156,7 @@ const fetchWFDetails = (dispatch,getState)=>
             dispatch(setAlert(err,'danger'))            
         });   
 }
+
 
 const updateProgress =(dispatch,getState)=>
 {
@@ -259,6 +264,74 @@ const fetchSourceEntity = (dispatch,getState)=>
         });   
 }
 
+
+const fetchDispatchWindow = (dispatch,getState)=>
+{  
+   let server_name = wf_details.server
+   let metastore_name = wf_details.metastore
+   let wf_id = wf_details.wf_id    
+   let auth_type = wf_details.auth
+   
+   //Prepare request     
+   getIDToken().then(token=>
+    {   
+        axios.defaults.headers.common['Authorization'] =token
+        axios.get('/wf_man/wf/dispatch_window',{            
+            cancelToken : new CancelToken(function executor(c){
+                cancellers.cancelDispatchWindow = c
+            }),
+            params : {                
+                server : server_name,
+                auth_type,                
+                workflow_id : wf_id,                 
+                db : metastore_name,
+                schema:'dbo'            
+           }
+        })
+        .then(response=> response.data)
+        .then(res=>{
+            
+            if(res.err===1)
+            {
+                let msg = res.data.info;
+                let inner_msg = msg;
+                try
+                {
+                    inner_msg = JSON.parse(msg)                        
+                    if(inner_msg.originalError && inner_msg.originalError.info && inner_msg.originalError.info.message)
+                    {
+                        msg = inner_msg.originalError.info.message;
+                    }
+                }
+                catch(err)
+                {
+                    msg = res.data.info;                        
+                }
+                
+            }
+            else{                   
+                if(res.data.info.length>=1)
+                {                    
+                    let results = res.data.info;                                                          
+                    master_workflow_details['window'] = results;
+                }
+                else
+                {                    
+                    master_workflow_details['window'] = undefined;                    
+                }               
+                
+            }    
+        updateProgress(dispatch,getState);                            
+            
+        }).catch(function (thrown) {
+            updateProgress(dispatch,getState);                                        
+        });;
+
+    }).catch(err=>
+        {
+            updateProgress(dispatch,getState);                            
+        });   
+}
 
 
 const fetchStageInfo = (dispatch,getState)=>
@@ -411,6 +484,7 @@ const fetchSourceSystem = (dispatch,getState)=>
             dispatch(setAlert(err,'danger'))            
         });   
 }
+
 
 
 
@@ -729,6 +803,7 @@ export const setMasterWorkflowDetails =()=>{
            datasets : master_workflow_details.datasets,
            stageInfo : master_workflow_details.stageInfo,
            params : master_workflow_details.params,           
+           window : master_workflow_details.window
         });
     }
 }

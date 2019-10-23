@@ -6,6 +6,7 @@ const initState = {
     sourceSystems : undefined,
     datasets : undefined,
     workflowParams : undefined,
+    dispatchWindow : undefined,
     blockinfo : undefined,
     refreshInterval : 60,
     viewRefreshProgress : 0,
@@ -17,6 +18,7 @@ const initState = {
     selectedEntity : undefined,
     selectedSystem : undefined,
     selectedParam : undefined,
+    selectedWindow : undefined,
     failedStageCount : 0
 }
 
@@ -55,7 +57,8 @@ const viewReducer = (state = initState,action) =>
             sourceSystems : action.sourceSystems,
             datasets : action.datasets,
             stageInfo : action.stageInfo,
-            workflowParams : action.params,            
+            workflowParams : action.params, 
+            dispatchWindow : action.window           
         }
 
         case 'SET_WF_BLOCK_INFO' :                 
