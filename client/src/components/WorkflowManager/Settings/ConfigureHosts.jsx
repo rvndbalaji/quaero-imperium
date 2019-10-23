@@ -166,7 +166,9 @@ export default function ConfigureHosts() {
                         <Form.Check inline  type="radio" custom  name='auth_type' onChange={(e)=>handleChange(e)}  label="SQL"   id="sqloption" checked={modalDetails.host_details.auth_type===1}/>
                     </Form.Group>
                     <Form.Group controlId="domain">                        
-                        <Form.Check  custom  label="Use domain username/password" defaultChecked='true' disabled />                        
+                       {// <Form.Check  custom  label="Use domain username/password" defaultChecked='true' disabled />                        
+                       }
+                       <span className='gray_text'>NOTE : Uses your domain username/password</span>
                     </Form.Group>
                 </Form>
             </Modal.Body>

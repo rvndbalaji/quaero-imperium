@@ -1588,6 +1588,7 @@ var generateConfig = async function(req,decodedToken)
           auth_type = req.body.auth_type;          
         }
     
+  /*
     if(process.env.domain_prefix)
     {
       servername = process.env.domain_prefix + '.' + servername
@@ -1595,7 +1596,7 @@ var generateConfig = async function(req,decodedToken)
     if(process.env.domain_suffix)
     {
       servername = servername + '.' + process.env.domain_suffix
-    }    
+    }    */
     
     //First check if a the user is present and a password is available,
     let fetchFromFirestore =  false;

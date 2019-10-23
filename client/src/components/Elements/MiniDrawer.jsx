@@ -11,7 +11,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItem from '@material-ui/core/ListItem';
 import Tooltip from '@material-ui/core/Tooltip';
-import {FaServer,FaTachometerAlt,FaShieldAlt, FaTools, FaSearch,FaUserAlt,FaChartPie, FaDatabase,FaChevronRight, FaChevronLeft,FaComments} from "react-icons/fa";
+import {FaServer,FaTachometerAlt,FaShieldAlt, FaTools, FaSearch,FaUserAlt,FaChartPie, FaDatabase,FaChevronRight, FaChevronLeft,FaComments,FaHotjar} from "react-icons/fa";
 
 import {Link} from 'react-router-dom'
 import quaero_logo from '../../images/q_logo_full.png'
@@ -22,6 +22,7 @@ import Settings from '../WorkflowManager/Settings'
 import Profile from '../WorkflowManager/Profile'
 import Servers from '../WorkflowManager/Servers';
 import Support from '../WorkflowManager/Support';
+import WhatsNew from '../WorkflowManager/WhatsNew';
 
 
 
@@ -31,8 +32,8 @@ const menu_color = '#263238'
 const logo_back_color = menu_color
 const ico_color = '#ffffff'
 const ico_text_color = ico_color
-const sections = [<Search />,<Monitor/>,<div>Reporting : Generate reports for multiple workflows, group workflows and create new reporting processes etc. <b>Coming Soon</b></div>,<div>Queries : Execute custom queries to obtain adhoc results. <b>Coming Soon</b></div>,<Servers />,<Profile />,<div>Admin : Manage Imperium Administration. <b>Coming Soon, only for admins</b></div>,<Settings />,<Support/>];
-const icon_name = [<FaSearch size={ico_size} color={ico_color}/>,<FaTachometerAlt size={ico_size} color={ico_color}/>,<FaChartPie size={ico_size} color={ico_color}/>, <FaDatabase size={ico_size} color={ico_color}/>,<FaServer size={ico_size} color={ico_color}/>,<FaUserAlt size={ico_size} color={ico_color}/>,<FaShieldAlt size={ico_size} color={ico_color}/>,<FaTools size={ico_size} color={ico_color}/>,<FaComments size={ico_size} color={ico_color}/>]        
+const sections = [<Search />,<Monitor/>,<div>Reporting : Generate reports for multiple workflows, group workflows and create new reporting processes etc. <b>Coming Soon</b></div>,<div>Queries : Execute custom queries to obtain adhoc results. <b>Coming Soon</b></div>,<Servers />,<Profile />,<div>Admin : Manage Imperium Administration. <b>Coming Soon, only for admins</b></div>,<Settings />,<Support/>,<WhatsNew></WhatsNew>];
+const icon_name = [<FaSearch size={ico_size} color={ico_color}/>,<FaTachometerAlt size={ico_size} color={ico_color}/>,<FaChartPie size={ico_size} color={ico_color}/>, <FaDatabase size={ico_size} color={ico_color}/>,<FaServer size={ico_size} color={ico_color}/>,<FaUserAlt size={ico_size} color={ico_color}/>,<FaShieldAlt size={ico_size} color={ico_color}/>,<FaTools size={ico_size} color={ico_color}/>,<FaComments size={ico_size} color={ico_color} />,<FaHotjar size={ico_size} color={ico_color}/>]        
 
 
 
@@ -104,7 +105,7 @@ export default function MiniDrawer() {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [selectedIndex, setSelectedIndex] = React.useState(9);
   
   function handleDrawerOpen() {
     setOpen(true);
@@ -180,7 +181,7 @@ export default function MiniDrawer() {
         </List>
         <Divider />
         <List  style={{color:ico_text_color}}>
-          {['Profile','Admin','Settings','Support'].map((text, index) => (
+          {['Profile','Admin','Settings','Support','What\'s New!?'  ].map((text, index) => (
             <Tooltip title={text} placement='right' key={text}>                                            
             <ListItem button 
                        onClick={event => handleListItemClick(event, index + 5)}

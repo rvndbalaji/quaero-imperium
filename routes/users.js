@@ -73,7 +73,7 @@ router.post('/performLogin',[
                     //Proceed Authenticate only if the user belongs to the correct group
                     if(!isImperiumMember)
                     {                        
-                        result.data.info = 'Authentication Failed : User does not belong to group ' + process.env.ACCOUNT_TYPE
+                        result.data.info = 'Authentication Failed : User does not have access to group ' + process.env.ACCOUNT_TYPE
                         res.send(result)
                         logger.error(username + '\t' + 'Auth Failed : User does not belong to group');
                     }

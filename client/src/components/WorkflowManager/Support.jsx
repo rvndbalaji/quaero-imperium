@@ -55,7 +55,7 @@ class Support extends Component {
         return (
             <div>
                 <Row className='justify-content-center p-3'>                
-                    <h4>Imperium Support</h4>                
+                    <h4>Workflow Manager Support</h4>                
                 </Row>
                 <Row className='justify-content-center'>                
                     Your feedback helps development and improves your experience.                     
