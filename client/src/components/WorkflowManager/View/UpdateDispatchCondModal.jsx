@@ -135,7 +135,7 @@ function UpdateDispatchCondModal(props) {
                         <Modal.Body>
                                 {myAlert}
                                 <Form.Group className='mt-2'>
-                                            <Form.Control required as="textarea" rows='3' ref={disp_cond.dispatch_condition_text} name='disp_cond' defaultValue={props.wf_result && props.wf_result[0].DISPATCH_CONDITION}  placeholder="No Dispatch Condition"/>                                                                                                
+                                            <Form.Control style={{fontFamily:'monospace'}} required as="textarea" rows='5' ref={disp_cond.dispatch_condition_text} name='disp_cond' defaultValue={props.wf_result && props.wf_result[0].DISPATCH_CONDITION}  placeholder="No Dispatch Condition"/>                                                                                                
                                 </Form.Group>                                   
                         </Modal.Body>
 

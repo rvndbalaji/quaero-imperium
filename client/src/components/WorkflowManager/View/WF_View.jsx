@@ -217,7 +217,7 @@ refreshTimeout;
                             </Col>
                         </Row>   
 
-                        <Row className='justify-content-start mt-3'>
+                        <Row className='justify-content-start mt-4'>
                             <Col lg={12} md={12} sm={12}>
                                 <div align='left'  style={{color : 'var(--secondary_dark)',marginLeft : '0.4rem'}}> 
                                     <h4>Dispatch Condition</h4>                                      
@@ -234,7 +234,7 @@ refreshTimeout;
                                     </Row>    
                                     <Row className='ml-2'>
                                         <div className='black_text mt-2 p-1 border'>
-                                            <span>{this.props.workflowResult && this.props.workflowResult[0].DISPATCH_CONDITION}</span>
+                                            <span style={{fontFamily:'monospace',fontSize:'120%'}}>{this.props.workflowResult && this.props.workflowResult[0].DISPATCH_CONDITION}</span>
                                         </div>                                        
                                     </Row>                                                                         
                                         
