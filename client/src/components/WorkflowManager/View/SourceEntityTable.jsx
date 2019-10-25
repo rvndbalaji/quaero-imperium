@@ -7,7 +7,8 @@ import Col from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import { FaTh } from 'react-icons/fa';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css'
-
+import { setSelectedRow } from '../../../store/actions/viewActions';
+import EditEntityModal from './EditEntityModal';
 class SourceEntityTable extends PureComponent {
 
     render() 
@@ -76,10 +77,10 @@ class SourceEntityTable extends PureComponent {
 
             const selectRow = {
                 mode: 'radio',
-                //clickToSelect: true,
+                clickToSelect: true,
                 selected : selected_row,
                 hideSelectColumn: true,
-                //bgColor: '#d0d0d0',
+                bgColor: '#d0d0d0',
                 onSelect: (row, isSelect, rowIndex, e) => {
                     if(isSelect)
                     {                        
@@ -122,6 +123,15 @@ class SourceEntityTable extends PureComponent {
 
             });       
             
+             //Check if any row was selected, if yes display the row options
+             let RowOptions = '';
+        
+             if(prevSelRow /*|| original_data.length===1*/)
+             {
+                 RowOptions = (
+                    <EditEntityModal  wf_details={this.props.wf_details} selected_row={prevSelRow} excluded_cols={['ID','SYSTEM_ID','DATASET_ID','FILE_FORMAT']}/>
+                 )
+             }
             
             return (
             
@@ -140,6 +150,7 @@ class SourceEntityTable extends PureComponent {
                             <h4>Source Entities</h4>
                         </div>
                         <Row className='justify-content-start ml-2 mb-1 mr-2'>                                                                                          
+                            {RowOptions}
                             <Col className='ml-auto'>                                
                                 <MyExportCSV { ...props.csvProps } />
                             </Col>
@@ -185,7 +196,7 @@ const mapDispatchToProps = (dispatch)=>
     return {      
         setSelectedRow : (tbl_name,sel_value)=>
         {
-            dispatch({type : 'SET_SELECTED_ROW', tbl_name,sel_value })
+            dispatch(setSelectedRow(tbl_name,sel_value))
         }
     }
 }

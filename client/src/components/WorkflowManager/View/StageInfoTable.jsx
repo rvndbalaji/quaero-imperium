@@ -9,7 +9,7 @@ import Button from 'react-bootstrap/Button';
 import { FaTh } from 'react-icons/fa';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css'
 import StageSelect from './StageSelect';
-
+import { setSelectedRow } from '../../../store/actions/viewActions';
 class StageInfoTable extends PureComponent {
 
 fileSizeFormatter(cell, row) {    
@@ -46,7 +46,7 @@ fileSizeFormatter(cell, row) {
         
 
         //excluded ['SOURCE_ENTITY_ID',' FTP_ID',' FLE_ID','PARENT_FTP_ID']
-        let init_col_list = ['DATASET_INSTANCE_ID','FILE_NM','FTP_STATUS','FLE_STATUS','DSI_STATUS','FILE_SIZE_BYTES']
+        let init_col_list = ['FILE_NM','FTP_STATUS','FLE_STATUS','DSI_STATUS','FILE_SIZE_BYTES','DATASET_INSTANCE_ID']
                 
         let finalColumns = []
         let selectedTableStoreName = 'selectedStageInfo';        
@@ -265,7 +265,7 @@ const mapDispatchToProps = (dispatch)=>
     return {      
         setSelectedRow : (tbl_name,sel_value)=>
         {
-            dispatch({type : 'SET_SELECTED_ROW', tbl_name,sel_value })
+            dispatch(setSelectedRow(tbl_name,sel_value))
         },
         setFailedStageCount : (failed_count)=>
         {

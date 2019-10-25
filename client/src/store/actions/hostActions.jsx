@@ -100,18 +100,17 @@ export const deleteHost = (host_id) =>
         })
         .then(function() {               
             dispatch(setAlert('Removing monitors for host ' + host_id +'....','danger'))               
-        //Now delete the monitors of the above server
+            //Now delete the monitors of the above server
             fire.doc("users").collection(authUser.uid).doc('monitors').update({  
                     [host_id] : firebase.firestore.FieldValue.delete()
                 }).then(()=>{                       
-                    dispatch(setAlert('closeModal'))                                           
+                    dispatch(setAlert('closeModal'))                                                               
                 });
         })
         .catch(err=> {
             dispatch(setAlert(err,'danger'))                                           
-        });
-        
-       dispatch(setAlert('closeModal'))                                           
+        });        
+       
     }
 }
     

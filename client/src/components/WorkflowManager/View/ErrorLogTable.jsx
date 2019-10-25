@@ -156,7 +156,7 @@ class ErrorLogTable extends PureComponent {
                     <div>                      
                         <Row className='ml-3'>     
                             <Col className='mr-4'>                                                            
-                                <Button size='sm' variant='info' onClick={ this.props.refreshCallback() }>                                        
+                                <Button size='sm' variant='primary' onClick={ this.props.refreshCallback() }>                                        
                                     <FaUndo className='mb-1' size='1rem'/>
                                     <span style={{whiteSpace : 'pre'}}>  Refresh</span>                    
                                 </Button>   

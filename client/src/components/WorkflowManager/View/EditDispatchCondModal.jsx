@@ -9,7 +9,7 @@ import {  FaEdit } from 'react-icons/fa'
 import { setViewMonitor } from '../../../store/actions/viewActions';
 import Form from 'react-bootstrap/Form';
 
-function UpdateDispatchCondModal(props) {
+function EditDispatchCondModal(props) {
     
     const [show, setShow] = useState(false);        
     const dispatch = useDispatch();
@@ -37,18 +37,7 @@ function UpdateDispatchCondModal(props) {
     {   
         setShow(true);
     }
-   /* const setCondition = (e) => 
-    {   
-         let val = e.target.value;
-         if(!val || val.trim()==='')
-         {
-             val = null;
-         }
-         setDispCond({
-             ...disp_cond, 
-             dispatch_condition_text : val
-         })
-    }*/
+ 
     
     const setDispatchCondition=()=>
     {
@@ -123,7 +112,7 @@ function UpdateDispatchCondModal(props) {
         return (
             
             <div>                
-                <Button size='sm' variant='info' onClick={handleShow} >
+                <Button size='sm' variant='primary' onClick={handleShow} >
                     <FaEdit className='mb-1' size='1rem'/>
                     <span style={{whiteSpace : 'pre'}}> Update</span>                    
                 </Button>         
@@ -135,7 +124,7 @@ function UpdateDispatchCondModal(props) {
                         <Modal.Body>
                                 {myAlert}
                                 <Form.Group className='mt-2'>
-                                            <Form.Control style={{fontFamily:'monospace'}} required as="textarea" rows='5' ref={disp_cond.dispatch_condition_text} name='disp_cond' defaultValue={props.wf_result && props.wf_result[0].DISPATCH_CONDITION}  placeholder="No Dispatch Condition"/>                                                                                                
+                                            <Form.Control style={{fontFamily:'monospace'}} required as="textarea" rows='5' ref={disp_cond.dispatch_condition_text} name='disp_cond' defaultValue={props.wf_result && props.wf_result[0].DISPATCH_CONDITION}  placeholder="No Dispatch Condition (NULL)"/>                                                                                                
                                 </Form.Group>                                   
                         </Modal.Body>
 
@@ -149,4 +138,4 @@ function UpdateDispatchCondModal(props) {
         )    
 }
 
-export default  memo(UpdateDispatchCondModal)
+export default  memo(EditDispatchCondModal)

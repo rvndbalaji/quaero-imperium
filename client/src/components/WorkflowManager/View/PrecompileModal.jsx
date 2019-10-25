@@ -115,7 +115,7 @@ function PrecompileModal(props) {
         }       
         return (
             <div>                                
-                <Button  size='sm' variant='info'  onClick={handleShow} >                                        
+                <Button  size='sm' variant='primary'  onClick={handleShow} >                                        
                         <FaCog className='mb-1'/>
                         <span style={{whiteSpace : 'pre'}}>  Precompile</span>                    
                     </Button>        

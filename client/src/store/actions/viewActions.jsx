@@ -712,6 +712,15 @@ const fetchDatasets = (dispatch,getState)=>
 
 
 
+export const setSelectedRow = (tbl_name,sel_value) =>
+{    
+    return (dispatch,getState) =>
+    {   
+        dispatch({type : 'SET_SELECTED_ROW', tbl_name,sel_value })
+    }
+}
+
+
 export const toggleWorkflowMonitor = (togglestate) =>
 {    
     return (dispatch,getState) =>

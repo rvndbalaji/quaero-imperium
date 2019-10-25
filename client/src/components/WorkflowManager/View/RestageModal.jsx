@@ -100,7 +100,7 @@ function RestageModal(props) {
         }               
         return (
             <div>                
-                <Button size='sm' variant='info' onClick={handleShow} >                                        
+                <Button size='sm' variant='primary' onClick={handleShow} >                                        
                         <FaUndoAlt className='mb-1'/>
                         <span style={{whiteSpace : 'pre'}}>  Re-stage File</span>                    
                 </Button>    

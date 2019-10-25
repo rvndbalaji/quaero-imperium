@@ -7,8 +7,8 @@ import Col from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import { FaTh } from 'react-icons/fa';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css'
-import ParamSelect from './ParamSelect';
-
+import EditParamModal from './EditParamModal';
+import { setSelectedRow } from '../../../store/actions/viewActions';
 class WorkflowParamsTable extends PureComponent {
 
     render() 
@@ -119,10 +119,10 @@ class WorkflowParamsTable extends PureComponent {
             //Check if any row was selected, if yes display the row options
             let RowOptions = '';
         
-            if(prevSelRow || original_data.length===1)
-            {
+            if(prevSelRow)
+            {   
                 RowOptions = (
-                    <ParamSelect selected_row={prevSelRow} />
+                    <EditParamModal wf_details={this.props.wf_details} selected_row={prevSelRow} />
                 )
             }
             
@@ -189,7 +189,7 @@ const mapDispatchToProps = (dispatch)=>
     return {      
         setSelectedRow : (tbl_name,sel_value)=>
         {
-            dispatch({type : 'SET_SELECTED_ROW', tbl_name,sel_value })
+            dispatch(setSelectedRow(tbl_name,sel_value))
         }
     }
 }

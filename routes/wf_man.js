@@ -437,6 +437,31 @@ router.get('/wf/precompile',function(req,res)
 });
 
 
+router.get('/wf/evalDispCond',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
+        {
+          evalDispatchCondition(config,req,res,result);  
+        }
+        else{
+          reconnectAndCallback(decodedToken,req,res,config,evalDispatchCondition);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
 //Get the server stats given the servername and all the metastores
 router.get('/wf/stats',function(req,res)
 {  
@@ -629,6 +654,62 @@ router.post('/wf/setDispCond',function(req,res){
     res.status(403).send('Forbidden. Please sign in.')
   }); 
 });
+
+
+//Get columns for a given table name
+router.post('/wf/setWorkflowParams',function(req,res){
+  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
+        {                
+          setWorkflowParams(config,req,res,result);
+        }
+        else{          
+          reconnectAndCallback(decodedToken,req,res,config,setWorkflowParams);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  }); 
+});
+
+
+
+//Get columns for a given table name
+router.post('/wf/setSourceEntity',function(req,res){
+  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
+        {                
+          setSourceEntity(config,req,res,result);
+        }
+        else{          
+          reconnectAndCallback(decodedToken,req,res,config,setSourceEntity);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  }); 
+});
+
 
 var getWorkflowStats = async function (config,req,res,res_data)
 {   
@@ -941,19 +1022,21 @@ var setDispatchCondition = async function (config,req,res,res_data)
         throw 'No Workflow ID was specified'        
       }
       
+      //Replace single quotes with double-single quotes
+      disp_cond = (disp_cond)?disp_cond.replace(/\'/g,"''"):undefined
+
       if(!disp_cond || disp_cond.trim()==='')
       {
-        disp_cond = 'NULL'        
+        sql_request.input('disp_cond', undefined)         
+        disp_cond = '@disp_cond'
       }            
       else
       {
-        //Here check if statement is a delete or update or drop statement  
-        
+        //Here check if statement is a delete or update or drop statement          
+        disp_cond = "'" + disp_cond +"'"
       }
-
-      //Replace single quotes with double-single quotes
-      disp_cond = disp_cond.replace(/\'/g,"''")      
-      let myquery = `update M_WORKFLOW set DISPATCH_CONDITION = '` + disp_cond +`' where WORKFLOW_ID = @workflow_id`      
+      
+      let myquery = `update M_WORKFLOW set DISPATCH_CONDITION = ` + disp_cond +` where WORKFLOW_ID = @workflow_id`      
       
       sql_request.input('workflow_id', req.body.workflow_id)   
       sql_request.query(myquery, (err, result) =>
@@ -980,6 +1063,142 @@ var setDispatchCondition = async function (config,req,res,res_data)
       logger.error(config.user + '\t' + 'Set Disp Cond : ' + err.toString());
     }
 }
+
+
+var setWorkflowParams = async function (config,req,res,res_data)
+{   
+    
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
+      
+      if(!req.body.workflow_package_param_id || req.body.workflow_package_param_id.trim()==='' )
+      {
+        throw 'No Workflow Param ID was specified'        
+      }            
+
+      if(!req.body.workflow_param_name || req.body.workflow_param_name.trim()==='' )
+      {
+        throw 'No Workflow Param Name was specified'        
+      }   
+
+      let param_value = req.body.workflow_param_value;
+      if(!param_value || param_value.trim()==='')
+      {
+        param_value = undefined
+      }    
+
+      //Replace single quotes with double-single quotes
+      param_value = (param_value)?param_value.replace(/\'/g,"''"):undefined
+
+      
+      if(!param_value)
+      {
+        sql_request.input('param_value', undefined)         
+        param_value = '@param_value'
+      }
+      else
+      {
+        param_value = "'" + param_value +"'"
+      }
+
+      let myquery = `update M_WORKFLOW_PACKAGE_PARAM set PARAM_NAME = @workflow_param_name, PARAM_VALUE = ` + param_value + ` where WORKFLOW_PACKAGE_PARAM_ID = @workflow_package_param_id`            
+      sql_request.input('workflow_package_param_id', req.body.workflow_package_param_id)         
+      sql_request.input('workflow_param_name', req.body.workflow_param_name)         
+      sql_request.query(myquery, (err, result) =>
+      {
+        if(err)
+        {
+          res_data.err = 1; 
+          res_data.data = {info : JSON.stringify(err)};
+          res.send(res_data);     
+        }
+        else
+        {
+          res_data.err = 0; 
+          res_data.data = {info : JSON.stringify(result)};
+          res.send(res_data);
+        }
+      });
+    }
+    catch (err)
+    { 
+      res_data.data = {info : 'Something went wrong at (SETWFPARAM) : ' + err.toString()};      
+      res_data.err = 1;       
+      res.send(res_data);               
+      logger.error(config.user + '\t' + 'Set Workflow Param : ' + err.toString());
+    }
+}
+
+
+var setSourceEntity = async function (config,req,res,res_data)
+{   
+    
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
+      
+      if(!req.body.source_entity_id || req.body.source_entity_id.trim()==='' )
+      {
+        throw 'No Source Entity ID was specified'        
+      }            
+
+      if(!req.body.keyValuePairs || req.body.keyValuePairs.length===0)
+      {
+        throw 'No Key Value Pairs were specified'        
+      }     
+      
+      let myquery = `update M_SOURCE_ENTITY set `;
+      let query_pieces = []
+      keyValuePairs = req.body.keyValuePairs;      
+      for(keyname in keyValuePairs)
+      {
+        if(['FILE_FORMAT'].includes(keyname))
+        {
+          throw keyname + ' column does not belong to an entity, it was created using joins. Please exclude the column'
+        }  
+        let value = keyValuePairs[keyname];
+        if(!value)
+        {
+          value = undefined         
+        }    
+        sql_request.input(keyname, value)                 
+        string_val = ` ` + keyname + ` = @` + keyname + ` `
+        query_pieces.push(string_val)        
+      }
+      myquery = myquery + query_pieces.join(',') +  ` where ID = @source_entity_id`;            
+      //Replace single quotes with double-single quotes
+      //param_value = (param_value)?param_value.replace(/\'/g,"''"):undefined
+
+      
+      sql_request.input('source_entity_id', req.body.source_entity_id)               
+      sql_request.query(myquery, (err, result) =>
+      {
+        if(err)
+        {
+          res_data.err = 1; 
+          res_data.data = {info : JSON.stringify(err)};
+          res.send(res_data);     
+        }
+        else
+        {
+          res_data.err = 0; 
+          res_data.data = {info : JSON.stringify(result)};
+          res.send(res_data);
+        }
+      });
+    }
+    catch (err)
+    { 
+      res_data.data = {info : 'Something went wrong at (EDITSCENT) : ' + err.toString()};      
+      res_data.err = 1;       
+      res.send(res_data);               
+      logger.error(config.user + '\t' + 'Set Source Entity : ' + err.toString());
+    }
+}
+
 var getWFDatasets = async function (config,req,res,res_data)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1049,7 +1268,7 @@ var restageFile = async function (config,req,res,res_data)
       delete from M_TRACK_DATASET_INSTANCE where DATASET_INSTANCE_ID in (select DATASET_INSTANCE_ID from M_TRACK_FILE where FTP_ID in (select FTP_ID from @TEMP));      
        `;
       var sql_result = sql_request.query(query_string); 
-
+      logger.info(config.user + '\tRESTAGED file with FTP_ID =  : ' + req.body.ftp_id)
       //Capture the result when the query completes
       sql_result.then(function(result)
       {        
@@ -1086,7 +1305,7 @@ var getWFEntity = async function (config,req,res,res_data)
       sql_request.input('workflow_id', req.query.workflow_id)                  
 
       var query_string = `
-      select ID,SYSTEM_ID,DATASET_ID,ENTITY_NM,ENTITY_DESC,FREQUENCY,FREQUENCY_DAYS,INCLUDE_HEADER,NUM_HEADER_ROWS,STAGE_STRATEGY,STAGE_TABLE_NM,NEXT_EXTRACT_VALUE,STAGE_PACKAGE_PATH,SOURCE_FILE_MASK,FILE_FORMAT,CONTROL_FILE_FLG,CONTROL_FILE_EXT,CONTROL_FILE_DELIMITER,CONTROL_FILE_MASK,COLUMN_DELIMITER,TEXT_QUALIFIER,ALLOW_STRING_TRUNCATION,ROW_DELIMITER,PRE_PROCESS_FUNCTION,DATABASE_HOST,DATABASE_NM,DATABASE_USERNAME,DATABASE_PASSWORD,REQUIRED_FLG,REQUIRED_DATE_DIFF,DOWNLOAD_ONLY_FLG,UNZIP_FILE_FLG,UNZIP_FILE_PASSWORD,STATUS,ACTIVE_FLG,STD_CONFIG_ID,MATCH_CONFIG_ID,DELETE_SOURCE_FILE_FLG,PARENT_SOURCE_ENTITY_ID,SOURCE_UOW_ID_FUNCT,SOURCE_LINEAGE_DT_FUNCT,HEADER_EXCLUDE_EXPRESSION,ROW_DELIM_ESCAPE_CHAR,COLUMN_DELIM_ESCAPE_CHAR from M_SOURCE_ENTITY ent
+      select ID,SYSTEM_ID,DATASET_ID,ENTITY_NM,ENTITY_DESC,FREQUENCY,FREQUENCY_DAYS,INCLUDE_HEADER,NUM_HEADER_ROWS,STAGE_STRATEGY,STAGE_TABLE_NM,NEXT_EXTRACT_VALUE,STAGE_PACKAGE_PATH,SOURCE_FILE_MASK,FILE_FORMAT,CONTROL_FILE_FLG,CONTROL_FILE_EXT,CONTROL_FILE_DELIMITER,CONTROL_FILE_MASK,COLUMN_DELIMITER,TEXT_QUALIFIER,ALLOW_STRING_TRUNCATION,ROW_DELIMITER,PRE_PROCESS_FUNCTION,DATABASE_HOST,DATABASE_NM,DATABASE_USERNAME,REQUIRED_FLG,REQUIRED_DATE_DIFF,DOWNLOAD_ONLY_FLG,UNZIP_FILE_FLG,STATUS,ACTIVE_FLG,STD_CONFIG_ID,MATCH_CONFIG_ID,DELETE_SOURCE_FILE_FLG,PARENT_SOURCE_ENTITY_ID,SOURCE_UOW_ID_FUNCT,SOURCE_LINEAGE_DT_FUNCT,HEADER_EXCLUDE_EXPRESSION,ROW_DELIM_ESCAPE_CHAR,COLUMN_DELIM_ESCAPE_CHAR from M_SOURCE_ENTITY ent
       left join M_FILE_FORMAT form on form.FILE_FORMAT_ID = ent.FILE_FORMAT_ID
       where DATASET_ID in (
         select DATASET_ID from M_WORKFLOW_INPUT where WORKFLOW_ID = @workflow_id
@@ -1374,6 +1593,59 @@ var getPrecompile = async function (config,req,res,res_data)
     }
 }
 
+
+
+var evalDispatchCondition = async function (config,req,res,res_data)
+{   
+    
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
+      sql_request.input('workflow_id',sql.BigInt,req.query.workflow_id);      
+      var sql_result = sql_request.execute("USP_EVALUATE_DISPATCH_CONDITION"); 
+      
+      //Capture the result when the query completes
+      sql_result.then(function(first_result)
+      {                        
+        //Get the resultant temp table name
+        
+        temp_tbl_name = first_result.recordset[0].TEMP_TABLE_NAME;
+        
+        //We can now send another request to query the PARAM_NAME and PARAM_VALUE in this temp table
+        param_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();        
+        var dsi_result = param_request.query(`
+                    select * from ` + temp_tbl_name);         
+      
+        //Capture the result when the query completes
+        dsi_result.then(function(final_result)
+          {                    
+            res_data.err = 0; 
+            res_data.data = {info : final_result.recordset};
+            res.status(200).send(res_data);               
+          })
+          .catch(err=>{
+            res_data.err = 1; 
+            res_data.data = {info : JSON.stringify(err)};
+            res.send(res_data);               
+          });
+
+        //Wait for second request to complete, so don't send response to client
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.data = {info : 'Something went wrong at (EVALDISP) : ' + err.toString()};      
+      res_data.err = 1;       
+      res.send(res_data);               
+      logger.error(config.user + '\t' + 'Evaluate Disp Cond: ' + err.toString());
+    }
+}
 
 
 var getMetastores = async function (config,req,res,res_data)
@@ -1706,7 +1978,7 @@ var getColumns = async function (config,req,res,res_data)
 
 
 var generateConfig = async function(req,decodedToken)
-{ 
+{   
   return new Promise((resolve,reject) => {
     
     var result = {

@@ -9,7 +9,7 @@ import Row from 'react-bootstrap/Row';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import ReactDOMServer from 'react-dom/server';
 import ReviewRequestModal from './ReviewRequestModal';
-import { FaChevronLeft,FaTerminal} from 'react-icons/fa';
+import { FaChevronLeft} from 'react-icons/fa';
 import {Link} from 'react-router-dom'
 import ViewInstanceTable from './ViewInstanceTable';
 import StageInfoTable from './StageInfoTable';
@@ -21,8 +21,8 @@ import DispatchWindowTable from './DispatchWindowTable';
 import WorkflowParamsTable from './WorkflowParamsTable';
 import {Animated} from "react-animated-css";
 import { Tooltip } from '@material-ui/core';
-import Button from 'react-bootstrap/Button';
-import UpdateDispatchCondModal from './UpdateDispatchCondModal';
+import EditDispatchCondModal from './EditDispatchCondModal';
+import EvaluateDispatchCondition from './EvaluateDispatchCondition';
 class WF_View extends PureComponent {
 refreshTimeout;
 
@@ -203,17 +203,17 @@ refreshTimeout;
                         </Row>     
                         <Row className='justify-content-center'>
                             <Col lg={12} md={12} sm={12}>
-                                <DatasetsTable/>
+                                <DatasetsTable  wf_details={wf_details}/>
                             </Col>
                         </Row>                       
                         <Row className='justify-content-center'>
                             <Col lg={12} md={12} sm={12}>
-                                <SourceEntityTable/>
+                                <SourceEntityTable  wf_details={wf_details}/>
                             </Col>
                         </Row>    
                         <Row className='justify-content-center'>
                             <Col lg={12} md={12} sm={12}>
-                                <SourceSystemTable/>
+                                <SourceSystemTable  wf_details={wf_details}/>
                             </Col>
                         </Row>   
 
@@ -223,13 +223,10 @@ refreshTimeout;
                                     <h4>Dispatch Condition</h4>                                      
                                     <Row className='justify-content-start' style={{marginLeft:'-0.3rem'}}>
                                         <Col lg='auto' md='auto' sm='auto'>                                            
-                                            <UpdateDispatchCondModal wf_details={wf_details} wf_result={this.props.workflowResult} />
+                                            <EditDispatchCondModal wf_details={wf_details} wf_result={this.props.workflowResult} />
                                         </Col>
                                         <Col lg='auto' md='auto' sm='auto'>
-                                         <Button size='sm' variant='info' disabled={true} style={{opacity:0}}>
-                                            <FaTerminal className='mb-1' size='1rem'/>
-                                            <span style={{whiteSpace : 'pre'}}> Evaluate</span>                    
-                                        </Button>      
+                                                <EvaluateDispatchCondition wf_details={wf_details}/>
                                         </Col>
                                     </Row>    
                                     <Row className='ml-2'>
@@ -244,12 +241,12 @@ refreshTimeout;
                         </Row>    
                         <Row className='justify-content-center mt-2'>
                             <Col lg={12} md={12} sm={12}>
-                                <DispatchWindowTable/>
+                                <DispatchWindowTable  wf_details={wf_details}/>
                             </Col>
                         </Row>    
                         <Row className='justify-content-center'>
                             <Col lg={12} md={12} sm={12}>
-                                <WorkflowParamsTable/>
+                                <WorkflowParamsTable  wf_details={wf_details}/>
                             </Col>
                         </Row>                    
                         

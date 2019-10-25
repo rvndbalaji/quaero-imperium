@@ -17,7 +17,8 @@ class WhatsNew extends Component {
             </Row>
             <Row>
                 <Col className='text-left'>
-                    <i>Everything</i> 😛
+                    1. Edit workflow params &amp; source entities <br/>
+                    2. View &amp; edit dispatch conditions (and view dispatch window) <br/>                    
                 </Col>    
             </Row>
 
@@ -28,10 +29,8 @@ class WhatsNew extends Component {
                 <Col className='text-left'>
                     1. Ability to start/stop using service account <br/>
                     2. Get notified when a job is started/stopped <br/>
-                    3. Suggest usernames when sending workflow request review <br/>
-                    4. Edit workflow params &amp; source entities <br/>
-                    5. View &amp; edit dispatch condition and window <br/>                    
-                    6. Set default servers &amp; metastores                
+                    3. Suggest usernames when sending workflow request review <br/>                                        
+                    4. Set default servers &amp; metastores                
                 </Col>                
             </Row>
 

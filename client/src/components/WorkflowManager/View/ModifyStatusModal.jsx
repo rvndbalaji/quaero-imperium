@@ -111,7 +111,7 @@ function ModifyStatusModal(props) {
         }       
         return (
             <div>                
-                <Button size='sm' variant='info' onClick={handleShow} >                                        
+                <Button size='sm' variant='primary' onClick={handleShow} >                                        
                         <FaPen className='mb-1'/>
                         <span style={{whiteSpace : 'pre'}}>  Modify Status</span>                    
                 </Button>         

@@ -9,7 +9,7 @@ import Button from 'react-bootstrap/Button';
 import { FaTh } from 'react-icons/fa';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css'
 import InstanceSelect from './InstanceSelect';
-
+import { setSelectedRow } from '../../../store/actions/viewActions';
 class ViewInstanceTable extends PureComponent {
 
     render() 
@@ -218,7 +218,7 @@ const mapDispatchToProps = (dispatch)=>
     return {      
         setSelectedRow : (tbl_name,sel_value)=>
         {
-            dispatch({type : 'SET_SELECTED_ROW', tbl_name,sel_value })
+            dispatch(setSelectedRow(tbl_name,sel_value))
         }
     }
 }

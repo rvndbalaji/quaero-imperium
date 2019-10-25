@@ -4,16 +4,16 @@ import Modal from 'react-bootstrap/Modal';
 import axios from 'axios'
 import {getIDToken} from '../../Auth/getIDToken'
 import Button from 'react-bootstrap/Button';
-import {  FaRegListAlt } from 'react-icons/fa'
+import {  FaTerminal } from 'react-icons/fa'
+import Row from 'react-bootstrap/Row';
 
-import ErrorLogTable from './ErrorLogTable';
-function ViewLogsModal(props) {
+function EvaluateDispatchCondition(props) {
     
     const [show, setShow] = useState(false);        
     
-    const [vwLogs, setVwLogs] = useState({      
+    const [evalDisp, setEvalDisp] = useState({      
       actionInProgress : false,      
-      viewLogs : [],
+      viewDSI : [],
       actionAlert : {          
         msg : '',
         color : ''
@@ -22,9 +22,9 @@ function ViewLogsModal(props) {
 
     
     const handleClose = () => {                  
-        setVwLogs({
-            ...vwLogs,
-            viewLogs : [],
+        setEvalDisp({
+            ...evalDisp,
+            viewDSI : [],
             actionInProgress : false,
             actionAlert : {
                 msg : '',
@@ -37,17 +37,17 @@ function ViewLogsModal(props) {
     {   
         setShow(true);
         //Fetch the logs immediately after modal is shown
-        fetchLogs()                
+        evalDispatch()                
     }
 
    
-    const fetchLogs=()=>
+    const evalDispatch=()=>
     {
-        setVwLogs({
-            ...vwLogs,
+        setEvalDisp({
+            ...evalDisp,
             actionInProgress : true,
             actionAlert : {
-                msg : 'Fetching logs, please wait...',
+                msg : 'Evaluating dispatch condition, please wait...',
                 color : 'warning'
             }
         })
@@ -55,23 +55,23 @@ function ViewLogsModal(props) {
         getIDToken().then(token=>
             {
                 
-                let wf_details = props.wf_details                
+                let wf_details = props.wf_details                       
                 axios.defaults.headers.common['Authorization'] = token
-                axios.get('/wf_man/wf/error_log',{                    
+                axios.get('/wf_man/wf/evalDispCond',{                    
                     params : {
                         server : wf_details.server,
                         auth_type : wf_details.auth,
                         db : wf_details.metastore, 
                         schema:'dbo', 
-                        event_group_id : props.selected_row.EVENT_GROUP_ID
+                        workflow_id : wf_details.wf_id
                     }                    
                 }).then(res =>{
                     let resp = res.data
                     if(resp.err===1)
                     {   
-                        setVwLogs({
-                            ...vwLogs,
-                            viewLogs : [],
+                        setEvalDisp({
+                            ...evalDisp,
+                            viewDSI : [],
                             actionInProgress : false,
                             actionAlert : {
                                 msg : resp.data.info,
@@ -81,9 +81,9 @@ function ViewLogsModal(props) {
                     }
                     else
                     {                       
-                        setVwLogs({
-                            ...vwLogs,
-                            viewLogs : resp.data.info,
+                        setEvalDisp({
+                            ...evalDisp,
+                            viewDSI : resp.data.info,
                             actionInProgress : false,
                             actionAlert : {                                
                                 msg : '',
@@ -94,9 +94,9 @@ function ViewLogsModal(props) {
                     
                 }).catch(err =>
                 {
-                    setVwLogs({
-                        ...vwLogs,
-                        viewLogs : [],
+                    setEvalDisp({
+                        ...evalDisp,
+                        viewDSI : [],
                         actionInProgress : false,
                         actionAlert : {
                             msg : err.toString(),
@@ -108,25 +108,49 @@ function ViewLogsModal(props) {
     }
     
         let myAlert = ''
-        if(vwLogs.actionAlert.msg!=='')
+        if(evalDisp.actionAlert.msg!=='')
         {
            myAlert =  (
-                <Alert style={{wordBreak:'break-all'}}  variant={vwLogs.actionAlert.color}>{vwLogs.actionAlert.msg}</Alert>                       
+                <Alert style={{wordBreak:'break-all'}} variant={evalDisp.actionAlert.color}>{evalDisp.actionAlert.msg}</Alert>                       
             )
         }       
+
+        let DSI_DISPLAY = ''
+        let KEY=''
+        if(evalDisp.viewDSI && evalDisp.viewDSI.length!==0)
+        {            
+            DSI_DISPLAY = evalDisp.viewDSI.map((dsi,index)=>{                                
+                KEY = Object.keys(dsi)[0]                
+                return (                
+                <Row key={index} className='p-2 m-2'>
+                    <span>{dsi[KEY]}</span>
+                </Row>                
+            )});
+        }
+        else if(evalDisp.viewDSI.length===0 && !evalDisp.actionInProgress)
+        {
+            DSI_DISPLAY = 'No Dataset Instances'
+        }
+        DSI_DISPLAY = (
+            <div>
+                <span className='font-weight-bold'>{KEY}</span>
+                {DSI_DISPLAY}
+            </div>
+        )
+
         return (
             <div>                                
-                <Button  size='sm' variant='primary'  onClick={handleShow} >                                        
-                        <FaRegListAlt className='mb-1'/>
-                        <span style={{whiteSpace : 'pre'}}>  View Logs</span>                    
-                    </Button>        
-                <Modal size='lg' show={show} onHide={handleClose} backdrop='static' backdropClassName='my_modal_backdrop'>
+                <Button size='sm' variant='primary' onClick={handleShow}>
+                    <FaTerminal className='mb-1' size='1rem'/>
+                    <span style={{whiteSpace : 'pre'}}> Evaluate</span>                    
+                </Button>          
+                <Modal size='sm' show={show} onHide={handleClose} backdrop='static' backdropClassName='my_modal_backdrop'>
                         <Modal.Header closeButton>
-                            <Modal.Title>Error Logs for {props.selected_row.EVENT_GROUP_ID}</Modal.Title>
+                            <Modal.Title>Evaluate Dispatch Condition</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                        {myAlert}       
-                        <ErrorLogTable inProgress={vwLogs.actionInProgress} data={vwLogs.viewLogs} refreshCallback={()=>fetchLogs} />
+                        {myAlert}                              
+                        {DSI_DISPLAY}
                         </Modal.Body>
 
                         <Modal.Footer>                            
@@ -138,4 +162,4 @@ function ViewLogsModal(props) {
         )    
 }
 
-export default  memo(ViewLogsModal)
+export default  memo(EvaluateDispatchCondition)
