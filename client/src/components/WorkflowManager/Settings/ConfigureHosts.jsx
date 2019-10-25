@@ -117,7 +117,7 @@ export default function ConfigureHosts() {
     let del_btn = ''
     if(modalDetails.modal_type==='Edit')
     {
-        del_btn = (<Button variant='danger' className="mr-auto" disabled={true} onClick={removeHost}>Delete</Button>)
+        del_btn = (<Button variant='danger' className="mr-auto" onClick={removeHost}>Delete</Button>)
     }
     return (
         <div>
@@ -173,8 +173,7 @@ export default function ConfigureHosts() {
                        <span className='gray_text'>NOTE : Uses your domain username/password</span>
                     </Form.Group>
                 </Form>
-            </Modal.Body>
-            <span className="red_text ml-3">DELETING HOST is Temporarily Unavailable</span>
+            </Modal.Body>            
             <Modal.Footer>
                 {del_btn}
                 <Button variant='secondary' onClick={handleClose}>Close</Button>                

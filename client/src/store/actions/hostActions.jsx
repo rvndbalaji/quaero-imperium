@@ -95,21 +95,18 @@ export const deleteHost = (host_id) =>
     {
         authUser = getState().auth.authUser;            
         dispatch(setAlert('Removing host... ' + host_id+'....','danger'))     
-                  
         
-        fire.doc("users").collection(authUser.uid).doc('hosts').update({  
-            [host_id] : firebase.firestore.FieldValue.delete()
-        })
+        fire.doc("users").collection(authUser.uid).doc('hosts').set({ 
+            [host_id]: firebase.firestore.FieldValue.delete()
+        }, { merge: true })
         .then(function() {                  
             dispatch(setAlert('Removing monitors for host ' + host_id +'....','danger'))               
-            //Now delete the monitors of the above server
-
-            //Firestore keys should not contain DOT [.] operator. So we fetch the fieldpath
-            let field_path = new firebase.firestore.FieldPath(host_id)
-            console.log(field_path)
-            fire.doc("users").collection(authUser.uid).doc('monitors').update({  
-                    [field_path] : firebase.firestore.FieldValue.delete()
-                }).then(()=>{                                           
+            //Firestore keys should not contain DOT [.] operator. So we delete using set function
+            
+            fire.doc("users").collection(authUser.uid).doc('monitors').set({  
+                    [host_id] : firebase.firestore.FieldValue.delete()
+                }, { merge: true })
+                .then(()=>{                                           
                     dispatch(setAlert('closeModal'))                                                               
                 })
         })
