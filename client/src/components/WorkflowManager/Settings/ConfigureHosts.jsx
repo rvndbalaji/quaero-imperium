@@ -117,7 +117,7 @@ export default function ConfigureHosts() {
     let del_btn = ''
     if(modalDetails.modal_type==='Edit')
     {
-        del_btn = (<Button variant='danger' className="mr-auto" onClick={removeHost}>Delete</Button>)
+        del_btn = (<Button variant='danger' className="mr-auto" disabled={true} onClick={removeHost}>Delete</Button>)
     }
     return (
         <div>
@@ -137,7 +137,9 @@ export default function ConfigureHosts() {
                         </Row>
                     </div>                    
                     </Col>
-                    <span className="red_text ml-3">WARNING : Deleting a host will also remove any workflows being monitored on that server</span>                                                                     
+                    <span className="red_text ml-3">WARNING : Deleting a host will also remove any workflows that were marked for monitoring on that server</span>
+                    
+                    
             </Row>
             <Modal show={show} onHide={handleClose} backdrop='static' backdropClassName='my_modal_backdrop'>
             <Modal.Header closeButton>
@@ -172,7 +174,7 @@ export default function ConfigureHosts() {
                     </Form.Group>
                 </Form>
             </Modal.Body>
-
+            <span className="red_text ml-3">DELETING HOST is Temporarily Unavailable</span>
             <Modal.Footer>
                 {del_btn}
                 <Button variant='secondary' onClick={handleClose}>Close</Button>                

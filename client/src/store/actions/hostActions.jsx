@@ -2,6 +2,7 @@ import  firebase from '../../firebase/firebase'
 import axios from 'axios'
 import {getIDToken} from '../../components/Auth/getIDToken'
 import {getJobStats} from './serverActions'
+
 const CancelToken = axios.CancelToken;
 let fire = firebase.firestore().collection('root')
 let unsubscribeHost;
@@ -89,23 +90,28 @@ export const fetchUserTitle = () =>
 
 
 export const deleteHost = (host_id) =>
-{    
+{   
     return (dispatch,getState) =>
     {
-        authUser = getState().auth.authUser;        
+        authUser = getState().auth.authUser;            
         dispatch(setAlert('Removing host... ' + host_id+'....','danger'))     
                   
+        
         fire.doc("users").collection(authUser.uid).doc('hosts').update({  
             [host_id] : firebase.firestore.FieldValue.delete()
         })
-        .then(function() {               
+        .then(function() {                  
             dispatch(setAlert('Removing monitors for host ' + host_id +'....','danger'))               
             //Now delete the monitors of the above server
+
+            //Firestore keys should not contain DOT [.] operator. So we fetch the fieldpath
+            let field_path = new firebase.firestore.FieldPath(host_id)
+            console.log(field_path)
             fire.doc("users").collection(authUser.uid).doc('monitors').update({  
-                    [host_id] : firebase.firestore.FieldValue.delete()
-                }).then(()=>{                       
+                    [field_path] : firebase.firestore.FieldValue.delete()
+                }).then(()=>{                                           
                     dispatch(setAlert('closeModal'))                                                               
-                });
+                })
         })
         .catch(err=> {
             dispatch(setAlert(err,'danger'))                                           
