@@ -23,6 +23,7 @@ import {Animated} from "react-animated-css";
 import { Tooltip } from '@material-ui/core';
 import EditDispatchCondModal from './EditDispatchCondModal';
 import EvaluateDispatchCondition from './EvaluateDispatchCondition';
+import { sendUserActivity } from '../../../store/actions/userActivityActions'
 class WF_View extends PureComponent {
 refreshTimeout;
 
@@ -34,6 +35,8 @@ refreshTimeout;
             wf_id : this.props.match.params.wf_id,
             auth : this.props.match.params.auth,
         })
+
+        this.props.sendUserActivity()
         
     }     
     
@@ -283,6 +286,10 @@ const mapDispatchToProps = (dispatch)=>
         setAlert : (msg,color) => 
         {            
             dispatch(setAlert(msg,color));
+        },
+        sendUserActivity : ()=>
+        {
+            dispatch(sendUserActivity())
         }  
     }
 }

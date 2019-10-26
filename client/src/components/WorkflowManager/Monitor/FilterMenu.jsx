@@ -6,6 +6,7 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import Button from 'react-bootstrap/Button'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Form from 'react-bootstrap/Form'
+
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import { connect } from 'react-redux'
 import {setRefreshInterval} from '../../../store/actions/monitorActions'
@@ -77,20 +78,21 @@ refreshTimeout;
                         </Row>
                     </Col>          
                 </Row>                     
-                <Row className='justify-content-center' style={{zoom:0.85}} >                                                            
+                <Row className='justify-content-center' style={{zoom:0.85}} >                                                                                 
                     <Col lg="auto" md="auto">
                         <span>Refresh every </span>
                         <div className="btn-group">
                             <input type="number" className="form-control" id="ref_box"  min={7} defaultValue={ref_interval} onChange={(e)=>this.refreshChanged(e)}/>
                         </div>
                         <span> seconds</span>
-                    </Col>        
+                    </Col>                          
                 </Row>   
                 <Row className='justify-content-center mt-2 mb-1'>                    
                     <Col lg={12} md={12}>
                         <ProgressBar animated now={100} style={{height:'0.2rem',opacity : (this.props.progressVisible)?1:0}}/>                        
                     </Col>                                     
-                </Row>          
+                </Row> 
+                       
             </Container>            
         )
     }

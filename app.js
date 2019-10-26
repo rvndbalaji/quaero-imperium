@@ -36,7 +36,7 @@ var logRecycler =  new (DailyRotateFile)({
 });
 //Create a Logger
 
-function getTimeZone(mydate)
+ getTimeZone = function(mydate)
 {
   zone_string = (mydate.toString().match(/\(([A-Za-z\s].*)\)/)[1]);
   try

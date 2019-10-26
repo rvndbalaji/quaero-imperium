@@ -10,6 +10,10 @@ var GLOBAL_CONN_POOL = {};
 //This is loaded once and the password is reused from here instead of the database.
 //when the database password updates, this is undefined, so it can be fetched freshly
 GLOBAL_FLYING_PASSWORDS = {};
+
+//We maintain a variable that has the last activity of a user
+GLOBAL_LAST_USER_ACTIVITY = {}
+
 //Connect to SQL
 router.post('/connectSQL',function(req,res)
 { 
@@ -1976,9 +1980,9 @@ var getColumns = async function (config,req,res,res_data)
       }
 }
 
-
 var generateConfig = async function(req,decodedToken)
-{   
+{ 
+  
   return new Promise((resolve,reject) => {
     
     var result = {
@@ -2004,16 +2008,6 @@ var generateConfig = async function(req,decodedToken)
           schema = req.body.schema;
           auth_type = req.body.auth_type;          
         }
-    
-  /*
-    if(process.env.domain_prefix)
-    {
-      servername = process.env.domain_prefix + '.' + servername
-    }
-    if(process.env.domain_suffix)
-    {
-      servername = servername + '.' + process.env.domain_suffix
-    }    */
     
     //First check if a the user is present and a password is available,
     let fetchFromFirestore =  false;

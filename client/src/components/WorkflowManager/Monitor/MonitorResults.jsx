@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
+import Col from 'react-bootstrap/Col'
 import { connect } from 'react-redux'
 import WorkflowResult from '../Search/WorkflowResult'
+import RemoveAllMonitorsModal from './RemoveAllMonitorsModal'
 class MonitorResults extends Component {
 
     render() {        
@@ -26,9 +28,15 @@ class MonitorResults extends Component {
         }
         else{           
             
-            return (                
-            <div className='mt-4' align='left'>                             
-                <WorkflowResult type='monitor' filterSortOptions={this.props.filterSortOptions} wf_list={this.props.monitorResults}/>
+            return (                           
+                
+            <div>
+                <Col lg="auto" md="auto" className='text-right' style={{zoom:0.85,marginRight:'-3.5rem'}}>
+                    <RemoveAllMonitorsModal />
+                </Col>         
+                <div className='text-left'>
+                    <WorkflowResult type='monitor' filterSortOptions={this.props.filterSortOptions} wf_list={this.props.monitorResults}/>
+                </div>                                           
             </div>)
                
         }

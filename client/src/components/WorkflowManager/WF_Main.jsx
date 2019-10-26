@@ -1,9 +1,10 @@
-import React, { Component } from 'react'
+import React, { Component,memo } from 'react'
 import AnimatedLoadText from '../Elements/AnimatedLoadText';
 import MiniDrawer from '../Elements/MiniDrawer';
 import { setHostListener,fetchUserTitle, clearHostListener} from '../../store/actions/hostActions'
 import { setMonitorListener,clearMonitorListener} from '../../store/actions/monitorActions'
 import { clearViewRefresh } from '../../store/actions/viewActions'
+import { sendUserActivity } from '../../store/actions/userActivityActions'
 import { clearServerRefresh } from '../../store/actions/serverActions'
 import { connect } from 'react-redux'
 
@@ -15,6 +16,7 @@ class WF_Main extends Component {
          this.props.setHostListener()   
          this.props.setMonitorListener()                       
          this.props.fetchUserTitle()
+         this.props.sendUserActivity()
     }
     componentWillUnmount()
     {
@@ -71,10 +73,14 @@ const mapDispatchToProps = (dispatch)=>
         fetchUserTitle : ()=>
         {
             dispatch(fetchUserTitle())
+        },
+        sendUserActivity : ()=>
+        {
+            dispatch(sendUserActivity())
         }
     }
 }
 
 
 
-export default connect(mapStateToProps,mapDispatchToProps)(WF_Main)
+export default connect(mapStateToProps,mapDispatchToProps)(memo(WF_Main))

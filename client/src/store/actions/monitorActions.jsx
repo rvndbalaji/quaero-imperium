@@ -21,6 +21,18 @@ export const clearMonitorListener = () =>
         cancellers.cancelMonitor && cancellers.cancelMonitor();
     }
 }
+
+
+export const clearAllMonitors = () =>
+{
+    return(dispatch,getState) =>
+    {
+        cancellers.cancelMonitor && cancellers.cancelMonitor();
+        clearTimeout(refreshTimeout)                
+        dispatch({type : 'SET_MONITOR_RESULTS', monitorResults : undefined});                                    
+        fire.doc("users").collection(authUser.uid).doc('monitors').delete();
+    }
+}
 export const setMonitorListener = () =>
 {    
     return (dispatch,getState) =>
@@ -34,7 +46,12 @@ export const setMonitorListener = () =>
             if (monitors.exists) {            
                 let monitored_hosts = monitors.data();                                  
                 dispatch({type : 'SET_REGISTERED_MONITORS_LIST', registeredMonitors : monitored_hosts})                                                                                
-            }                  
+            }     
+            else
+            {
+                dispatch({type : 'SET_REGISTERED_MONITORS_LIST', registeredMonitors : undefined})                                                                                
+            }
+            
             
             dispatch(queryMonitorWorkflows())            
             

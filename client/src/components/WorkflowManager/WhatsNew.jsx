@@ -17,8 +17,9 @@ class WhatsNew extends Component {
             </Row>
             <Row>
                 <Col className='text-left'>
-                    1. Edit workflow params &amp; source entities <br/>
-                    2. View &amp; edit dispatch conditions (and view dispatch window) <br/>                    
+                    1. Clear all monitors button  <br/>
+                    2. Edit workflow params &amp; source entities <br/>
+                    3. View &amp; edit dispatch conditions (and view dispatch window) <br/>                    
                 </Col>    
             </Row>
 
@@ -38,13 +39,12 @@ class WhatsNew extends Component {
                 <h5>Upcoming minor changes...</h5>
             </Row>
             <Row>
-                <Col className='text-left'>
-                   1. Clear all monitors button  <br/>
-                   2. Bulk Status Change - Modify the status of multiple workflow instances at once <br/>
-                   3. Set timezones and display all time and date in the preferred zone   <br/> 
-                   4. Ability to perform source system scan immediately &amp; display the timer until next scan   <br/>
-                   5. Ability to modify and bulk-edit DSI Status   <br/>
-                   6. Toggle multiple SQL Server jobs at once   <br/>
+                <Col className='text-left'>                   
+                   1. Bulk Status Change - Modify the status of multiple workflow instances at once <br/>
+                   2. Set timezones and display all time and date in the preferred zone   <br/> 
+                   3. Ability to perform source system scan immediately &amp; display the timer until next scan   <br/>
+                   4. Ability to modify and bulk-edit DSI Status   <br/>
+                   5. Toggle multiple SQL Server jobs at once   <br/>
                 </Col>                
             </Row>
 
