@@ -7,8 +7,8 @@ import Col from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import { FaTh } from 'react-icons/fa';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css'
-import SystemSelect from './SystemSelect';
 import { setSelectedRow } from '../../../store/actions/viewActions';
+import ScanNowModal from './ScanNowModal';
 class SourceSystemTable extends PureComponent {
 
     render() 
@@ -123,7 +123,7 @@ class SourceSystemTable extends PureComponent {
             if(prevSelRow /*|| original_data.length===1*/)
             {
                 RowOptions = (
-                    <SystemSelect />
+                    <ScanNowModal wf_details={this.props.wf_details} selected_row = {prevSelRow}/>
                 )
             }
             

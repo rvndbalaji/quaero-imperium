@@ -105,7 +105,7 @@ function EditDispatchCondModal(props) {
         if(disp_cond.actionAlert.msg!=='')
         {
            myAlert =  (            
-                <Alert  style={{wordBreak:'break-all'}} variant={disp_cond.actionAlert.color}>{disp_cond.actionAlert.msg}</Alert>                       
+                <Alert variant={disp_cond.actionAlert.color}>{disp_cond.actionAlert.msg}</Alert>                       
             )
         }         
         

@@ -365,6 +365,31 @@ router.get('/wf/source_system',function(req,res)
 });
 
 
+router.post('/wf/performSystemScan',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
+        {
+          performSystemScan(config,req,res,result);  
+        }
+        else{
+          reconnectAndCallback(decodedToken,req,res,config,performSystemScan);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
 router.get('/wf/blockInfo',function(req,res)
 {  
   var result = {
@@ -1009,7 +1034,46 @@ var getErrorLog = async function (config,req,res,res_data)
     }
 }
 
-
+const removeQuotedStrings = function(sourceString)
+{
+    let single_quote_reg =  new RegExp(/'[^']+'/, "g")
+    let double_quote_reg =  new RegExp(/"[^"]+"/, "g")
+    modified_string = sourceString
+    let single_quoted_strings = sourceString.matchAll(single_quote_reg)
+    let double_quoted_strings = sourceString.matchAll(double_quote_reg)
+    for(singl_substring of single_quoted_strings)
+    {
+      //remove single quoted strings
+      modified_string = modified_string.replace(singl_substring[0],'')
+    }
+    for(doubl_substring of double_quoted_strings)
+    {
+      //remove double quoted strings
+      modified_string = modified_string.replace(doubl_substring[0],'')
+    }
+    return modified_string
+}
+const sqlStatementContainsType = function(sql_stmt,rejectableKeywords)
+{
+    let res= false;
+    let sql_stmt_nostring = removeQuotedStrings(sql_stmt);        
+    let tokens = sql_stmt_nostring.split(' ')        
+    for(const index in tokens)
+    {
+        if(tokens[index] && tokens[index].trim()!=='')
+        {
+          //Convert valid tokens to lower case and check if they contain the keywords
+          
+          if(rejectableKeywords.includes(tokens[index].toLowerCase()))
+          {            
+            res = true;
+            break;
+          }
+        }
+    }    
+    
+  return res
+}
 
 var setDispatchCondition = async function (config,req,res,res_data)
 {   
@@ -1026,21 +1090,23 @@ var setDispatchCondition = async function (config,req,res,res_data)
         throw 'No Workflow ID was specified'        
       }
       
-      //Replace single quotes with double-single quotes
-      disp_cond = (disp_cond)?disp_cond.replace(/\'/g,"''"):undefined
 
       if(!disp_cond || disp_cond.trim()==='')
       {
         sql_request.input('disp_cond', undefined)         
-        disp_cond = '@disp_cond'
+        disp_cond = undefined
       }            
       else
       {
-        //Here check if statement is a delete or update or drop statement          
-        disp_cond = "'" + disp_cond +"'"
+        //Here check if statement is a delete or update or drop statement                   
+          if(sqlStatementContainsType(disp_cond,['drop','delete']))
+          {
+            throw "Dispatch conditions cannot contain [drop, delete] statements. If this is a special occurence, please report to admin"
+          }        
       }
       
-      let myquery = `update M_WORKFLOW set DISPATCH_CONDITION = ` + disp_cond +` where WORKFLOW_ID = @workflow_id`      
+      sql_request.input('disp_cond', disp_cond)         
+      let myquery = `update M_WORKFLOW set DISPATCH_CONDITION = @disp_cond where WORKFLOW_ID = @workflow_id`      
       
       sql_request.input('workflow_id', req.body.workflow_id)   
       sql_request.query(myquery, (err, result) =>
@@ -1093,21 +1159,9 @@ var setWorkflowParams = async function (config,req,res,res_data)
         param_value = undefined
       }    
 
-      //Replace single quotes with double-single quotes
-      param_value = (param_value)?param_value.replace(/\'/g,"''"):undefined
-
-      
-      if(!param_value)
-      {
-        sql_request.input('param_value', undefined)         
-        param_value = '@param_value'
-      }
-      else
-      {
-        param_value = "'" + param_value +"'"
-      }
-
-      let myquery = `update M_WORKFLOW_PACKAGE_PARAM set PARAM_NAME = @workflow_param_name, PARAM_VALUE = ` + param_value + ` where WORKFLOW_PACKAGE_PARAM_ID = @workflow_package_param_id`            
+      sql_request.input('param_value', param_value)               
+     
+      let myquery = `update M_WORKFLOW_PACKAGE_PARAM set PARAM_NAME = @workflow_param_name, PARAM_VALUE = @param_value where WORKFLOW_PACKAGE_PARAM_ID = @workflow_package_param_id`            
       sql_request.input('workflow_package_param_id', req.body.workflow_package_param_id)         
       sql_request.input('workflow_param_name', req.body.workflow_param_name)         
       sql_request.query(myquery, (err, result) =>
@@ -1271,11 +1325,11 @@ var restageFile = async function (config,req,res,res_data)
       delete from M_TRACK_FILE where FTP_ID in (select FTP_ID from @TEMP);
       delete from M_TRACK_DATASET_INSTANCE where DATASET_INSTANCE_ID in (select DATASET_INSTANCE_ID from M_TRACK_FILE where FTP_ID in (select FTP_ID from @TEMP));      
        `;
-      var sql_result = sql_request.query(query_string); 
-      logger.info(config.user + '\tRESTAGED file with FTP_ID =  : ' + req.body.ftp_id)
+      var sql_result = sql_request.query(query_string);       
       //Capture the result when the query completes
       sql_result.then(function(result)
       {        
+        logger.info(config.user + '\tRESTAGED file on ' + config.server + ' > ' + config.database + ' with FTP_ID = ' + req.body.ftp_id)
         res_data.err = 0; 
         //Get the result and set it                
         res_data.data = {info : result.recordset};
@@ -1452,6 +1506,7 @@ function parameteriseQueryForIn(request, columnName, parameterNamePrefix, type, 
   }
   return `${columnName} IN (${parameterNames.join(',')})`
 }
+
 var getWFSourceSystem = async function (config,req,res,res_data)
 {   
     
@@ -1491,6 +1546,47 @@ var getWFSourceSystem = async function (config,req,res,res_data)
 }
 
 
+var performSystemScan = async function (config,req,res,res_data)
+{   
+    
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
+
+      sql_request.input('ss_id',req.body.source_system_id);      
+      var query_string = `
+        delete from M_TRACK_SOURCE_SYSTEM_SCAN where SOURCE_SYSTEM_SCAN_ID in (
+        select max(SOURCE_SYSTEM_SCAN_ID) from M_TRACK_SOURCE_SYSTEM_SCAN where SOURCE_SYSTEM_ID = @ss_id)
+        and SOURCE_SYSTEM_SCAN_END_DT is not NULL
+      `;
+      
+      var sql_result = sql_request.query(query_string); 
+
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        logger.info(config.user + '\tForced system scan on ' + config.server + ' > ' + config.database + ' with SS_ID = ' + req.body.source_system_id)
+        res_data.err = 0; 
+        //Get the result and set it                        
+        res_data.data = {info : result.rowsAffected};        
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    { 
+      res_data.data = {info : 'Something went wrong at (FRCSSCAN) : ' + err.toString()};      
+      res_data.err = 1;       
+      res.send(res_data);               
+      logger.error(config.user + '\t' + 'Source System Scan Error : ' + err.toString());
+    }
+}
+
 var getWFStageInfo = async function (config,req,res,res_data)
 {   
     
@@ -1503,38 +1599,43 @@ var getWFStageInfo = async function (config,req,res,res_data)
       sql_request.input('entity_id',req.query.entity_id);
       var query_string = `with dess as
       (
-      select ID,PARENT_FTP_ID from M_TRACK_FTP 
+      select ID,PARENT_FTP_ID from M_TRACK_FTP(NOLOCK)
       where PARENT_FTP_ID is NULL
       and SOURCE_ENTITY_ID = @entity_id
       union all
-      select A.ID , A.PARENT_FTP_ID  from M_TRACK_FTP A
+      select A.ID , A.PARENT_FTP_ID  from M_TRACK_FTP(NOLOCK) A
       inner join dess B on B.ID = A.PARENT_FTP_ID
       )
-      select SOURCE_ENTITY_ID, ftp.ID as FTP_ID, fle.ID as FLE_ID,fle.DATASET_INSTANCE_ID,dsis.STATUS as DSI_STATUS,ftp.FILE_NM,ftp.STATUS as FTP_STATUS, fle.STATUS as FLE_STATUS,PARENT_FTP_ID,fle.FILE_SIZE_BYTES from M_TRACK_FTP ftp
-      left join M_TRACK_FILE fle on ftp.ID = fle.FTP_ID
-      left join M_TRACK_DATASET_INSTANCE dsi on dsi.DATASET_INSTANCE_ID = fle.DATASET_INSTANCE_ID
-      left join M_DATASET_INSTANCE_STATUS dsis on dsi.STATUS_ID=dsis.STATUS_ID
+      select SOURCE_ENTITY_ID, ftp.ID as FTP_ID, fle.ID as FLE_ID,fle.DATASET_INSTANCE_ID,dsis.STATUS as DSI_STATUS,ftp.FILE_NM,ftp.STATUS as FTP_STATUS, fle.STATUS as FLE_STATUS,PARENT_FTP_ID,fle.FILE_SIZE_BYTES from M_TRACK_FTP(NOLOCK) ftp
+      left join M_TRACK_FILE(NOLOCK) fle on ftp.ID = fle.FTP_ID
+      left join M_TRACK_DATASET_INSTANCE(NOLOCK) dsi on dsi.DATASET_INSTANCE_ID = fle.DATASET_INSTANCE_ID
+      left join M_DATASET_INSTANCE_STATUS(NOLOCK) dsis on dsi.STATUS_ID=dsis.STATUS_ID
       where ftp.ID not in (select PARENT_FTP_ID from dess where PARENT_FTP_ID is not NULL)
       and SOURCE_ENTITY_ID = @entity_id
       order by ftp.ID desc`;
       var sql_result = sql_request.query(query_string); 
-
+      
+      
       //Capture the result when the query completes
       sql_result.then(function(result)
       {        
+      
         res_data.err = 0; 
         //Get the result and set it                
         res_data.data = {info : result.recordset};
         res.status(200).send(res_data);
+        
       })
       .catch(err=>{
         res_data.err = 1; 
         res_data.data = {info : JSON.stringify(err)};
         res.send(res_data);               
+        
       });
     }
     catch (err)
     { 
+      
       res_data.data = {info : 'Something went wrong at (GETWFSTGINF) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               

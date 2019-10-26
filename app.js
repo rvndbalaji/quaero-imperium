@@ -31,7 +31,7 @@ var logRecycler =  new (DailyRotateFile)({
   dirname : 'host/logs/',
   datePattern: 'YYYYMMDD',  
   maxSize: '200m',
-  maxFiles: '10d',
+  maxFiles: '5d',
   handleExceptions : true
 });
 //Create a Logger
