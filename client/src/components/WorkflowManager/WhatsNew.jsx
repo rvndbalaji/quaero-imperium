@@ -17,10 +17,11 @@ class WhatsNew extends Component {
             </Row>
             <Row>
                 <Col className='text-left'>
-                    1. Ability to perform source system scan immediately <br />
-                    2. Clear all monitors button  <br/>
-                    3. Edit workflow params &amp; source entities <br/>
-                    4. View &amp; edit dispatch conditions (and view dispatch window) <br/>                    
+                    1. See all DSIs for Input/Output datasets   <br/>
+                    2. Ability to perform source system scan immediately <br />
+                    3. Clear all monitors button  <br/>
+                    4. Edit workflow params &amp; source entities <br/>
+                    5. View &amp; edit dispatch conditions (and view dispatch window) <br/>                    
                 </Col>    
             </Row>
 
