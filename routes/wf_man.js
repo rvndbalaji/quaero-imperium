@@ -182,6 +182,32 @@ router.get('/wf/error_log',function(req,res)
 });
 
 
+
+router.get('/wf/getDatasetInstances',function(req,res)
+{  
+  var result = {
+    err: 1,
+    data : {}
+  }; 
+  
+  admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+  .then(function(decodedToken) 
+  {    
+      generateConfig(req,decodedToken).then(config=>{          
+        if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
+        {
+          getDatasetInstances(config,req,res,result);  
+        }
+        else{                    
+          reconnectAndCallback(decodedToken,req,res,config,getDatasetInstances);
+        }
+    });
+  }).catch(function(error) 
+  {   
+    res.status(403).send('Forbidden. Please sign in.')
+  });
+});
+
 router.get('/wf/datasets',function(req,res)
 {  
   var result = {
@@ -1034,6 +1060,8 @@ var getErrorLog = async function (config,req,res,res_data)
     }
 }
 
+
+
 const removeQuotedStrings = function(sourceString)
 {
     let single_quote_reg =  new RegExp(/'[^']+'/, "g")
@@ -1295,6 +1323,47 @@ var getWFDatasets = async function (config,req,res,res_data)
       res_data.err = 1;       
       res.send(res_data);               
       logger.error(config.user + '\t' + 'Get WF Datasets : ' + err.toString());
+    }
+}
+
+
+var getDatasetInstances = async function (config,req,res,res_data)
+{     
+    await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
+    try{
+      //Prepare an SQL request
+      const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
+
+      sql_request.input('dataset_id', req.query.dataset_id)      
+      var query_string = `
+      select DATASET_INSTANCE_ID as INSTANCE_ID, st.STATUS, OBJECT_URI
+      from M_TRACK_DATASET_INSTANCE dsi 
+      inner join M_DATASET_INSTANCE_STATUS st on st.STATUS_ID = dsi.STATUS_ID
+      where DATASET_ID = @dataset_id
+      order by DATASET_INSTANCE_ID desc
+      `;
+      var sql_result = sql_request.query(query_string); 
+      
+      //Capture the result when the query completes
+      sql_result.then(function(result)
+      {        
+        res_data.err = 0; 
+        //Get the result and set it                
+        res_data.data = {info : result.recordset};
+        res.status(200).send(res_data);
+      })
+      .catch(err=>{
+        res_data.err = 1; 
+        res_data.data = {info : JSON.stringify(err)};
+        res.send(res_data);               
+      });
+    }
+    catch (err)
+    {       
+      res_data.data = {info : 'Something went wrong at (GETDSI) : ' + err.toString()};      
+      res_data.err = 1;       
+      res.send(res_data);               
+      logger.error(config.user + '\t' + 'Get Dataset Instances : ' + err.toString());
     }
 }
 
@@ -1594,32 +1663,32 @@ var getWFStageInfo = async function (config,req,res,res_data)
     try{
       //Prepare an SQL request
       const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();
-
       
       sql_request.input('entity_id',req.query.entity_id);
       var query_string = `with dess as
       (
-      select ID,PARENT_FTP_ID from M_TRACK_FTP(NOLOCK)
+      select ID,PARENT_FTP_ID from M_TRACK_FTP
       where PARENT_FTP_ID is NULL
       and SOURCE_ENTITY_ID = @entity_id
       union all
-      select A.ID , A.PARENT_FTP_ID  from M_TRACK_FTP(NOLOCK) A
+      select A.ID , A.PARENT_FTP_ID  from M_TRACK_FTP A
       inner join dess B on B.ID = A.PARENT_FTP_ID
       )
-      select SOURCE_ENTITY_ID, ftp.ID as FTP_ID, fle.ID as FLE_ID,fle.DATASET_INSTANCE_ID,dsis.STATUS as DSI_STATUS,ftp.FILE_NM,ftp.STATUS as FTP_STATUS, fle.STATUS as FLE_STATUS,PARENT_FTP_ID,fle.FILE_SIZE_BYTES from M_TRACK_FTP(NOLOCK) ftp
-      left join M_TRACK_FILE(NOLOCK) fle on ftp.ID = fle.FTP_ID
-      left join M_TRACK_DATASET_INSTANCE(NOLOCK) dsi on dsi.DATASET_INSTANCE_ID = fle.DATASET_INSTANCE_ID
-      left join M_DATASET_INSTANCE_STATUS(NOLOCK) dsis on dsi.STATUS_ID=dsis.STATUS_ID
+      select SOURCE_ENTITY_ID, ftp.ID as FTP_ID, fle.ID as FLE_ID,fle.DATASET_INSTANCE_ID,dsis.STATUS as DSI_STATUS,ftp.FILE_NM,ftp.STATUS as FTP_STATUS, fle.STATUS as FLE_STATUS,PARENT_FTP_ID,fle.FILE_SIZE_BYTES from M_TRACK_FTP ftp
+      left join M_TRACK_FILE fle on ftp.ID = fle.FTP_ID
+      left join M_TRACK_DATASET_INSTANCE dsi on dsi.DATASET_INSTANCE_ID = fle.DATASET_INSTANCE_ID
+      left join M_DATASET_INSTANCE_STATUS dsis on dsi.STATUS_ID=dsis.STATUS_ID
       where ftp.ID not in (select PARENT_FTP_ID from dess where PARENT_FTP_ID is not NULL)
       and SOURCE_ENTITY_ID = @entity_id
       order by ftp.ID desc`;
+      
       var sql_result = sql_request.query(query_string); 
       
       
       //Capture the result when the query completes
       sql_result.then(function(result)
       {        
-      
+        
         res_data.err = 0; 
         //Get the result and set it                
         res_data.data = {info : result.recordset};

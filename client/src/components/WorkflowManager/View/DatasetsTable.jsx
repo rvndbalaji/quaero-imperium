@@ -7,8 +7,8 @@ import Col from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import { FaTh } from 'react-icons/fa';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css'
-import DatasetSelect from './DatasetSelect';
 import { setSelectedRow } from '../../../store/actions/viewActions';
+import ViewDSIStatusModal from './ViewDSIStatusModal';
 class DatasetsTable extends PureComponent {
 
     render() 
@@ -79,7 +79,7 @@ class DatasetsTable extends PureComponent {
             {
                 selected_row.push(prevSelRow.DATASET_ID)                               
                 RowOptions = (
-                    <DatasetSelect selected_row={prevSelRow} />
+                    <ViewDSIStatusModal selected_row={prevSelRow} wf_details={this.props.wf_details} />
                 )
             }            
             

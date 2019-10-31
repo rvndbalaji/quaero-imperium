@@ -23,6 +23,7 @@ import Profile from '../WorkflowManager/Profile'
 import Servers from '../WorkflowManager/Servers';
 import Support from '../WorkflowManager/Support';
 import WhatsNew from '../WorkflowManager/WhatsNew';
+import { Badge } from '@material-ui/core';
 
 
 
@@ -172,8 +173,7 @@ export default function MiniDrawer() {
                   onClick={event => handleListItemClick(event, index)}
                   selected={selectedIndex === index}
               >
-                
-                  <ListItemIcon className='pl-1'>{icon_name[index]}</ListItemIcon>                                
+                  <ListItemIcon className='pl-1'>{icon_name[index]}</ListItemIcon>                                                
                   <span className='p-1' style={{fontFamily: 'futura_bold', fontSize : '1rem'}}>{text}</span>              
               </ListItem>     
             </Tooltip>                               
@@ -187,7 +187,9 @@ export default function MiniDrawer() {
                        onClick={event => handleListItemClick(event, index + 5)}
                        selected={selectedIndex === index + 5}
                        >
-              <ListItemIcon className='pl-1'>{icon_name[index + 5]}</ListItemIcon>
+              <ListItemIcon className='pl-1'>                 
+                     {icon_name[index + 5]}                 
+              </ListItemIcon>
               <span className='p-1' style={{fontFamily: 'futura_bold', fontSize : '1rem'}}>{text}</span>
             </ListItem>
             </Tooltip>
