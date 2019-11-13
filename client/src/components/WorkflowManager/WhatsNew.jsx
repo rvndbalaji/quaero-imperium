@@ -18,7 +18,7 @@ class WhatsNew extends Component {
             <Row>
                 <Col className='text-left'>
                     1. Ability to start/stop using service account <br/>
-                    2. SQL Authentication for custom login
+                    2. SQL Authentication for custom login <br />
                     3. See all DSIs for Input/Output datasets   <br/>
                     4. Ability to perform source system scan immediately <br />
                     5. Clear all monitors button  <br/>
