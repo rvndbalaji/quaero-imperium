@@ -8,7 +8,7 @@ import Form from 'react-bootstrap/Form';
 import { useSelector , useDispatch } from 'react-redux'
 import uuid from 'uuid/v1'
 import Alert from 'react-bootstrap/Alert'
-import { testHost , setAlert, cancellers, deleteHost} from '../../../store/actions/hostActions';
+import { testHost,saveHost as saveHostAction , setAlert, cancellers, deleteHost} from '../../../store/actions/hostActions';
 
 export default function ConfigureHosts() {
 
@@ -16,10 +16,13 @@ export default function ConfigureHosts() {
     const dispatch = useDispatch();
     const [show, setShow] = useState(false);        
     let initHost = {
+        host_id : undefined,
         host : '',
         auth_type : 0,
         server_type : 0,
-        nickname : ''
+        nickname : '',
+        sql_un : undefined,
+        sql_pw : undefined
     }
     const [modalDetails, setModalDetails] = useState({
         modal_type : 'Add',
@@ -38,22 +41,29 @@ export default function ConfigureHosts() {
         dispatch(setAlert(undefined))            
     }
     const handleShow = (type,host_name) => 
-    {           
+    {   
+        let temp_host_details = (store.hosts && host_name)?store.hosts[host_name]:{...initHost};
+        if(store.hosts && host_name)
+        {
+            temp_host_details['host_id'] = host_name
+        }        
         setModalDetails({
             modal_type : type,
             modal_title : type + ' Host',
-            host_details : (store.hosts && host_name)?store.hosts[host_name]:{...initHost},               
+            host_details : {...temp_host_details},                           
         })        
         setShow(true);
     }
     const removeHost=()=>
-    {
-        dispatch(deleteHost(modalDetails.host_details.host));                        
+    {   
+        dispatch(deleteHost(modalDetails.host_details.host_id));                        
     } 
     const handleChange =(e) =>
     {        
         let key = [e.target.name.trim()] 
         let value = e.target.value.trim()
+        let sql_un = modalDetails.host_details.sql_un
+        let sql_pw =  modalDetails.host_details.sql_pw
         if(key[0]==='host')  
         {
             value = value.toUpperCase();
@@ -62,33 +72,72 @@ export default function ConfigureHosts() {
         //For radios, use the ID to fetch the value
         if(key[0]==='server_type')
         {
-            value = (e.target.id==='testoption')?0:1                        
+            value = (e.target.id==='testoption')?0:1     
         }
         
 
         if(key[0]==='auth_type')
         {   
-            value = (e.target.id==='winoption')?0:1                        
+            value = (e.target.id==='winoption')?0:1   
+            if(value===1)
+            {
+               sql_pw = sql_un = undefined                   
+            }                     
         }        
         
+        if(sql_un)
+        {
+            if(sql_un.trim()==='')
+            {
+                sql_un = undefined
+            }
+            else
+            {
+                sql_un = sql_un.trim()
+            }
+        }
+       
+        if(sql_pw)
+        {
+            if(sql_pw.trim()==='')
+            {
+                sql_pw = undefined
+            }          
+        } 
         setModalDetails({
             ...modalDetails,
             host_details : {            
-                ...modalDetails.host_details,    
+                ...modalDetails.host_details,  
+                sql_un,
+                sql_pw,  
                 [key] :  value
             }
         });
     }          
     
     const saveHost = ()=>
-    {        
+    {       
+        if(modalDetails.modal_type!=='Edit' && modalDetails.host_details.auth_type===1 && (!modalDetails.host_details.sql_un || !modalDetails.host_details.sql_pw))
+        {            
+            dispatch(setAlert('Username and password required for SQL Auth','danger'))       
+            return                    
+        }
+
         if(modalDetails.host_details.host==='' || modalDetails.host_details.nickname==='')
         {
-            dispatch(setAlert('Hostname and Nickname are required','danger'))                           
-        }
-        else{        
+            dispatch(setAlert('Hostname and Nickname are required','danger'))       
+            return                    
+        }      
+        
+        if(modalDetails.modal_type!=='Edit')
+        {
             dispatch(testHost(modalDetails.host_details));                        
         }
+        else
+        {
+            dispatch(saveHostAction(modalDetails.host_details));                        
+        }
+        
     }    
     
     let host_names;
@@ -119,6 +168,25 @@ export default function ConfigureHosts() {
     {
         del_btn = (<Button variant='danger' className="mr-auto" onClick={removeHost}>Delete</Button>)
     }
+    let SQLLoginForm= ''
+    if(modalDetails.host_details.auth_type===1)
+    {
+        SQLLoginForm = (
+            <Form.Group style={{zoom:0.8}}>
+                <Form.Group controlId="domain"> 
+                            <Form.Label><b>Username</b></Form.Label>   <br/> 
+                            <Form.Control required type="text" autoComplete="new-password" disabled={modalDetails.modal_type==='Edit'} name='sql_un'  onChange={(e)=>handleChange(e)}  defaultValue={modalDetails.host_details.sql_un}/>                                                                
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label><b>Password</b></Form.Label>   <br/> 
+                            <Form.Control required type="password" autoComplete="new-password" disabled={modalDetails.modal_type==='Edit'} name='sql_pw'  onChange={(e)=>handleChange(e)}  defaultValue={modalDetails.host_details.sql_pw} />                                                                                                
+                        {// <span className='gray_text'>NOTE : Uses your domain username/password</span>
+                        }
+                </Form.Group>
+            </Form.Group>           
+        )
+    }
+    
     return (
         <div>
             <Row>
@@ -164,14 +232,10 @@ export default function ConfigureHosts() {
                     </Form.Group>        
                     <Form.Group  controlId="authRadio">
                         <Form.Label><b>Authentication Type</b></Form.Label>   <br/>    
-                        <Form.Check inline type="radio"  custom  name='auth_type' onChange={(e)=>handleChange(e)} label="Windows"  id="winoption" checked={modalDetails.host_details.auth_type===0}/>
-                        <Form.Check inline  type="radio" custom  name='auth_type' onChange={(e)=>handleChange(e)}  label="SQL"   id="sqloption" checked={modalDetails.host_details.auth_type===1}/>
+                        <Form.Check disabled={modalDetails.modal_type==='Edit'} inline type="radio"  custom  name='auth_type' onChange={(e)=>handleChange(e)} label="Windows"  id="winoption" checked={modalDetails.host_details.auth_type===0}/>
+                        <Form.Check  disabled={modalDetails.modal_type==='Edit'} inline  type="radio" custom  name='auth_type' onChange={(e)=>handleChange(e)}  label="SQL"   id="sqloption" checked={modalDetails.host_details.auth_type===1}/>
                     </Form.Group>
-                    <Form.Group controlId="domain">                        
-                       {// <Form.Check  custom  label="Use domain username/password" defaultChecked='true' disabled />                        
-                       }
-                       <span className='gray_text'>NOTE : Uses your domain username/password</span>
-                    </Form.Group>
+                    {SQLLoginForm}
                 </Form>
             </Modal.Body>            
             <Modal.Footer>

@@ -127,7 +127,7 @@ router.post('/performLogin',[
 });
 
 
-function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customToken,res)
+var fetchUserDetailsAndStoreInFirebase = async function(username,password,userRecord,customToken,res)
 {
     var result = {
         err: 1,
@@ -223,7 +223,7 @@ function fetchUserDetailsAndStoreInFirebase(username,password,userRecord,customT
   
 }
 
-function updateAndSavePassword(userObject,password,customToken,res,mytitle)
+var updateAndSavePassword = async function(userObject,password,customToken,res,mytitle)
 {
     let encryped_pass = encrypt(password);
     GLOBAL_FLYING_PASSWORDS[userObject.uid] = encryped_pass;

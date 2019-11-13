@@ -47,8 +47,13 @@ class HostItem extends Component {
         return true
    }
 
-    toggleJob(host_name,auth_type,job_name,act_flag)
+    toggleJob(host,job_name,act_flag)
     {
+        let host_name = host.host
+        let auth_type = host.auth_type
+        let sql_un = host.sql_un
+        let sql_pw = host.host_sql_pw
+        
         this.setState({
             ...this.state,
             inProgress : true
@@ -59,7 +64,9 @@ class HostItem extends Component {
                 axios.defaults.headers.common['Authorization'] = token
                 axios.post('/wf_man/toggleJob',{                    
                     server : host_name,
-                    auth_type,
+                    auth_type,                    
+                    sql_un,
+                    sql_pw,
                     db : 'msdb', 
                     schema:'dbo', 
                     job_name,
@@ -83,9 +90,9 @@ class HostItem extends Component {
             editMode : e.target.checked
         })        
     }
-
+    
     render() {
-
+        
         if(!this.props.jobs)
         {
             return (
@@ -142,7 +149,7 @@ class HostItem extends Component {
                 let ActionButton = ''
                 if(showStart)
                 {
-                    ActionButton = (  <Button size='sm' variant='light' className='btn btn-outline-success' disabled={buttonDisabled || this.state.inProgress || !this.state.editMode} onClick={()=>this.toggleJob(host.host,host.auth_type,job_name,1)}>
+                    ActionButton = (  <Button size='sm' variant='light' className='btn btn-outline-success' disabled={buttonDisabled || this.state.inProgress || !this.state.editMode} onClick={()=>this.toggleJob(host,job_name,1)}>
                                         <FaPlay className='mb-1'/>
                                         <span style={{whiteSpace : 'pre'}}>  Start</span>                    
                                       </Button>     
@@ -150,7 +157,7 @@ class HostItem extends Component {
                 }
                 else
                 {
-                    ActionButton = (  <Button size='sm' variant='light' className='btn btn-outline-danger' disabled={buttonDisabled || this.state.inProgress || !this.state.editMode} onClick={()=>this.toggleJob(host.host,host.auth_type,job_name,0)}>
+                    ActionButton = (  <Button size='sm' variant='light' className='btn btn-outline-danger' disabled={buttonDisabled || this.state.inProgress || !this.state.editMode} onClick={()=>this.toggleJob(host,job_name,0)}>
                                         <FaStop className='mb-1'/>
                                             <span style={{whiteSpace : 'pre'}}>  Stop</span>                    
                                       </Button>     

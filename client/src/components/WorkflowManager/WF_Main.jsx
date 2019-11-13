@@ -17,6 +17,7 @@ class WF_Main extends Component {
          this.props.setMonitorListener()                       
          this.props.fetchUserTitle()
          this.props.sendUserActivity()
+         
     }
     componentWillUnmount()
     {

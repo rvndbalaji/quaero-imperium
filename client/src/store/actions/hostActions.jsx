@@ -30,8 +30,13 @@ export const setHostListener = () =>
             if (hosts.exists) 
             {            
                 let configured_hosts = hosts.data(); 
-                let currentlySelectedHost = getState().search.options.selectedServer;                 
-                if(currentlySelectedHost!=='Select server' && !Object.keys(configured_hosts).includes(currentlySelectedHost))                                
+                let currentlySelectedHost = getState().search.options.selectedServer;                                 
+                let host_list = []
+                let host_keys = Object.keys(configured_hosts);
+                host_keys.forEach(element => {
+                    host_list.push(configured_hosts[element]['host'])
+                });
+                if(currentlySelectedHost!=='Select server' && host_list.includes(currentlySelectedHost))                                
                 {  
                     //If a host whcih is currently selected was removed in this update, we reset the selected Host to Default
                     //Since a host was removed, we also remove the metastore list, which when set to 0,
@@ -43,6 +48,10 @@ export const setHostListener = () =>
                     });
                     //Since host was removed, reset the metastore list
                     dispatch({type: 'SET_METASTORE_LIST', metastoreList : []});    
+                }
+                for(var key in configured_hosts)
+                {
+                    configured_hosts[key].sql_pw = undefined
                 }
                 dispatch({type : 'SET_HOSTS',host_list :configured_hosts})                
                 dispatch(getJobStats())
@@ -92,8 +101,9 @@ export const fetchUserTitle = () =>
 export const deleteHost = (host_id) =>
 {   
     return (dispatch,getState) =>
-    {
+    {        
         authUser = getState().auth.authUser;            
+        
         dispatch(setAlert('Removing host... ' + host_id+'....','danger'))     
         
         fire.doc("users").collection(authUser.uid).doc('hosts').set({ 
@@ -122,12 +132,14 @@ export const testHost = (host_details) =>
     return (dispatch,getState) =>
     {           
         getIDToken().then(token=>
-            {
+            {                
                 dispatch(setAlert('Testing connection to server ' + host_details.host +'....','warning'))            
                 axios.defaults.headers.common['Authorization'] =token
                 axios.post('/wf_man/connectSQL',{                    
                     server : host_details.host,
-                    auth_type : host_details.auth_type
+                    auth_type : host_details.auth_type,
+                    sql_un : host_details.sql_un,
+                    sql_pw : host_details.sql_pw, 
                     },{
                         cancelToken : new CancelToken(function executor(c){
                             cancellers.cancelTest = c
@@ -139,25 +151,8 @@ export const testHost = (host_details) =>
                         {
                             dispatch(setAlert(res.data.info,'danger'))
                         }
-                        else{
-                            dispatch(setAlert('Saving Host...','info'));
-                            //fire.doc('users').collection(authUser.uid).doc('hosts').
-                            //Prepare server configuration            
-                            fire.doc('users').collection(authUser.uid).doc('hosts').set({  
-                                [host_details.host] : 
-                                {     
-                                    host: host_details.host,
-                                    nickname : host_details.nickname,
-                                    server_type: host_details.server_type,
-                                    auth_type: host_details.auth_type        
-                                }
-                            },{merge : true})
-                            .then(function() {       
-                                dispatch(setAlert('closeModal'))
-                            })
-                            .catch(function(error) {
-                                dispatch(setAlert(error,'danger'))
-                            });
+                        else{                                                         
+                            dispatch(saveHost(host_details))
                         }
                     }).catch(function (thrown) {
                         if (axios.isCancel(thrown)) {
@@ -172,6 +167,63 @@ export const testHost = (host_details) =>
         });       
     }
 }
+
+
+export const saveHost = (host_details) =>
+{    
+    return (dispatch,getState) =>
+    {           
+       
+        getIDToken().then(token=>
+            {            
+                dispatch(setAlert('Saving Host. Please Wait...','info'));
+                axios.defaults.headers.common['Authorization'] =token
+                axios.post('/wf_man/saveHost',{                
+                    host_details : 
+                            {     
+                                host: host_details.host,
+                                nickname : host_details.nickname,
+                                server_type: host_details.server_type,
+                                auth_type: host_details.auth_type ,
+                                sql_un : host_details.sql_un,
+                                sql_pw : host_details.sql_pw, 
+                            }
+                    },{
+                        cancelToken : new CancelToken(function executor(c){
+                            cancellers.cancelTest = c
+                        })
+                    })
+                    .then(response=> response.data)
+                    .then(res=>{
+
+                        if(res.err===1)
+                        {                        
+                            dispatch(setAlert(res.data  ,'danger'))
+                        }
+                        else
+                        {
+                            dispatch(setAlert('closeModal'))
+                        }
+
+                    }).catch(function (thrown) {                    
+                        if (axios.isCancel(thrown)) {
+                            dispatch(setAlert(undefined))
+                        }
+                        else
+                        {
+                            dispatch(setAlert(thrown.message,'danger'))
+                        }
+
+                    });;
+
+        }).catch(err=>{
+        dispatch(setAlert(err,'danger'))
+        });  
+
+    }
+}
+
+
 export const setAlert =(msg,color)=>{    
     return (dispatch,getState)=>
     {   

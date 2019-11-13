@@ -44,8 +44,8 @@ export const setMonitorListener = () =>
         {                      
             
             if (monitors.exists) {            
-                let monitored_hosts = monitors.data();                                  
-                dispatch({type : 'SET_REGISTERED_MONITORS_LIST', registeredMonitors : monitored_hosts})                                                                                
+                let monitored_hosts = monitors.data();                   
+                dispatch({type : 'SET_REGISTERED_MONITORS_LIST', registeredMonitors : monitored_hosts})                                                                                                
             }     
             else
             {
@@ -67,28 +67,29 @@ export const toggleWorkflowMonitor = (togglestate,wf_details) =>
         cancellers.cancelMonitor && cancellers.cancelMonitor();
         clearTimeout(refreshTimeout)        
         dispatch({type : 'SET_REGISTERED_MONITORS_LIST', registeredMonitors : undefined})            
-        let server_name = wf_details.server_name
+        let server_name = wf_details.server_name        
         let metastore_name = wf_details.metastore_name
         let wfid = wf_details.wf_id
-
-        let a_type = 0
-        if(getState().host.hosts[server_name])
-        {
-            a_type = getState().host.hosts[server_name]['auth_type']
-        }        
+        let a_type = wf_details.auth_type
+        let s_un = wf_details.sql_un        
         
-        authUser = getState().auth.authUser;                        
+        authUser = getState().auth.authUser;         
         
+        let nameAsKey_1 = server_name.replace(/\./g,'_') 
+        let nameAsKey_2 = (a_type!==1)?authUser.uid:s_un           
+        let prim_key = (nameAsKey_1 + '|' + nameAsKey_2)
         if(togglestate)
         {                
                 fire.doc("users").collection(authUser.uid).doc('monitors').set({  
-                    [server_name] : 
+                    [prim_key] : 
                     {     
                         [metastore_name]: 
                         {
                             wf_id : firebase.firestore.FieldValue.arrayUnion(Number(wfid))
                         },
-                        auth_type : a_type             
+                        host : server_name,
+                        auth_type : a_type,
+                        sql_un : (s_un)?s_un:null
                     }
                 },{merge : true})
                 .then(function() {       
@@ -102,13 +103,15 @@ export const toggleWorkflowMonitor = (togglestate,wf_details) =>
         {
                 dispatch({type : 'SET_MONITOR_RESULTS', monitorResults : undefined});                                    
                 fire.doc("users").collection(authUser.uid).doc('monitors').set({  
-                    [server_name] : 
+                    [prim_key] : 
                     {     
                         [metastore_name]: 
                         {
                             wf_id : firebase.firestore.FieldValue.arrayRemove(Number(wfid))
                         },
-                        auth_type : a_type             
+                        host : server_name,
+                        auth_type : a_type,
+                        sql_un : (s_un)?s_un:null
                     }
                 },{merge : true})
                 .then(function() {       
@@ -185,11 +188,14 @@ const processResponses = async (respArray,dispatch,getState)=>
 
                 if(res.data.info.length>=1)
                 {   
-                      //Add server and host details
+                      //Add server and host details                      
                     msg.forEach(element => 
                         {            
+                            
                             element.SERVER_NAME =  resp.config.params.server;
                             element.METASTORE_NAME = resp.config.params.db;                                
+                            element.AUTH_TYPE = resp.config.params.auth_type;                                
+                            element.SQL_UN = resp.config.params.sql_un;
                             full_results.push(element);
                         });  
                     
@@ -230,35 +236,39 @@ export const queryMonitorWorkflows = () =>
     return (dispatch,getState) =>
     {
 
+        
         cancellers.cancelMonitor && cancellers.cancelMonitor();        
         clearTimeout(refreshTimeout)    
-        let monitored_hosts = getState().monitor.registeredMonitors;                
+        let monitored_hosts = getState().monitor.registeredMonitors;                        
         full_results = [];
         bulk_requests = []
         dispatch({type : 'SET_PROGRESS_BAR', pbar : true});     
         let isEmpty = true;        
         getIDToken().then(token=>
             {                
-                for(var server_name in monitored_hosts)
+                for(var host_key in monitored_hosts)
                     {                           
-                        for(var metastore_name in monitored_hosts[server_name])
+                        for(var metastore_name in monitored_hosts[host_key])
                         {            
-                            let wf_list = monitored_hosts[server_name][metastore_name];                            
+                            let wf_list = monitored_hosts[host_key][metastore_name];                            
                             if(wf_list && wf_list.wf_id && wf_list.wf_id.length>0)
                             {                                
                                 //Group all workflow ID together
                                 let wf_id_string = wf_list.wf_id.join(',');    
-                                let auth_type = monitored_hosts[server_name]['auth_type']
+                                let auth_type = monitored_hosts[host_key]['auth_type']                                
+                                let server_name = monitored_hosts[host_key]['host']                                
+                                let sql_un = monitored_hosts[host_key]['sql_un']
                                 let req_data = {
                                      server : server_name,
                                      auth_type, where_key : 'WORKFLOW_ID',
+                                     sql_un,
                                      where_val : wf_id_string,
                                      where_is_list : 'true' ,
                                      order_by: 'WORKFLOW_ID', order_type: 'asc', 
                                      db:metastore_name, 
                                      schema:'dbo'
                                 };                                                                                        
-                                isEmpty = false 
+                                isEmpty = false                                    
                                 prepareAxiosRequests(token,req_data)                                
                             }                    
                         

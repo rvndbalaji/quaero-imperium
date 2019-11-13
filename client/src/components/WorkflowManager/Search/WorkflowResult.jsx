@@ -92,18 +92,26 @@ class WorkflowResult extends PureComponent {
             let reg_mon = this.props.registeredMonitors
             
             let workflowBeingMonitored = false;            
-
+            
             //Check if the current workflow is a monitored workflow. If workflow ID is present inside a the [server_name, metastore_name, wf_id] triplet of registeredMonitors then its monitored
-            if(reg_mon && reg_mon[workflow.SERVER_NAME] && reg_mon[workflow.SERVER_NAME][workflow.METASTORE_NAME] && reg_mon[workflow.SERVER_NAME][workflow.METASTORE_NAME]['wf_id'])
-            {  
-                for(var ind in reg_mon[workflow.SERVER_NAME][workflow.METASTORE_NAME]['wf_id'])
-                {                           
-                    if(reg_mon[workflow.SERVER_NAME][workflow.METASTORE_NAME]['wf_id'][ind]===Number(workflow.WORKFLOW_ID))
+            if(reg_mon)
+            {                  
+                //&& reg_mon[workflow.SERVER_NAME] && reg_mon[workflow.SERVER_NAME][workflow.METASTORE_NAME] && reg_mon[workflow.SERVER_NAME][workflow.METASTORE_NAME]['wf_id']
+                let host_keys = Object.keys(reg_mon)                
+                host_keys.forEach(key => 
+                {                       
+                    if(reg_mon[key][workflow.METASTORE_NAME] && reg_mon[key][workflow.METASTORE_NAME]['wf_id'])
                     {
-                        workflowBeingMonitored = true;
-                        break;
+                        for(var ind in reg_mon[key][workflow.METASTORE_NAME]['wf_id'])
+                        {                           
+                            if(reg_mon[key][workflow.METASTORE_NAME]['wf_id'][ind]===Number(workflow.WORKFLOW_ID))
+                            {
+                                workflowBeingMonitored = true;
+                                break;
+                            }
+                        }
                     }
-                }
+                });               
             }            
 
             workflow.WORKFLOW_INSTANCE_STATUS = (workflow.WORKFLOW_INSTANCE_STATUS)?workflow.WORKFLOW_INSTANCE_STATUS:'DID NOT RUN'
@@ -136,7 +144,7 @@ class WorkflowResult extends PureComponent {
             );
             
             let ViewWorkflowButton = (<Col lg='auto' md='auto'>                            
-                                    <Link to={'/wf_man/view/0/' + workflow.SERVER_NAME + '/' + workflow.METASTORE_NAME + '/' + workflow.WORKFLOW_ID} target='_blank'>
+                                    <Link to={'/wf_man/view/' + workflow.AUTH_TYPE + '/' + ((workflow.SQL_UN)?workflow.SQL_UN:'win') + '/'+ workflow.SERVER_NAME + '/' + workflow.METASTORE_NAME + '/' + workflow.WORKFLOW_ID} target='_blank'>
                                         <Button variant='primary' size='sm'>                                        
                                             <FaExternalLinkSquareAlt className='mb-1'/>
                                             <span style={{whiteSpace : 'pre'}}> View</span>                    
@@ -173,7 +181,7 @@ class WorkflowResult extends PureComponent {
                             </Col>                                                        
                             <Col lg='auto' md='auto' className='ml-auto justify-content-left'>                            
                                 <div className="custom-control custom-switch" align='ef'>
-                                    <input type="checkbox" className="custom-control-input" id={'monitor_' + index} style={{cursor : 'pointer'}} defaultChecked={workflowBeingMonitored} onClick={(e)=>this.toggleMonitor(e,{server_name :  workflow.SERVER_NAME, metastore_name : workflow.METASTORE_NAME, wf_id : workflow.WORKFLOW_ID})}/>
+                                    <input type="checkbox" className="custom-control-input" id={'monitor_' + index} style={{cursor : 'pointer'}} defaultChecked={workflowBeingMonitored} onClick={(e)=>this.toggleMonitor(e,{server_name :  workflow.SERVER_NAME, metastore_name : workflow.METASTORE_NAME, wf_id : workflow.WORKFLOW_ID, auth_type : workflow.AUTH_TYPE, sql_un : workflow.SQL_UN, })}/>
                                     <label className="custom-control-label" htmlFor={'monitor_' + index} style={{cursor : 'pointer'}} ><div>{((workflowBeingMonitored)?'Monitoring':'Monitor     ').replace(/ /g,'\u00a0')}</div></label>
                                 </div>                              
                             </Col>

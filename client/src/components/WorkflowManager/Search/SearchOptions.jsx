@@ -24,21 +24,27 @@ import { connect } from 'react-redux'
     }
     render() 
     {           
-        let host_names = []        
+        let host_names = []                
+        let host_keys = []    
         let host_nicknames = []        
         let serverDisplayText = this.props.options.selectedServer;      
         if(this.props.host_list)
         {
-            host_names = Object.keys(this.props.host_list);  
-            host_names.forEach(element => {
+            host_keys = Object.keys(this.props.host_list);              
+            host_keys.forEach(element => {
                 let nickname = this.props.host_list[element].nickname
                 host_nicknames.push(nickname)
+
+                let name = this.props.host_list[element].host
+                host_names.push(name)
+
                 if(element===this.props.options.selectedServer)
                 {
                     serverDisplayText = nickname
                 }
             });            
         }
+        
         if(host_names.length<1)
         {
             serverDisplayText = 'No servers configured'
@@ -50,13 +56,13 @@ import { connect } from 'react-redux'
         return (
             <Row style={{ zoom:'0.9'}}>
                 <Col lg="auto" md="auto" sm="auto" xd="auto" align="left">                                            
-                    <DropDownElement option_name='selectedServer' caption="Select" item_list={host_names} item_list_altname={host_nicknames} text={serverDisplayText} onOptionChanged={this.changeSelectedOption} DisableCondition={(host_names.length<1)}></DropDownElement>                                    
+                    <DropDownElement option_name='selectedServer' caption="Select" item_list={host_keys} item_list_altname={host_nicknames} text={serverDisplayText}  DisableCondition={(host_names.length<1)}></DropDownElement>                                    
                 </Col>
                 <Col lg="auto" md="auto" sm="auto" xd="auto" align="left">                                            
-                    <DropDownElement replaceRegex='_metastore$' option_name='selectedMetastore' caption="using" item_list={metastore_list} text={this.props.options.selectedMetastore} onOptionChanged={this.changeSelectedOption} DisableCondition={(this.props.options.selectedServer==='Select server' || this.props.metastoreList.length<1)} ></DropDownElement>
+                    <DropDownElement replaceRegex='_metastore$' option_name='selectedMetastore' caption="using" item_list={metastore_list} text={this.props.options.selectedMetastore}  DisableCondition={(this.props.options.selectedServer==='Select server' || this.props.metastoreList.length<1)} ></DropDownElement>
                 </Col>
                 <Col lg="auto" md="auto" sm="auto" xd="auto" align="left">                                            
-                    <DropDownElement  option_name='selectedWorkflowColumn' caption="where column"  item_list={this.wf_where_list} text={this.props.options.selectedWorkflowColumn} onOptionChanged={this.changeSelectedOption} DisableCondition={(this.props.options.selectedMetastore==='Select metastore')}></DropDownElement>                                    
+                    <DropDownElement  option_name='selectedWorkflowColumn' caption="where column"  item_list={this.wf_where_list} text={this.props.options.selectedWorkflowColumn}  DisableCondition={(this.props.options.selectedMetastore==='Select metastore')}></DropDownElement>                                    
                 </Col>               
 
                 <Col>                    
@@ -67,7 +73,7 @@ import { connect } from 'react-redux'
                 </Col>
 
                 <Col lg="auto" md="auto" sm="auto" xd="auto" align="left">                                            
-                    <DropDownElement  option_name='selectedSortColumn' caption="order by column" item_list={this.wf_order_list} text={this.props.options.selectedSortColumn} onOptionChanged={this.changeSelectedOption} DisableCondition={(this.props.options.selectedMetastore==='Select metastore')}></DropDownElement>
+                    <DropDownElement  option_name='selectedSortColumn' caption="order by column" item_list={this.wf_order_list} text={this.props.options.selectedSortColumn}  DisableCondition={(this.props.options.selectedMetastore==='Select metastore')}></DropDownElement>
                 </Col>
                 <Col lg="auto" md="auto" sm="auto" xd="auto" align="left">                                            
                     <div>

@@ -11,6 +11,21 @@ var GLOBAL_CONN_POOL = {};
 //when the database password updates, this is undefined, so it can be fetched freshly
 GLOBAL_FLYING_PASSWORDS = {};
 
+/*
+The following variable stores the custom SQL auth usernames and password corresponding
+to each user who configured it
+
+GLOBAL_FLYING_SQLCREDS = {
+  username : {
+    server_name : {
+      sql_username : ..,
+      sql_password : ..
+    }
+  }
+}
+*/
+GLOBAL_FLYING_SQLCREDS = {};
+
 //We maintain a variable that has the last activity of a user
 GLOBAL_LAST_USER_ACTIVITY = {}
 
@@ -47,6 +62,65 @@ router.post('/connectSQL',function(req,res)
 });
 
 
+
+//Connect to SQL
+router.post('/saveHost',function(req,res)
+{ 
+  var result = {
+    err : 1,
+    data : {}
+  };       
+    admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
+    .then(function(decodedToken) 
+    {     
+        let host_details = req.body.host_details 
+        
+        let final_details = {
+          host: host_details.host,
+          nickname : host_details.nickname,
+          server_type: host_details.server_type,
+          auth_type: host_details.auth_type
+        }
+
+        let host_key = host_details.host.replace(/\./g,'_') + '|' + decodedToken.uid
+
+        if(host_details.sql_un)
+        {
+          final_details['sql_un'] = host_details.sql_un
+          if(host_details.sql_pw)
+          {
+            final_details['sql_pw'] = encrypt(host_details.sql_pw)
+          }
+          host_key = host_details.host.replace(/\./g,'_') + '|' + host_details.sql_un
+        }        
+        
+        
+        firebase.doc('users').collection(decodedToken.uid).doc('hosts').set({  
+          [host_key] : 
+          {     
+              ...final_details,                   
+          }
+          },{merge : true})
+          .then(function() {       
+              result.err = 0
+              result.data = {info : 'Host saved'}
+              res.send(result)
+          })
+          .catch(function(error) {
+              result.err = 1
+              result.data = {info : error.toString()}
+              res.send(result)
+          });
+          
+        
+    }).catch(function(error) 
+    {   
+      res.status(403).send('Forbidden. Please sign in.')
+    });
+});
+
+
+
 //Get the count of any workflows give the type.
 //Example : when type = "failed", returns the number of failed workflows in the environment
 router.get('/wf/count',function(req,res)
@@ -62,7 +136,7 @@ router.get('/wf/count',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getWorkflowCount(config,req,res,result);  
+          getWorkflowCount(config,req,res,result,decodedToken.uid);  
         }
         else{
           result.data = {info:'Server connection does not exist. Please reload/re-login (GETWFCNT)'}
@@ -89,14 +163,17 @@ router.post('/wf/act_deact',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          setWorkflowActiveFlag(config,req,res,result);  
+          setWorkflowActiveFlag(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,setWorkflowActiveFlag);
         }
-    });
+    }).catch(err=>
+      {
+        console.log(err)    
+      });
   }).catch(function(error) 
-  {   
+  {       
     res.status(403).send('Forbidden. Please sign in.')
   });
 });
@@ -117,7 +194,7 @@ router.get('/wf/exec_details',function(req,res)
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         { 
           
-          getWorkflowExecutionStatus(config,req,res,result);  
+          getWorkflowExecutionStatus(config,req,res,result,decodedToken.uid);  
         }
         else{                    
           reconnectAndCallback(decodedToken,req,res,config,getWorkflowExecutionStatus);
@@ -143,7 +220,7 @@ router.post('/wf/modifyStatus',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          setWorkflowInstanceStatus(config,req,res,result);  
+          setWorkflowInstanceStatus(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,setWorkflowInstanceStatus);
@@ -169,7 +246,7 @@ router.get('/wf/error_log',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getErrorLog(config,req,res,result);  
+          getErrorLog(config,req,res,result,decodedToken.uid);  
         }
         else{                    
           reconnectAndCallback(decodedToken,req,res,config,getErrorLog);
@@ -196,7 +273,7 @@ router.get('/wf/getDatasetInstances',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getDatasetInstances(config,req,res,result);  
+          getDatasetInstances(config,req,res,result,decodedToken.uid);  
         }
         else{                    
           reconnectAndCallback(decodedToken,req,res,config,getDatasetInstances);
@@ -220,7 +297,7 @@ router.get('/wf/datasets',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getWFDatasets(config,req,res,result);  
+          getWFDatasets(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getWFDatasets);
@@ -246,7 +323,7 @@ router.post('/wf/restage',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          restageFile(config,req,res,result);  
+          restageFile(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,restageFile);
@@ -273,7 +350,7 @@ router.get('/wf/entity',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getWFEntity(config,req,res,result);  
+          getWFEntity(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getWFEntity);
@@ -300,7 +377,7 @@ router.get('/wf/dispatch_window',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getDispatchWindow(config,req,res,result);  
+          getDispatchWindow(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getDispatchWindow);
@@ -327,7 +404,7 @@ router.post('/toggleJob',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {          
-          toggleJob(config,req,res,result);  
+          toggleJob(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,toggleJob);
@@ -352,7 +429,7 @@ router.get('/wf/params',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getWFParams(config,req,res,result);  
+          getWFParams(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getWFParams);
@@ -378,7 +455,7 @@ router.get('/wf/source_system',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getWFSourceSystem(config,req,res,result);  
+          getWFSourceSystem(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getWFSourceSystem);
@@ -404,7 +481,7 @@ router.post('/wf/performSystemScan',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          performSystemScan(config,req,res,result);  
+          performSystemScan(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,performSystemScan);
@@ -429,7 +506,7 @@ router.get('/wf/blockInfo',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getBlockedInfo(config,req,res,result);  
+          getBlockedInfo(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getBlockedInfo);
@@ -454,7 +531,7 @@ router.get('/wf/stageInfo',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getWFStageInfo(config,req,res,result);  
+          getWFStageInfo(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getWFStageInfo);
@@ -479,7 +556,7 @@ router.get('/wf/precompile',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getPrecompile(config,req,res,result);  
+          getPrecompile(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getPrecompile);
@@ -505,7 +582,7 @@ router.get('/wf/evalDispCond',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          evalDispatchCondition(config,req,res,result);  
+          evalDispatchCondition(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,evalDispatchCondition);
@@ -531,7 +608,7 @@ router.get('/wf/stats',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getWorkflowStats(config,req,res,result);  
+          getWorkflowStats(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getWorkflowStats);
@@ -558,7 +635,7 @@ router.get('/jobStatus',function(req,res)
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {
-          getJobStatus(config,req,res,result);  
+          getJobStatus(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getJobStatus);
@@ -583,10 +660,10 @@ router.get('/serverMemUsage',function(req,res)
   admin.auth().verifyIdToken(acquireTokenAsString(req.headers['authorization']))
   .then(function(decodedToken) 
   {    
-      generateConfig(req,decodedToken).then(config=>{          
+      generateConfig(req,decodedToken).then(config=>{                  
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
-        {
-          getServerMemoryUsagePercent(config,req,res,result);  
+        {          
+          getServerMemoryUsagePercent(config,req,res,result,decodedToken.uid);  
         }
         else{
           reconnectAndCallback(decodedToken,req,res,config,getServerMemoryUsagePercent);
@@ -610,12 +687,12 @@ router.get('/search/wf',function(req,res){
   .then(function(decodedToken) 
   { 
     generateConfig(req,decodedToken).then(config=>{                   
-        
+    
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
-        {           
-          fetchWFDetails(config,req,res,result);          
+        {                     
+          fetchWFDetails(config,req,res,result,decodedToken.uid);          
         }
-        else{          
+        else{                    
           reconnectAndCallback(decodedToken,req,res,config,fetchWFDetails);
         }
     });
@@ -643,7 +720,7 @@ router.post('/getMetastores',function(req,res){
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {                
-          getMetastores(config,req,res,result);
+          getMetastores(config,req,res,result,decodedToken.uid);
         }
         else
         {          
@@ -671,7 +748,7 @@ router.post('/getColumns',function(req,res){
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {                
-          getColumns(config,req,res,result);
+          getColumns(config,req,res,result,decodedToken.uid);
         }
         else{          
           reconnectAndCallback(decodedToken,req,res,config,getColumns);
@@ -698,7 +775,7 @@ router.post('/wf/setDispCond',function(req,res){
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {                
-          setDispatchCondition(config,req,res,result);
+          setDispatchCondition(config,req,res,result,decodedToken.uid);
         }
         else{          
           reconnectAndCallback(decodedToken,req,res,config,setDispatchCondition);
@@ -725,7 +802,7 @@ router.post('/wf/setWorkflowParams',function(req,res){
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {                
-          setWorkflowParams(config,req,res,result);
+          setWorkflowParams(config,req,res,result,decodedToken.uid);
         }
         else{          
           reconnectAndCallback(decodedToken,req,res,config,setWorkflowParams);
@@ -753,7 +830,7 @@ router.post('/wf/setSourceEntity',function(req,res){
       generateConfig(req,decodedToken).then(config=>{          
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)        
         {                
-          setSourceEntity(config,req,res,result);
+          setSourceEntity(config,req,res,result,decodedToken.uid);
         }
         else{          
           reconnectAndCallback(decodedToken,req,res,config,setSourceEntity);
@@ -766,7 +843,7 @@ router.post('/wf/setSourceEntity',function(req,res){
 });
 
 
-var getWorkflowStats = async function (config,req,res,res_data)
+var getWorkflowStats = async function (config,req,res,res_data,req_user)
 {   
   await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -808,13 +885,13 @@ var getWorkflowStats = async function (config,req,res,res_data)
       res_data.err = 1;             
       res_data.data = {info : 'Something went wrong at (GETWFSTAT) : ' + err.toString()};      
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Workflow Stats Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Workflow Stats Error : ' + err.toString());
     }
 }  
 
 
 
-var getWorkflowCount = async function (config,req,res,res_data)
+var getWorkflowCount = async function (config,req,res,res_data,req_user)
 {   
   await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -852,11 +929,11 @@ var getWorkflowCount = async function (config,req,res,res_data)
       res_data.err = 1; 
       res_data.data = {info : 'Something went wrong at (GETWFCONT) : ' + err.toString()};      
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Workflow Count Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Workflow Count Error : ' + err.toString());
     }
 }  
 
-var fetchWFDetails = async function (config,req,res,res_data)
+var fetchWFDetails = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -883,7 +960,6 @@ var fetchWFDetails = async function (config,req,res,res_data)
         where_list_query_part = new_where_key + ` like @where_val`;
       }
  
-
       query_text = `      
       with main_view as (
       select 
@@ -931,7 +1007,7 @@ var fetchWFDetails = async function (config,req,res,res_data)
       })
       .catch(error=>{
         res_data.err = 1;         
-        res_data.data = {info : JSON.stringify(error)};
+        res_data.data = {info : JSON.stringify(error), source : 'fetchWFDetail'};
         res.send(res_data);           
       });
     }
@@ -940,12 +1016,12 @@ var fetchWFDetails = async function (config,req,res,res_data)
       res_data.err = 1;       
       res_data.data = {info : 'Something went wrong at (GETWFSTAT) : ' + error};      
       res.send(res_data);            
-      logger.error(config.user + '\t' + 'Workflow Fetch Error : ' + error);
+      logger.error(req_user + '\t' + 'Workflow Fetch Error : ' + error);
     }
 }
 
 
-var getWorkflowExecutionStatus = async function (config,req,res,res_data)
+var getWorkflowExecutionStatus = async function (config,req,res,res_data,req_user)
 {       
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -1021,12 +1097,12 @@ var getWorkflowExecutionStatus = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETWFSTAT) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Workflow Fetch Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Workflow Fetch Error : ' + err.toString());
     }
 }
 
 
-var getErrorLog = async function (config,req,res,res_data)
+var getErrorLog = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1056,13 +1132,14 @@ var getErrorLog = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETERRLOG) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Get Logs Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Get Logs Error : ' + err.toString());
     }
 }
 
 
 
-const removeQuotedStrings = function(sourceString)
+
+removeQuotedStrings = function (sourceString)
 {
     let single_quote_reg =  new RegExp(/'[^']+'/, "g")
     let double_quote_reg =  new RegExp(/"[^"]+"/, "g")
@@ -1081,7 +1158,8 @@ const removeQuotedStrings = function(sourceString)
     }
     return modified_string
 }
-const sqlStatementContainsType = function(sql_stmt,rejectableKeywords)
+
+sqlStatementContainsType = function(sql_stmt,rejectableKeywords)
 {
     let res= false;
     let sql_stmt_nostring = removeQuotedStrings(sql_stmt);        
@@ -1103,7 +1181,7 @@ const sqlStatementContainsType = function(sql_stmt,rejectableKeywords)
   return res
 }
 
-var setDispatchCondition = async function (config,req,res,res_data)
+var setDispatchCondition = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1158,12 +1236,12 @@ var setDispatchCondition = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (SETDISPCOND) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Set Disp Cond : ' + err.toString());
+      logger.error(req_user + '\t' + 'Set Disp Cond : ' + err.toString());
     }
 }
 
 
-var setWorkflowParams = async function (config,req,res,res_data)
+var setWorkflowParams = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1213,12 +1291,12 @@ var setWorkflowParams = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (SETWFPARAM) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Set Workflow Param : ' + err.toString());
+      logger.error(req_user + '\t' + 'Set Workflow Param : ' + err.toString());
     }
 }
 
 
-var setSourceEntity = async function (config,req,res,res_data)
+var setSourceEntity = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1281,11 +1359,11 @@ var setSourceEntity = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (EDITSCENT) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Set Source Entity : ' + err.toString());
+      logger.error(req_user + '\t' + 'Set Source Entity : ' + err.toString());
     }
 }
 
-var getWFDatasets = async function (config,req,res,res_data)
+var getWFDatasets = async function (config,req,res,res_data,req_user)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -1322,12 +1400,12 @@ var getWFDatasets = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETERRLOG) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Get WF Datasets : ' + err.toString());
+      logger.error(req_user + '\t' + 'Get WF Datasets : ' + err.toString());
     }
 }
 
 
-var getDatasetInstances = async function (config,req,res,res_data)
+var getDatasetInstances = async function (config,req,res,res_data,req_user)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -1363,11 +1441,11 @@ var getDatasetInstances = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETDSI) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Get Dataset Instances : ' + err.toString());
+      logger.error(req_user + '\t' + 'Get Dataset Instances : ' + err.toString());
     }
 }
 
-var restageFile = async function (config,req,res,res_data)
+var restageFile = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1415,13 +1493,13 @@ var restageFile = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (RESTGFLE) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Restage File : ' + err.toString());
+      logger.error(req_user + '\t' + 'Restage File : ' + err.toString());
     }
 }
 
 
 
-var getWFEntity = async function (config,req,res,res_data)
+var getWFEntity = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1460,12 +1538,12 @@ var getWFEntity = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETWFENT) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Workflow Entity Fetch Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Workflow Entity Fetch Error : ' + err.toString());
     }
 }
 
 
-var getDispatchWindow = async function (config,req,res,res_data)
+var getDispatchWindow = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1498,11 +1576,11 @@ var getDispatchWindow = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETDISPWIN) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Workflow Dispatch Window Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Workflow Dispatch Window Error : ' + err.toString());
     }
 }
 
-var getWFParams = async function (config,req,res,res_data)
+var getWFParams = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1538,7 +1616,7 @@ var getWFParams = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETWFPARAM) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Workflow Param Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Workflow Param Error : ' + err.toString());
     }
 }
 
@@ -1549,7 +1627,7 @@ var reconnectAndCallback = async function(decodedToken,req,res,config,callBack)
     data : {}
   }
     
-    connectSQL(decodedToken,req,res,result)
+    connectSQL(decodedToken,req)
     .then(resp=>{      
     if(resp.err==1)
     {                        
@@ -1559,14 +1637,14 @@ var reconnectAndCallback = async function(decodedToken,req,res,config,callBack)
     {            
       result.err  = 0
       result.data = resp.data.info
-      callBack(config,req,res,result);      
+      callBack(config,req,res,result,decodedToken.uid);      
     }
     }).catch(err=>{             
       res.send(err);              
     });
 }
 
-function parameteriseQueryForIn(request, columnName, parameterNamePrefix, type, values) {
+ parameteriseQueryForIn =  function(request, columnName, parameterNamePrefix, type, values) {
   var parameterNames = [];
   for (var i = 0; i < values.length; i++) {
     var parameterName = parameterNamePrefix + i;
@@ -1576,7 +1654,7 @@ function parameteriseQueryForIn(request, columnName, parameterNamePrefix, type, 
   return `${columnName} IN (${parameterNames.join(',')})`
 }
 
-var getWFSourceSystem = async function (config,req,res,res_data)
+var getWFSourceSystem = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1610,12 +1688,12 @@ var getWFSourceSystem = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETSS) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Workflow Source System Fetch Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Workflow Source System Fetch Error : ' + err.toString());
     }
 }
 
 
-var performSystemScan = async function (config,req,res,res_data)
+var performSystemScan = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1652,11 +1730,11 @@ var performSystemScan = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (FRCSSCAN) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Source System Scan Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Source System Scan Error : ' + err.toString());
     }
 }
 
-var getWFStageInfo = async function (config,req,res,res_data)
+var getWFStageInfo = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1708,12 +1786,12 @@ var getWFStageInfo = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETWFSTGINF) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Workflow Stage Info Fetch Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Workflow Stage Info Fetch Error : ' + err.toString());
     }
 }
 
 
-var getPrecompile = async function (config,req,res,res_data)
+var getPrecompile = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1763,13 +1841,13 @@ var getPrecompile = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (GETPRCMP) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Workflow Precompile Error : ' + err.toString());
+      logger.error(req_user + '\t' + 'Workflow Precompile Error : ' + err.toString());
     }
 }
 
 
 
-var evalDispatchCondition = async function (config,req,res,res_data)
+var evalDispatchCondition = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -1817,12 +1895,12 @@ var evalDispatchCondition = async function (config,req,res,res_data)
       res_data.data = {info : 'Something went wrong at (EVALDISP) : ' + err.toString()};      
       res_data.err = 1;       
       res.send(res_data);               
-      logger.error(config.user + '\t' + 'Evaluate Disp Cond: ' + err.toString());
+      logger.error(req_user + '\t' + 'Evaluate Disp Cond: ' + err.toString());
     }
 }
 
 
-var getMetastores = async function (config,req,res,res_data)
+var getMetastores = async function (config,req,res,res_data,req_user)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -1848,11 +1926,11 @@ var getMetastores = async function (config,req,res,res_data)
         res_data.data = {info : 'Something went wrong at (GETMTSTR) : ' + err.toString()};      
         res_data.err = 1;       
         res.send(res_data);               
-        logger.error(config.user + '\t' + 'Get Metastore Error : ' + err.toString());
+        logger.error(req_user + '\t' + 'Get Metastore Error : ' + err.toString());
       }
 }
 
-var getJobStatus = async function (config,req,res,res_data)
+var getJobStatus = async function (config,req,res,res_data,req_user)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -1932,12 +2010,12 @@ var getJobStatus = async function (config,req,res,res_data)
         res_data.data = {info : 'Something went wrong at (GEJOBSTATUS) : ' + err.toString()};      
         res_data.err = 1;       
         res.send(res_data);               
-        logger.error(config.user + '\t' + 'Get Job Status Error : ' + err.toString());
+        logger.error(req_user + '\t' + 'Get Job Status Error : ' + err.toString());
       }
 }
 
 
-var getServerMemoryUsagePercent = async function (config,req,res,res_data)
+var getServerMemoryUsagePercent = async function (config,req,res,res_data,req_user)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -1973,11 +2051,11 @@ var getServerMemoryUsagePercent = async function (config,req,res,res_data)
         res_data.data = {info : 'Something went wrong at (GETMEMUSG) : ' + err.toString()};      
         res_data.err = 1;       
         res.send(res_data);               
-        logger.error(config.user + '\t' + 'Get Server Memory Usage Error : ' + err.toString());
+        logger.error(req_user + '\t' + 'Get Server Memory Usage Error : ' + err.toString());
       }
 }
 
-var toggleJob = async function (config,req,res,res_data)
+var toggleJob = async function (config,req,res,res_data,req_user)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -1989,12 +2067,12 @@ var toggleJob = async function (config,req,res,res_data)
           if(req.body.act_flag==1)    
           {
             sql_result = sql_request.execute('sp_start_job');
-            logger.info(config.user + '\tENABLED JOB : ' + req.body.job_name)
+            logger.info(req_user + '\tENABLED JOB : ' + req.body.job_name)
           }
           else if(req.body.act_flag==0)    
           {              
             sql_result = sql_request.execute('sp_stop_job');          
-            logger.info(config.user + '\tSTOPPED JOB : ' + req.body.job_name)
+            logger.info(req_user  + '\tSTOPPED JOB : ' + req.body.job_name)
           }      
           else
           {
@@ -2021,17 +2099,17 @@ var toggleJob = async function (config,req,res,res_data)
         res_data.data = {info : 'Something went wrong at (TGLJOB) : ' + err.toString()};      
         res_data.err = 1;       
         res.send(res_data);               
-        logger.error(config.user + '\t' + 'Toggle Job Error : ' + err.toString());
+        logger.error(req_user + '\t' + 'Toggle Job Error : ' + err.toString());
       }
 }
 
-var setWorkflowActiveFlag = async function (config,req,res,res_data)
+var setWorkflowActiveFlag = async function (config,req,res,res_data,req_user)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
           //Prepare an SQL request
           const sql_request = GLOBAL_CONN_POOL[JSON.stringify(config)].request();    
-
+          
                     
           var sql_result;          
           
@@ -2071,12 +2149,12 @@ var setWorkflowActiveFlag = async function (config,req,res,res_data)
         res_data.err = 1; 
         res_data.data = {info : 'Something went wrong at (ACTDEACT) : ' + err.toString()};        
         res.send(res_data);               
-        logger.error(config.user + '\t' + 'Workflow ActivateDeactivate Error : ' + err.toString());
+        logger.error(req_user + '\t' + 'Workflow ActivateDeactivate Error : ' + err.toString());
       }
 }
 
 
-var setWorkflowInstanceStatus = async function (config,req,res,res_data)
+var setWorkflowInstanceStatus = async function (config,req,res,res_data,req_user)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -2107,11 +2185,11 @@ var setWorkflowInstanceStatus = async function (config,req,res,res_data)
         res_data.err = 1; 
         res_data.data = {info : 'Something went wrong at (SETWFINST) : ' + err.toString()};        
         res.send(res_data);               
-        logger.error(config.user + '\t' + 'Workflow Instance Status Error : ' + err.toString());
+        logger.error(req_user + '\t' + 'Workflow Instance Status Error : ' + err.toString());
       }
 }
 
-var getColumns = async function (config,req,res,res_data)
+var getColumns = async function (config,req,res,res_data,req_user)
 {     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
     try{
@@ -2146,7 +2224,7 @@ var getColumns = async function (config,req,res,res_data)
         res_data.err = 1; 
         res_data.data = {info : 'Something went wrong at (GETCLMNS) : ' + err.toString()};        
         res.send(res_data);               
-        logger.error(config.user + '\t' + 'Table Column Fetch: ' + err.toString());
+        logger.error(req_user + '\t' + 'Table Column Fetch: ' + err.toString());
       }
 }
 
@@ -2163,71 +2241,153 @@ var generateConfig = async function(req,decodedToken)
     var servername;
     var auth_type;
     var database;
-    var schema;    
+    var schema;  
+    var sql_un;
+    var sql_pw;  
     if(req.method=='GET')
         {          
           servername = req.query.server;
           database = req.query.db;
           schema = req.query.schema;
-          auth_type = req.query.auth_type;                    
+          auth_type =  (req.query.auth_type)?Number(req.query.auth_type):0;                    
+          sql_pw = req.query.sql_pw;
+          sql_un = req.query.sql_un;
         }
         else if(req.method=='POST')
         {
           servername = req.body.server;
           database = req.body.db;
           schema = req.body.schema;
-          auth_type = req.body.auth_type;          
+          auth_type =  (req.body.auth_type)?Number(req.body.auth_type):0;                    
+          sql_pw = req.body.sql_pw;
+          sql_un = req.body.sql_un;
         }
     
-    //First check if a the user is present and a password is available,
+    //First check if the user is present and a password is available,
     let fetchFromFirestore =  false;
-    if(decodedToken.uid in GLOBAL_FLYING_PASSWORDS)
-    {
+    
+    
+    
+    
+    if(auth_type!==1)    
+    {      
+      sql_pw = undefined
+      sql_un = undefined
+    }    
+    
+    if((servername + sql_un) in GLOBAL_FLYING_PASSWORDS)
+    {      
       //If password is available, use that to prepare the config. This saves us a firestore READ.
       //If undefined, fetch the password from the firestore and use tha
-      let enc_pass = GLOBAL_FLYING_PASSWORDS[decodedToken.uid];
+      
+      let enc_pass = GLOBAL_FLYING_PASSWORDS[servername + sql_un];
       if(enc_pass)
-      {        
-        let config = prepareConfigUsingDetails(decodedToken.uid,enc_pass,servername,database,schema,auth_type)
+      {               
+        let config = prepareConfigUsingDetails((auth_type===0)?decodedToken.uid:sql_un,enc_pass,servername,database,schema,auth_type,1)                
         resolve(config);
       }
       else
       {        
-        fetchFromFirestore = true;                
+        fetchFromFirestore = true;                        
       }
     }
     else
     {      
-      fetchFromFirestore = true;              
+      fetchFromFirestore = true;           
     }
     //Password isn't available in memory, so fetch it from firestore, and prepare config        
     if(fetchFromFirestore)
     {
-      delete GLOBAL_FLYING_PASSWORDS[decodedToken.uid]
-      firebase.doc('users').collection(decodedToken.uid).doc('profile').get().then( user_data =>
-        {      
-          if(!user_data.exists)        
-          {                 
-            error =  "There was an error fetching user information, please login again. ERR : GENCONF"
-            reject(error);
-            return
-          }        
-          var user_data = user_data.data();      
-          //Prepare a connection config          
-          GLOBAL_FLYING_PASSWORDS[decodedToken.uid] = user_data.password;
-          let config = prepareConfigUsingDetails(decodedToken.uid,user_data.password,servername,database,schema,auth_type)                                  
-          resolve(config);      
-        })
-        .catch(function(error) {      
-          reject(error)
-        }); 
+      
+      
+      if(auth_type===1)      
+      {                 
+        
+          delete GLOBAL_FLYING_PASSWORDS[servername + sql_un]              
+          //Check if a password was passed along with the request, if yes use the same password,
+          //otherwise fetch from firebase      
+          
+          if(sql_pw)
+          {            
+            GLOBAL_FLYING_PASSWORDS[servername + sql_un] = encrypt(sql_pw)
+            let config = prepareConfigUsingDetails(sql_un, GLOBAL_FLYING_PASSWORDS[servername + sql_un],servername,database,schema,auth_type,2)                                  
+            resolve(config);      
+          }
+          else
+          {
+            
+            firebase.doc('users').collection(decodedToken.uid).doc('hosts').get().then( host_data =>
+              {                      
+                
+                  if(!host_data.exists)        
+                  {                 
+                    error =  "There was an error fetching host information, please login again. ERR : GENCONF_SQLAUTH_1"
+                    reject(error);
+                    return
+                  }        
+                  var host_data = host_data.data();     
+                  
+                  if(Object.keys(host_data).length===0)
+                  {
+                    error =  "There was an error fetching host information, please login again. ERR : GENCONF_SQLAUTH_2"
+                    reject(error);
+                    return
+                  }
+                  
+                  //Prepare a connection config          
+                  let host_key = host_data[(servername.replace(/\./g,'_')) + '|' + sql_un]
+                  if(host_key && host_key['sql_pw'])
+                  {
+                    GLOBAL_FLYING_PASSWORDS[servername + sql_un] = host_key['sql_pw']
+                  }
+                  else{
+                    error =  "The workflow is running on a server that you have not added to your hosts. Please add this host in Settings and try again"
+                    reject(error);
+                    return
+                  }
+                  
+                  
+                  let config = prepareConfigUsingDetails(sql_un,GLOBAL_FLYING_PASSWORDS[servername + sql_un],servername,database,schema,auth_type,3)                                  
+                  
+                  resolve(config);      
+                })
+                .catch(error => {    
+                  reject(error.toString())
+                }); 
+          }         
+      }
+      else
+      {        
+        delete GLOBAL_FLYING_PASSWORDS[decodedToken.uid]
+        firebase.doc('users').collection(decodedToken.uid).doc('profile').get().then( user_data =>
+          {      
+            if(!user_data.exists)        
+            {                 
+              error =  "There was an error fetching user information, please login again. ERR : GENCONF_WINAUTH"
+              reject(error);
+              return
+            }        
+            var user_data = user_data.data();      
+            //Prepare a connection config          
+            GLOBAL_FLYING_PASSWORDS[decodedToken.uid] = user_data.password;
+            
+            let config = prepareConfigUsingDetails(decodedToken.uid,user_data.password,servername,database,schema,auth_type,4)                                  
+            resolve(config);      
+          })
+          .catch(function(error) {      
+            reject(error.toString())
+          }); 
+  
+      }
+      
     }
+   
     
   });
 }
 
-function prepareConfigUsingDetails(username,enc_pass,servername,database,schema,auth_type)
-{
+var prepareConfigUsingDetails = async function(username,enc_pass,servername,database,schema,auth_type,call_source)
+{    
   let config = {
     user : username,
     password : decrypt(enc_pass),
@@ -2241,7 +2401,7 @@ function prepareConfigUsingDetails(username,enc_pass,servername,database,schema,
           trustedConnection: (auth_type==0)?true:false
         },        
     }   
-
+    
   return config         
 }
 
@@ -2253,8 +2413,8 @@ var connectSQL = async function (decodedToken,req)
   }
   return new Promise((resolve,reject) => {
     
-    generateConfig(req,decodedToken).then(config=>{
-    
+    generateConfig(req,decodedToken).then(config=>{    
+      
         //Once we prepare the config, we check to see if global conn pool exists
         //Check if conn pool exists               
         if(JSON.stringify(config) in GLOBAL_CONN_POOL)
@@ -2264,14 +2424,17 @@ var connectSQL = async function (decodedToken,req)
           resolve(res_data)          
         }
         else
-        {                    
-          //Prepare a connection pool
+        {                              
+          
+          //Prepare a connection pool          
           new sql.ConnectionPool(config).connect()
           .then(pool => {      
               //Save the connection in global pool
+
+              
               GLOBAL_CONN_POOL[JSON.stringify(config)] = pool;
               res_data.err = 0;      
-              res_data.data = {info : "connected"};             
+              res_data.data = {info : "connected"};                           
               resolve(res_data)
 
           }).catch(err => {
@@ -2282,17 +2445,19 @@ var connectSQL = async function (decodedToken,req)
           });  
         }        
 
-  }).catch(promise_err=>{
-    res_data.err = 1;
-    res_data.data = {info : promise_err};   
-    reject(res_data)
+  }).catch(err=>{    
+    
+    res_data.err = 1; 
+    res_data.data = {info : 'Something went wrong at (CONSQL) : ' + err.toString()};        
+    logger.error(decodedToken.uid + '\t' + 'ConnectSQL1: ' + err.toString());    
+    reject(res_data)        
   });
 
-});
+})
 
 }
 
-var getBlockedInfo = async function (config,req,res,res_data)
+var getBlockedInfo = async function (config,req,res,res_data,req_user)
 {   
     
     await GLOBAL_CONN_POOL[JSON.stringify(config)]; //Ensure a global sql connection exists
@@ -2639,7 +2804,7 @@ var getBlockedInfo = async function (config,req,res,res_data)
         res_data.err = 1; 
         res_data.data = {info : 'Something went wrong at (GETBLOCKINF) : ' + err.toString()};        
         res.send(res_data);               
-        logger.error(config.user + '\t' + 'Get Blocked Info: ' + err.toString());
+        logger.error(req_user + '\t' + 'Get Blocked Info: ' + err.toString());
     }
 }
 

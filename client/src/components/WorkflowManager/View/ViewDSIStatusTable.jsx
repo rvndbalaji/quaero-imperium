@@ -2,7 +2,6 @@ import React, { PureComponent,memo } from 'react'
 import BootstrapTable from 'react-bootstrap-table-next';
 import ToolkitProvider, {  } from 'react-bootstrap-table2-toolkit';
 import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css'
 import Button from 'react-bootstrap/Button';

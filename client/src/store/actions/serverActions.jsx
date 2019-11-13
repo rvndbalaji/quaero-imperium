@@ -46,7 +46,7 @@ const raiseJobStatusRequest = (dispatch,getState,host_details)=>
 {   
    let server_name = host_details.host   
    let auth_type = host_details.auth_type
-   
+   let sql_un = host_details.sql_un
    //Prepare request     
    getIDToken().then(token=>
     {   
@@ -57,7 +57,8 @@ const raiseJobStatusRequest = (dispatch,getState,host_details)=>
             }),
             params : {                
                 server : server_name,
-                auth_type,                                          
+                auth_type,    
+                sql_un,                
                 schema:'dbo'                
            }
         })
@@ -122,6 +123,7 @@ const raiseServerMemUsageRequest = (dispatch,getState,host_details)=>
 {   
    let server_name = host_details.host   
    let auth_type = host_details.auth_type
+   let sql_un = host_details.sql_un   
 
    //Prepare request     
    getIDToken().then(token=>
@@ -133,6 +135,7 @@ const raiseServerMemUsageRequest = (dispatch,getState,host_details)=>
             }),
             params : {                
                 server : server_name,
+                sql_un,                
                 auth_type                
            }
         })

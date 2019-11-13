@@ -61,6 +61,7 @@ function ViewLogsModal(props) {
                     params : {
                         server : wf_details.server,
                         auth_type : wf_details.auth,
+                        sql_un : wf_details.sql_un,
                         db : wf_details.metastore, 
                         schema:'dbo', 
                         event_group_id : props.selected_row.EVENT_GROUP_ID

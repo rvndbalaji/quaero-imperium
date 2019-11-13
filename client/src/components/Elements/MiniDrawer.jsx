@@ -23,7 +23,7 @@ import Profile from '../WorkflowManager/Profile'
 import Servers from '../WorkflowManager/Servers';
 import Support from '../WorkflowManager/Support';
 import WhatsNew from '../WorkflowManager/WhatsNew';
-import { Badge } from '@material-ui/core';
+//import { Badge } from '@material-ui/core';
 
 
 
@@ -106,7 +106,7 @@ export default function MiniDrawer() {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [selectedIndex, setSelectedIndex] = React.useState(1);
   
   function handleDrawerOpen() {
     setOpen(true);

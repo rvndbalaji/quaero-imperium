@@ -32,7 +32,7 @@ router.post('/sendMail',function(req,res)
   });
 });
 
-function dispatchEmailWith(uid,full_name,email,req,res)
+dispatchEmailWith = async function (uid,full_name,email,req,res)
 {
   var mailOptions = {
     from: (full_name)?(full_name + ' ' + email):email,

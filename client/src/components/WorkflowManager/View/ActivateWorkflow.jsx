@@ -25,6 +25,7 @@ function ActivateWorkflow(props) {
             axios.post('/wf_man/wf/act_deact',{                    
                 server : wf_details.server,
                 auth_type: wf_details.auth,
+                sql_un : wf_details.sql_un,
                 db : wf_details.metastore,
                 schema:'dbo', 
                 workflow_id : wf_details.wf_id,

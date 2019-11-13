@@ -28,14 +28,15 @@ class WF_View extends PureComponent {
 refreshTimeout;
 
     componentDidMount=()=>
-    {
+    {        
         this.props.setViewMonitor({
             server : this.props.match.params.server,
             metastore : this.props.match.params.metastore,
             wf_id : this.props.match.params.wf_id,
             auth : this.props.match.params.auth,
-        })
-
+            sql_un : this.props.match.params.sql_un,
+        })            
+      
         this.props.sendUserActivity()
         
     }     
@@ -59,8 +60,10 @@ refreshTimeout;
             server : this.props.match.params.server,
             metastore : this.props.match.params.metastore,
             wf_id : this.props.match.params.wf_id,
-            auth : this.props.match.params.auth,
+            auth : this.props.match.params.auth,            
+            sql_un : this.props.match.params.sql_un
         }
+        
         let MyToolbar = (
                 <Toolbar variant="dense" style={{backgroundColor: 'var(--primary_dark)'}}>     
                     <Tooltip title='Go back to Workflow Manager' placement='bottom'>

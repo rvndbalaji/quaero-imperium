@@ -63,6 +63,7 @@ function EditDispatchCondModal(props) {
                 axios.post('/wf_man/wf/setDispCond',{                    
                     server : wf_details.server,
                     auth_type : wf_details.auth,
+                    sql_un : wf_details.sql_un,
                     db : wf_details.metastore, 
                     schema:'dbo', 
                     dispatch_condition : val,

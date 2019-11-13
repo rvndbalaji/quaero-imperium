@@ -17,11 +17,13 @@ class WhatsNew extends Component {
             </Row>
             <Row>
                 <Col className='text-left'>
-                    1. See all DSIs for Input/Output datasets   <br/>
-                    2. Ability to perform source system scan immediately <br />
-                    3. Clear all monitors button  <br/>
-                    4. Edit workflow params &amp; source entities <br/>
-                    5. View &amp; edit dispatch conditions (and view dispatch window) <br/>                    
+                    1. Ability to start/stop using service account <br/>
+                    2. SQL Authentication for custom login
+                    3. See all DSIs for Input/Output datasets   <br/>
+                    4. Ability to perform source system scan immediately <br />
+                    5. Clear all monitors button  <br/>
+                    6. Edit workflow params &amp; source entities <br/>
+                    7. View &amp; edit dispatch conditions (and view dispatch window) <br/>                    
                 </Col>    
             </Row>
 
@@ -29,11 +31,10 @@ class WhatsNew extends Component {
                 <h5>Upcoming major features!</h5>
             </Row>
             <Row>
-                <Col className='text-left'>
-                    1. Ability to start/stop using service account <br/>
-                    2. Get notified when a job is started/stopped <br/>
-                    3. Suggest usernames when sending workflow request review <br/>                                        
-                    4. Set default servers &amp; metastores                
+                <Col className='text-left'>                    
+                    1. Get notified when a job is started/stopped <br/>
+                    2. Suggest usernames when sending workflow request review <br/>                                        
+                    3. Set default servers &amp; metastores                
                 </Col>                
             </Row>
 

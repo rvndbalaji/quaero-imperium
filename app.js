@@ -106,7 +106,7 @@ app.use('/docs',express.static('docs/build/'))
 app.get('/*', function(req, res) {
   res.sendFile(path.join(__dirname, 'client/build/index.html'), function(err) {
     if (err) {
-      logger.error('server\t' + err.toString())
+      logger.error('server\t' + err.toString() + ' - app.js')
       res.status(500).send('Oops something went wrong on our end! :\\ Please report this to admin')      
     }
   })
@@ -168,6 +168,6 @@ decrypt = function(text) {
 process.on('unhandledRejection', (reason, promise) => {  
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use  
-  logger.error('server\t' + 'Unhandled Rejection at : ' + reason.stack || reason);
+  logger.error('server\t' + 'Unhandled Rejection at : ' + reason);  
 });
 

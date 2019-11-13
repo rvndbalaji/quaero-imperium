@@ -46,8 +46,9 @@ export const setViewMonitor = (wf_details_p)=>
         
         master_workflow_details = {}
         clearTimeout(refreshTimeout)                    
-        wf_details  = wf_details_p                 
-
+        wf_details  = wf_details_p    
+        
+        
         //Get workflow block information
         fetchBlockInfo(dispatch,getState);
 
@@ -84,6 +85,7 @@ const fetchWFDetails = (dispatch,getState)=>
    let metastore_name = wf_details.metastore
    let wf_id = wf_details.wf_id    
    let auth_type = wf_details.auth
+   let sql_un = wf_details.sql_un
    
    //Prepare request     
    getIDToken().then(token=>
@@ -96,6 +98,7 @@ const fetchWFDetails = (dispatch,getState)=>
             params : {                
                 server : server_name,
                 auth_type,
+                sql_un,
                 where_key : 'WORKFLOW_ID', 
                 where_val : wf_id,                 
                 db : metastore_name,
@@ -191,7 +194,7 @@ const fetchSourceEntity = (dispatch,getState)=>
    let metastore_name = wf_details.metastore
    let wf_id = wf_details.wf_id    
    let auth_type = wf_details.auth
-   
+   let sql_un = wf_details.sql_un
    //Prepare request     
    getIDToken().then(token=>
     {   
@@ -202,7 +205,8 @@ const fetchSourceEntity = (dispatch,getState)=>
             }),
             params : {                
                 server : server_name,
-                auth_type,                
+                auth_type,  
+                sql_un,              
                 workflow_id : wf_id,                 
                 db : metastore_name,
                 schema:'dbo'            
@@ -271,7 +275,7 @@ const fetchDispatchWindow = (dispatch,getState)=>
    let metastore_name = wf_details.metastore
    let wf_id = wf_details.wf_id    
    let auth_type = wf_details.auth
-   
+   let sql_un = wf_details.sql_un
    //Prepare request     
    getIDToken().then(token=>
     {   
@@ -282,7 +286,8 @@ const fetchDispatchWindow = (dispatch,getState)=>
             }),
             params : {                
                 server : server_name,
-                auth_type,                
+                auth_type,          
+                sql_un,      
                 workflow_id : wf_id,                 
                 db : metastore_name,
                 schema:'dbo'            
@@ -340,6 +345,7 @@ const fetchStageInfo = (dispatch,getState)=>
    let metastore_name = wf_details.metastore   
    let ent_id = master_workflow_details.entityResult[0].ID
    let auth_type = wf_details.auth   
+   let sql_un = wf_details.sql_un
    //Prepare request     
    getIDToken().then(token=>
     {   
@@ -350,7 +356,8 @@ const fetchStageInfo = (dispatch,getState)=>
             }),
             params : {                
                 server : server_name,
-                auth_type,                
+                auth_type,    
+                sql_un,            
                 entity_id : ent_id,                 
                 db : metastore_name,
                 schema:'dbo'            
@@ -411,7 +418,7 @@ const fetchSourceSystem = (dispatch,getState)=>
 {  
    let server_name = wf_details.server
    let metastore_name = wf_details.metastore
-
+   let sql_un = wf_details.sql_un
    let system_id_list =  [] 
    let cur_entity = master_workflow_details.entityResult
    
@@ -431,7 +438,8 @@ const fetchSourceSystem = (dispatch,getState)=>
             }),
             params : {                
                 server : server_name,
-                auth_type,                
+                auth_type, 
+                sql_un,               
                 ss_id : system_id_list.join(","),           
                 db : metastore_name,
                 schema:'dbo'            
@@ -494,6 +502,7 @@ const fetchBlockInfo = (dispatch,getState)=>
    let metastore_name = wf_details.metastore
    let wf_id = wf_details.wf_id    
    let auth_type = wf_details.auth   
+   let sql_un = wf_details.sql_un
    //Prepare request     
    getIDToken().then(token=>
     {   
@@ -504,7 +513,8 @@ const fetchBlockInfo = (dispatch,getState)=>
             }),
             params : {                
                 server : server_name,
-                auth_type,                
+                auth_type,      
+                sql_un,         
                 workflow_id : wf_id,           
                 db : metastore_name,
                 schema:'dbo'            
@@ -571,6 +581,7 @@ const fetchWFParams = (dispatch,getState)=>
    let metastore_name = wf_details.metastore
    let wf_id = wf_details.wf_id    
    let auth_type = wf_details.auth
+   let sql_un = wf_details.sql_un
    
    //Prepare request     
    getIDToken().then(token=>
@@ -582,7 +593,8 @@ const fetchWFParams = (dispatch,getState)=>
             }),
             params : {                
                 server : server_name,
-                auth_type,                
+                auth_type,        
+                sql_un,        
                 workflow_id : wf_id,           
                 db : metastore_name,
                 schema:'dbo'            
@@ -644,7 +656,7 @@ const fetchDatasets = (dispatch,getState)=>
    let metastore_name = wf_details.metastore
    let wf_id = wf_details.wf_id    
    let auth_type = wf_details.auth
-   
+   let sql_un = wf_details.sql_un
    //Prepare request     
    getIDToken().then(token=>
     {   
@@ -655,7 +667,8 @@ const fetchDatasets = (dispatch,getState)=>
             }),
             params : {                
                 server : server_name,
-                auth_type,                
+                auth_type,  
+                sql_un,              
                 workflow_id : wf_id,           
                 db : metastore_name,
                 schema:'dbo'            
@@ -729,17 +742,23 @@ export const toggleWorkflowMonitor = (togglestate) =>
         let metastore_name = wf_details.metastore
         let wfid = wf_details.wf_id
         let a_type = wf_details.auth
-        authUser = getState().auth.authUser;                                
+        let s_un = wf_details.sql_un        
+
+        let nameAsKey_1 = server_name.replace(/\./g,'_') 
+        let nameAsKey_2 = (a_type!==1)?authUser.uid:s_un           
+        let prim_key = (nameAsKey_1 + '|' + nameAsKey_2)
         if(togglestate)
         {                
                 fire.doc("users").collection(authUser.uid).doc('monitors').set({  
-                    [server_name] : 
+                    [prim_key] : 
                     {     
                         [metastore_name]: 
                         {
                             wf_id : firebase.firestore.FieldValue.arrayUnion(Number(wfid))
                         },
-                        auth_type : a_type             
+                        host : server_name,
+                        auth_type : a_type,
+                        sql_un : (s_un)?s_un:null
                     }
                 },{merge : true})
                 .then(function() {       
@@ -750,15 +769,18 @@ export const toggleWorkflowMonitor = (togglestate) =>
                 });
         }
         else
-        {                
+        {
+                dispatch({type : 'SET_MONITOR_RESULTS', monitorResults : undefined});                                    
                 fire.doc("users").collection(authUser.uid).doc('monitors').set({  
-                    [server_name] : 
+                    [prim_key] : 
                     {     
                         [metastore_name]: 
                         {
                             wf_id : firebase.firestore.FieldValue.arrayRemove(Number(wfid))
                         },
-                        auth_type : a_type             
+                        host : server_name,
+                        auth_type : a_type,
+                        sql_un : (s_un)?s_un:null
                     }
                 },{merge : true})
                 .then(function() {       
