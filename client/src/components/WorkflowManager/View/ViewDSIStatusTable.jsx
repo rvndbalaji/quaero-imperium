@@ -200,40 +200,47 @@ class ViewDSIStatusTable extends PureComponent {
 
             });       
               //Check if any row was selected, if yes display the row options
-              let RowOptions = '';                      
+              let RowOptions = '';                                    
                 RowOptions = (                                          
                     <Row className='ml-3 mb-2'>                                                     
                         <div className='col-lg-auto col-md-auto col-sm-auto'>
+                            
                             <Button size='sm' variant='primary' disabled={true} style={{zoom:0.9}} onClick={()=>this.props.modifyStatusCallback(this.state.all_selected,2,this.state.selected_rows)}>
-                                <span style={{whiteSpace : 'pre'}}>READY</span>                    
+                                <span style={{whiteSpace : 'pre'}}>READY</span>                                                    
                             </Button>
                         </div>
                         <div className='col-lg-auto col-md-auto col-sm-auto'>
+                            
                             <Button size='sm' variant='primary' disabled={true} style={{zoom:0.9}} onClick={()=>this.props.modifyStatusCallback(this.state.all_selected,2,this.state.selected_rows)}>                                                                    
-                                <span style={{whiteSpace : 'pre'}}>ERROR</span>                    
+                                <span style={{whiteSpace : 'pre'}}>ERROR</span>                                                    
                             </Button>                        
                         </div>
                         <div className='col-lg-auto col-md-auto col-sm-auto'>
+                            
                             <Button size='sm' variant='primary' disabled={true} style={{zoom:0.9}} onClick={()=>this.props.modifyStatusCallback(this.state.all_selected,2,this.state.selected_rows)}>                                                                    
-                                <span style={{whiteSpace : 'pre'}}>EMPTY</span>                    
+                                <span style={{whiteSpace : 'pre'}}>EMPTY</span>                                                    
                             </Button>
                         </div>
                         <div className='col-lg-auto col-md-auto col-sm-auto'>
+                            
                             <Button size='sm' variant='primary' disabled={true} style={{zoom:0.9}} onClick={()=>this.props.modifyStatusCallback(this.state.all_selected,2,this.state.selected_rows)}>                                                                    
-                                <span style={{whiteSpace : 'pre'}}>PENDING</span>                    
+                                <span style={{whiteSpace : 'pre'}}>PENDING</span>                                                    
                             </Button>                        
                         </div>
                         <div className='col-lg-auto col-md-auto col-sm-auto'>
+                            
                             <Button size='sm' variant='primary' disabled={true} style={{zoom:0.9}} onClick={()=>this.props.modifyStatusCallback(this.state.all_selected,2,this.state.selected_rows)}>                                                                    
-                                <span style={{whiteSpace : 'pre'}}>EXPIRED</span>                    
+                                <span style={{whiteSpace : 'pre'}}>EXPIRED</span>                                                    
                             </Button>                        
                         </div>
                         <div className='col-lg-auto col-md-auto col-sm-auto'>
+                            
                             <Button size='sm' variant='primary' disabled={true} style={{zoom:0.9}} onClick={()=>this.props.modifyStatusCallback(this.state.all_selected,2,this.state.selected_rows)}>                                                                    
-                                <span style={{whiteSpace : 'pre'}}>PENDING-DELETE</span>                    
+                                <span style={{whiteSpace : 'pre'}}>PENDING-DELETE</span>                                                    
                             </Button>
                         </div>
                         <div className='col-lg-auto col-md-auto col-sm-auto'>
+                            
                             <Button size='sm' variant='primary' disabled={true} style={{zoom:0.9}} onClick={()=>this.props.modifyStatusCallback(this.state.all_selected,2,this.state.selected_rows)}>                                                                    
                                 <span style={{whiteSpace : 'pre'}}>DELETED</span>                    
                             </Button>                        
