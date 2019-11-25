@@ -32,9 +32,10 @@ class WhatsNew extends Component {
             </Row>
             <Row>
                 <Col className='text-left'>                    
-                    1. Get notified when a job is started/stopped <br/>
-                    2. Suggest usernames when sending workflow request review <br/>                                        
-                    3. Set default servers &amp; metastores                
+                    1. Get notified when a workflow being monitored changes status <br/>
+                    2. Get notified when a job is started/stopped <br/>
+                    3. Suggest usernames when sending workflow request review <br/>                                        
+                    4. Set default servers &amp; metastores                
                 </Col>                
             </Row>
 

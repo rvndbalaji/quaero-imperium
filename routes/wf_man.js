@@ -1510,7 +1510,7 @@ var getWFEntity = async function (config,req,res,res_data,req_user)
       sql_request.input('workflow_id', req.query.workflow_id)                  
 
       var query_string = `
-      select ID,SYSTEM_ID,DATASET_ID,ENTITY_NM,ENTITY_DESC,FREQUENCY,FREQUENCY_DAYS,INCLUDE_HEADER,NUM_HEADER_ROWS,STAGE_STRATEGY,STAGE_TABLE_NM,NEXT_EXTRACT_VALUE,STAGE_PACKAGE_PATH,SOURCE_FILE_MASK,FILE_FORMAT,CONTROL_FILE_FLG,CONTROL_FILE_EXT,CONTROL_FILE_DELIMITER,CONTROL_FILE_MASK,COLUMN_DELIMITER,TEXT_QUALIFIER,ALLOW_STRING_TRUNCATION,ROW_DELIMITER,PRE_PROCESS_FUNCTION,DATABASE_HOST,DATABASE_NM,DATABASE_USERNAME,REQUIRED_FLG,REQUIRED_DATE_DIFF,DOWNLOAD_ONLY_FLG,UNZIP_FILE_FLG,STATUS,ACTIVE_FLG,STD_CONFIG_ID,MATCH_CONFIG_ID,DELETE_SOURCE_FILE_FLG,PARENT_SOURCE_ENTITY_ID,SOURCE_UOW_ID_FUNCT,SOURCE_LINEAGE_DT_FUNCT,HEADER_EXCLUDE_EXPRESSION,ROW_DELIM_ESCAPE_CHAR,COLUMN_DELIM_ESCAPE_CHAR from M_SOURCE_ENTITY ent
+      select ID,SYSTEM_ID,DATASET_ID,ENTITY_NM,ENTITY_DESC,FREQUENCY,FREQUENCY_DAYS,INCLUDE_HEADER,NUM_HEADER_ROWS,STAGE_STRATEGY,STAGE_TABLE_NM,NEXT_EXTRACT_VALUE,STAGE_PACKAGE_PATH,SOURCE_FILE_MASK,FILE_FORMAT,CONTROL_FILE_FLG,CONTROL_FILE_EXT,CONTROL_FILE_DELIMITER,CONTROL_FILE_MASK,COLUMN_DELIMITER,TEXT_QUALIFIER,ALLOW_STRING_TRUNCATION,ROW_DELIMITER,PRE_PROCESS_FUNCTION,DATABASE_HOST,DATABASE_NM,DATABASE_USERNAME,REQUIRED_FLG,REQUIRED_DATE_DIFF,DOWNLOAD_ONLY_FLG,UNZIP_FILE_FLG,STATUS,ent.ACTIVE_FLG,STD_CONFIG_ID,MATCH_CONFIG_ID,DELETE_SOURCE_FILE_FLG,PARENT_SOURCE_ENTITY_ID,SOURCE_UOW_ID_FUNCT,SOURCE_LINEAGE_DT_FUNCT,HEADER_EXCLUDE_EXPRESSION,ROW_DELIM_ESCAPE_CHAR,COLUMN_DELIM_ESCAPE_CHAR from M_SOURCE_ENTITY ent
       left join M_FILE_FORMAT form on form.FILE_FORMAT_ID = ent.FILE_FORMAT_ID
       where DATASET_ID in (
         select DATASET_ID from M_WORKFLOW_INPUT where WORKFLOW_ID = @workflow_id
@@ -2262,6 +2262,7 @@ var generateConfig = async function(req,decodedToken)
           sql_pw = req.body.sql_pw;
           sql_un = req.body.sql_un;
         }
+
     
     //First check if the user is present and a password is available,
     let fetchFromFirestore =  false;
@@ -2388,20 +2389,47 @@ var generateConfig = async function(req,decodedToken)
 
 var prepareConfigUsingDetails = async function(username,enc_pass,servername,database,schema,auth_type,call_source)
 {    
+  //Extract port if present, else, default to 1433
+  let port = 1433
+  if(servername.includes(':'))
+  {
+    let serv_port = servername.split(':')
+    servername = serv_port[0]
+    port = Number(serv_port[1])
+  }
+  
+  
+  //Add QUAERO domain, if win authenticatin, otherwise undefined
+  let domain = undefined
+  if(auth_type==0)
+  {
+    domain = 'QUAERO'
+  }
+  else
+  {
+    //Check if domain is specified, by splitting backslash \
+    if(username.includes('\\'))
+    {
+      let  domain_username =   username.split('\\')
+      domain = domain_username[0]
+      username = domain_username[1]      
+    }    
+  }
+
   let config = {
     user : username,
     password : decrypt(enc_pass),
     server : servername,        
     database,
     schema,
-    domain : 'QUAERO',        
+    port,
+    domain,        
     requestTimeout : 60000,
     options: 
         {
           trustedConnection: (auth_type==0)?true:false
         },        
-    }   
-    
+    }     
   return config         
 }
 

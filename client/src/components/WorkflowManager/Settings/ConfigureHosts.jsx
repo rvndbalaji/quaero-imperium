@@ -174,8 +174,8 @@ export default function ConfigureHosts() {
         SQLLoginForm = (
             <Form.Group style={{zoom:0.8}}>
                 <Form.Group controlId="domain"> 
-                            <Form.Label><b>Username</b></Form.Label>   <br/> 
-                            <Form.Control required type="text" autoComplete="new-password" disabled={modalDetails.modal_type==='Edit'} name='sql_un'  onChange={(e)=>handleChange(e)}  defaultValue={modalDetails.host_details.sql_un}/>                                                                
+                            <Form.Label><b>Username (Ex : DOMAIN\username)</b></Form.Label>   <br/> 
+                            <Form.Control required type="text" autoComplete="new-password" disabled={modalDetails.modal_type==='Edit'} name='sql_un'  onChange={(e)=>handleChange(e)}  defaultValue={modalDetails.host_details.sql_un} placeholder='QUAERO\username'/>                                                                
                         </Form.Group>
                         <Form.Group>
                             <Form.Label><b>Password</b></Form.Label>   <br/> 
@@ -218,8 +218,8 @@ export default function ConfigureHosts() {
             {alert_item}
                 <Form>
                     <Form.Group>
-                         <Form.Label><b>Server/Hostname (Ex. HSPSQL02T.quaero.com)</b></Form.Label>
-                         <Form.Control type="text" className='text-uppercase' name='host' onChange={(e)=>handleChange(e)} disabled={modalDetails.modal_type==='Edit'} defaultValue={modalDetails.host_details.host}/>
+                         <Form.Label><b>Server/Hostname (Ex. HSPSQL02T.QUAERO.COM:1433)</b></Form.Label>
+                         <Form.Control type="text" className='text-uppercase' name='host' onChange={(e)=>handleChange(e)} disabled={modalDetails.modal_type==='Edit'} defaultValue={modalDetails.host_details.host} placeholder='Ex. HSPSQL02T.QUAERO.COM'/>
                     </Form.Group>
                     <Form.Group>
                          <Form.Label><b>Nickname (Ex. Acme Prod)</b></Form.Label>
