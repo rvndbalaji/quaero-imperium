@@ -215,7 +215,7 @@ class HostItem extends Component {
                 <Container fluid >
                     <Row>
                         <Col lg={3} sm={3} md={3}>
-                            <b>{host.host}</b>
+                            <b>{host.nickname}</b> - <span class='gray_text'>{host.host}</span>
                         </Col>                                                                     
                     </Row>    
                     <Row className='mt-2 justify-content-start'>                        

@@ -12,6 +12,12 @@ router.get('/about',function(req,res){
    `)
 });
 
+//Redirect for documentation
+router.get('/docs',function(req,res){  
+ res.redirect('http://test-imperium.quaero.com:4000/docs')
+});
+
+
 
 router.post('/sendMail',function(req,res)
 {  

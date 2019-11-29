@@ -16,6 +16,3 @@ build
 /client/node_modules
 /client/public
 host
-/docs/source
-/docs/make.bat
-/docs/Makefile
