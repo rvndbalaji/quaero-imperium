@@ -2427,8 +2427,9 @@ var prepareConfigUsingDetails = async function(username,enc_pass,servername,data
     requestTimeout : 60000,
     options: 
         {
-          trustedConnection: (auth_type==0)?true:false
-        },        
+          trustedConnection: (auth_type==0)?true:false,
+          encrypt : true
+        }
     }     
   return config         
 }

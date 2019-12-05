@@ -111,21 +111,26 @@ app.get('/*', function(req, res) {
     }
   })
 })
-logger.info('server\tServing site');
+
+
+logger.info('server\tLoading certificate...');
 const options = {
   key : fs.readFileSync('./host/certificates/imperium.key'),
   cert : fs.readFileSync('./host/certificates/imperium.crt'),
   passphrase : process.env.https_passphrase
 }
 
+
 var httpsServer = https.createServer(options, app);
 
+logger.info('server\tServing site...')
 //Start Server and listen for requests
-var server  = httpsServer.listen(port,hostname,function(){
+var server = httpsServer.listen(port, hostname, () => {
   logger.info(`server\tServer running at https://${hostname}:${port}/`);
 });
 
 //Initialize Firebase App
+logger.info('server\tInitalizing Firebase...');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: process.env.databaseURL
@@ -169,5 +174,9 @@ process.on('unhandledRejection', (reason, promise) => {
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use  
   logger.error('server\t' + 'Unhandled Rejection at : ' + reason);  
+  console.log(reason)
 });
 
+process.on('uncaughtException', function(e){
+  console.log(e);
+});
