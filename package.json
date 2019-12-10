@@ -22,7 +22,7 @@
   "scripts": {
     "server": "sudo nodemon app.js",
     "client": "sudo npm start --prefix client",
-    "build": "sudo npm run build --prefix client",
+    "build": "npm run build --prefix client",
     "test": "concurrently \"npm run server\" \"npm run client\"",
     "prod": "sudo node app.js"
   },
