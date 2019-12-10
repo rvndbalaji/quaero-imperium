@@ -4,4 +4,4 @@ COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
 RUN npm install
 COPY . .
 EXPOSE 443
-CMD ["sudo","npm", "run", "prod" ]
+CMD [ "npm", "run", "prod" ]
