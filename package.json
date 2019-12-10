@@ -24,7 +24,7 @@
     "client": "sudo npm start --prefix client",
     "build": "npm run build --prefix client",
     "test": "concurrently \"npm run server\" \"npm run client\"",
-    "prod": "sudo node app.js"
+    "prod": "node app.js"
   },
   "repository": {
     "type": "git",
