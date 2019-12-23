@@ -81,6 +81,7 @@ function EditParamModal(props) {
                     auth_type : wf_details.auth,
                     sql_un : wf_details.sql_un,
                     db : wf_details.metastore, 
+                    encrypt : wf_details.encrypt,
                     schema:'dbo', 
                     workflow_package_param_id : props.selected_row.WORKFLOW_PACKAGE_PARAM_ID, 
                     workflow_param_name : editVal.PARAM_NAME,

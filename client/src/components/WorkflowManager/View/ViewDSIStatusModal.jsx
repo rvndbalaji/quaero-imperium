@@ -68,6 +68,7 @@ function ViewDSIStatusModal(props) {
                         server : wf_details.server,
                         auth_type : wf_details.auth,
                         sql_un : wf_details.sql_un,
+                        encrypt : wf_details.encrypt,
                         db : wf_details.metastore, 
                         schema:'dbo', 
                         dataset_id : props.selected_row.DATASET_ID

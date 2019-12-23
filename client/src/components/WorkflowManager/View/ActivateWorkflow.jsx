@@ -29,7 +29,8 @@ function ActivateWorkflow(props) {
                 db : wf_details.metastore,
                 schema:'dbo', 
                 workflow_id : wf_details.wf_id,
-                act_flag : active_state
+                act_flag : active_state,
+                encrypt : wf_details.encrypt
             }).then(res =>{                                
                 props.postDispatchMethod();      
                 //setButton({                                

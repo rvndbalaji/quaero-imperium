@@ -140,6 +140,7 @@ export const testHost = (host_details) =>
                     auth_type : host_details.auth_type,
                     sql_un : host_details.sql_un,
                     sql_pw : host_details.sql_pw, 
+                    encrypt : host_details.encrypt
                     },{
                         cancelToken : new CancelToken(function executor(c){
                             cancellers.cancelTest = c
@@ -186,7 +187,8 @@ export const saveHost = (host_details) =>
                                 server_type: host_details.server_type,
                                 auth_type: host_details.auth_type ,
                                 sql_un : host_details.sql_un,
-                                sql_pw : host_details.sql_pw, 
+                                sql_pw : host_details.sql_pw,
+                                encrypt : host_details.encrypt 
                             }
                     },{
                         cancelToken : new CancelToken(function executor(c){

@@ -66,7 +66,9 @@ const performSearch = (dispatch,getState)=>
    let server_name = getState().host.hosts[host_key].host;            
    let sql_un = getState().host.hosts[host_key].sql_un;     
    let auth_type = getState().host.hosts[host_key].auth_type
-   
+   let encrypt = getState().host.hosts[host_key].encrypt
+
+
     //Search col
    let srch_col = getState().search.options.selectedWorkflowColumn.trim()
     //Order by
@@ -90,6 +92,7 @@ const performSearch = (dispatch,getState)=>
                 server : server_name,
                 auth_type,
                 sql_un,
+                encrypt,
                 where_key : srch_col, 
                 where_val : srch_text, 
                 where_is_list : 'false',
@@ -129,7 +132,8 @@ const performSearch = (dispatch,getState)=>
                         element.SERVER_NAME = server_name;
                         element.METASTORE_NAME = metastore_name;
                         element.AUTH_TYPE = auth_type;                        
-                        element.SQL_UN = sql_un ;                        
+                        element.SQL_UN = sql_un ;     
+                        element.ENCRYPT = encrypt;                   
                     });                        
                     end_time = performance.now();            
                     let timeTaken = (end_time-start_time)
@@ -160,7 +164,9 @@ const serverChanged = (new_host_name,dispatch,getState)=> {
     //Get host's auth type from store
     let auth_type = getState().host.hosts[new_host_name].auth_type;            
     let host_name = getState().host.hosts[new_host_name].host;            
-    let sql_un = getState().host.hosts[new_host_name].sql_un;                
+    let sql_un = getState().host.hosts[new_host_name].sql_un;      
+    let encrypt = getState().host.hosts[new_host_name].encrypt;
+          
     //Set a dispatch that resets the metastore list 
     dispatch({type: 'SET_METASTORE_LIST', metastoreList : []});    
     dispatch({type: 'SET_SEARCH_RESULTS', workflowResults : undefined});
@@ -172,6 +178,7 @@ const serverChanged = (new_host_name,dispatch,getState)=> {
             axios.post('/wf_man/getMetastores',{                
                 server : host_name,
                 auth_type: auth_type,
+                encrypt,
                 sql_un
                 },{
                     cancelToken : new CancelToken(function executor(c){

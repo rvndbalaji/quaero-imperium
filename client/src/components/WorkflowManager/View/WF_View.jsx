@@ -35,6 +35,7 @@ refreshTimeout;
             wf_id : this.props.match.params.wf_id,
             auth : this.props.match.params.auth,
             sql_un : this.props.match.params.sql_un,
+            encrypt : (this.props.match.params.encrypt)?this.props.match.params.encrypt:0
         })            
       
         this.props.sendUserActivity()
@@ -61,7 +62,8 @@ refreshTimeout;
             metastore : this.props.match.params.metastore,
             wf_id : this.props.match.params.wf_id,
             auth : this.props.match.params.auth,            
-            sql_un : this.props.match.params.sql_un
+            sql_un : this.props.match.params.sql_un,
+            encrypt : (this.props.match.params.encrypt)?this.props.match.params.encrypt:0
         }
         
         let MyToolbar = (
@@ -107,7 +109,9 @@ refreshTimeout;
                                             <b>Link : </b><br/><a href={window.location.href}>{window.location.href}</a><br/><br/>
                                             <b>SERVER      : </b><br/>{wf_details.server}<br/>
                                             <b>METASTORE   : </b><br/>{wf_details.metastore}<br/>
-                                            <b>WORKFLOW_ID : </b><br/>{wf_details.wf_id}<br/><br/>                                            
+                                            <b>WORKFLOW_ID : </b><br/>{wf_details.wf_id}<br/><br/> 
+                                            <b>ENCRYPTION : </b><br/>{(wf_details.encrypt===1)?'Required':'Not Required'}<br/><br/>                                            
+                                           
                                         </div>
                                     </div>)
         

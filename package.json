@@ -23,7 +23,7 @@
     "server": "nodemon app.js",
     "client": "npm start --prefix client",
     "build": "npm run build --prefix client",
-    "test": "concurrently \"npm run server\" \"npm run client\"",
+    "test": "sudo concurrently \"npm run server\" \"npm run client\"",
     "prod": "node app.js"
   },
   "repository": {

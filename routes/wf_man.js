@@ -79,7 +79,8 @@ router.post('/saveHost',function(req,res)
           host: host_details.host,
           nickname : host_details.nickname,
           server_type: host_details.server_type,
-          auth_type: host_details.auth_type
+          auth_type: host_details.auth_type,
+          encrypt : (host_details.encrypt)?host_details.encrypt:0
         }
 
         let host_key = host_details.host.replace(/\./g,'_') + '|' + decodedToken.uid
@@ -2244,6 +2245,7 @@ var generateConfig = async function(req,decodedToken)
     var schema;  
     var sql_un;
     var sql_pw;  
+    var encrypt = 0
     if(req.method=='GET')
         {          
           servername = req.query.server;
@@ -2252,6 +2254,7 @@ var generateConfig = async function(req,decodedToken)
           auth_type =  (req.query.auth_type)?Number(req.query.auth_type):0;                    
           sql_pw = req.query.sql_pw;
           sql_un = req.query.sql_un;
+          encrypt = req.query.encrypt;
         }
         else if(req.method=='POST')
         {
@@ -2261,6 +2264,7 @@ var generateConfig = async function(req,decodedToken)
           auth_type =  (req.body.auth_type)?Number(req.body.auth_type):0;                    
           sql_pw = req.body.sql_pw;
           sql_un = req.body.sql_un;
+          encrypt = req.body.encrypt;
         }
 
     
@@ -2284,7 +2288,7 @@ var generateConfig = async function(req,decodedToken)
       let enc_pass = GLOBAL_FLYING_PASSWORDS[servername + sql_un];
       if(enc_pass)
       {               
-        let config = prepareConfigUsingDetails((auth_type===0)?decodedToken.uid:sql_un,enc_pass,servername,database,schema,auth_type,1)                
+        let config = prepareConfigUsingDetails((auth_type===0)?decodedToken.uid:sql_un,enc_pass,servername,database,schema,auth_type,encrypt,1)                
         resolve(config);
       }
       else
@@ -2311,7 +2315,7 @@ var generateConfig = async function(req,decodedToken)
           if(sql_pw)
           {            
             GLOBAL_FLYING_PASSWORDS[servername + sql_un] = encrypt(sql_pw)
-            let config = prepareConfigUsingDetails(sql_un, GLOBAL_FLYING_PASSWORDS[servername + sql_un],servername,database,schema,auth_type,2)                                  
+            let config = prepareConfigUsingDetails(sql_un, GLOBAL_FLYING_PASSWORDS[servername + sql_un],servername,database,schema,auth_type,encrypt,2)                                  
             resolve(config);      
           }
           else
@@ -2348,12 +2352,12 @@ var generateConfig = async function(req,decodedToken)
                   }
                   
                   
-                  let config = prepareConfigUsingDetails(sql_un,GLOBAL_FLYING_PASSWORDS[servername + sql_un],servername,database,schema,auth_type,3)                                  
+                  let config = prepareConfigUsingDetails(sql_un,GLOBAL_FLYING_PASSWORDS[servername + sql_un],servername,database,schema,auth_type,encrypt,3)                                  
                   
                   resolve(config);      
                 })
                 .catch(error => {    
-                  reject(error.toString())
+                  reject(error.toString() + " GENCONF : 1")
                 }); 
           }         
       }
@@ -2372,11 +2376,11 @@ var generateConfig = async function(req,decodedToken)
             //Prepare a connection config          
             GLOBAL_FLYING_PASSWORDS[decodedToken.uid] = user_data.password;
             
-            let config = prepareConfigUsingDetails(decodedToken.uid,user_data.password,servername,database,schema,auth_type,4)                                  
+            let config = prepareConfigUsingDetails(decodedToken.uid,user_data.password,servername,database,schema,auth_type,encrypt,4)                                  
             resolve(config);      
           })
-          .catch(function(error) {      
-            reject(error.toString())
+          .catch(function(error) {    
+            reject(error.toString() + " GENCONF : 2")
           }); 
   
       }
@@ -2387,7 +2391,7 @@ var generateConfig = async function(req,decodedToken)
   });
 }
 
-var prepareConfigUsingDetails = async function(username,enc_pass,servername,database,schema,auth_type,call_source)
+var prepareConfigUsingDetails = async function(username,enc_pass,servername,database,schema,auth_type,encryption,call_source)
 {    
   //Extract port if present, else, default to 1433
   let port = 1433
@@ -2428,7 +2432,7 @@ var prepareConfigUsingDetails = async function(username,enc_pass,servername,data
     options: 
         {
           trustedConnection: (auth_type==0)?true:false,
-          encrypt : true
+          encrypt : (encryption==0)?false:true
         }
     }     
   return config         
@@ -2469,7 +2473,7 @@ var connectSQL = async function (decodedToken,req)
           }).catch(err => {
               delete GLOBAL_CONN_POOL[JSON.stringify(config)];
               res_data.err = 1;
-              res_data.data = {info : err.message};               
+              res_data.data = {info : err.message + " CONSQL"};                       
               reject(res_data)
           });  
         }        

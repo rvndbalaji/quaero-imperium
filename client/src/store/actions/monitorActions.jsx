@@ -71,7 +71,8 @@ export const toggleWorkflowMonitor = (togglestate,wf_details) =>
         let metastore_name = wf_details.metastore_name
         let wfid = wf_details.wf_id
         let a_type = wf_details.auth_type
-        let s_un = wf_details.sql_un        
+        let s_un = wf_details.sql_un
+        let enc = wf_details.encrypt        
         
         authUser = getState().auth.authUser;         
         
@@ -89,7 +90,8 @@ export const toggleWorkflowMonitor = (togglestate,wf_details) =>
                         },
                         host : server_name,
                         auth_type : a_type,
-                        sql_un : (s_un)?s_un:null
+                        sql_un : (s_un)?s_un:null,
+                        encrypt : (enc)?enc:0
                     }
                 },{merge : true})
                 .then(function() {       
@@ -111,7 +113,8 @@ export const toggleWorkflowMonitor = (togglestate,wf_details) =>
                         },
                         host : server_name,
                         auth_type : a_type,
-                        sql_un : (s_un)?s_un:null
+                        sql_un : (s_un)?s_un:null,
+                        encrypt : (enc)?enc:0
                     }
                 },{merge : true})
                 .then(function() {       
@@ -196,6 +199,7 @@ const processResponses = async (respArray,dispatch,getState)=>
                             element.METASTORE_NAME = resp.config.params.db;                                
                             element.AUTH_TYPE = resp.config.params.auth_type;                                
                             element.SQL_UN = resp.config.params.sql_un;
+                            element.ENCRYPT = resp.config.params.encrypt;
                             full_results.push(element);
                         });  
                     

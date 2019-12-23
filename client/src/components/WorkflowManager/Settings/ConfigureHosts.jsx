@@ -21,6 +21,7 @@ export default function ConfigureHosts() {
         auth_type : 0,
         server_type : 0,
         nickname : '',
+        encrypt : 0,
         sql_un : undefined,
         sql_pw : undefined
     }
@@ -73,6 +74,11 @@ export default function ConfigureHosts() {
         if(key[0]==='server_type')
         {
             value = (e.target.id==='testoption')?0:1     
+        }
+
+        if(key[0]==='encrypt')
+        {
+            value = (modalDetails.host_details.encrypt===0)?1:0    
         }
         
 
@@ -128,7 +134,6 @@ export default function ConfigureHosts() {
             dispatch(setAlert('Hostname and Nickname are required','danger'))       
             return                    
         }      
-        
         if(modalDetails.modal_type!=='Edit')
         {
             dispatch(testHost(modalDetails.host_details));                        
@@ -179,9 +184,7 @@ export default function ConfigureHosts() {
                         </Form.Group>
                         <Form.Group>
                             <Form.Label><b>Password</b></Form.Label>   <br/> 
-                            <Form.Control required type="password" autoComplete="new-password" disabled={modalDetails.modal_type==='Edit'} name='sql_pw'  onChange={(e)=>handleChange(e)}  defaultValue={modalDetails.host_details.sql_pw} />                                                                                                
-                        {// <span className='gray_text'>NOTE : Uses your domain username/password</span>
-                        }
+                            <Form.Control required type="password" autoComplete="new-password" disabled={modalDetails.modal_type==='Edit'} name='sql_pw'  onChange={(e)=>handleChange(e)}  defaultValue={modalDetails.host_details.sql_pw} />                                                                                                                        
                 </Form.Group>
             </Form.Group>           
         )
@@ -236,7 +239,9 @@ export default function ConfigureHosts() {
                         <Form.Check  disabled={modalDetails.modal_type==='Edit'} inline  type="radio" custom  name='auth_type' onChange={(e)=>handleChange(e)}  label="SQL"   id="sqloption" checked={modalDetails.host_details.auth_type===1}/>
                     </Form.Group>
                     {SQLLoginForm}
-                </Form>
+                    <Form.Group  controlId="encCheck">
+                        <Form.Check inline type="checkbox" custom name='encrypt' onChange={(e)=>handleChange(e)}  label="Requires encryption"   id="enc_option" defaultChecked={modalDetails.host_details.encrypt===1} disabled={modalDetails.modal_type==='Edit'}/>
+                    </Form.Group>                     </Form>
             </Modal.Body>            
             <Modal.Footer>
                 {del_btn}

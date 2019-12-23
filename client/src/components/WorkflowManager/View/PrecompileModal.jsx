@@ -62,6 +62,7 @@ function PrecompileModal(props) {
                         auth_type : wf_details.auth,
                         sql_un : wf_details.sql_un,
                         db : wf_details.metastore, 
+                        encrypt : wf_details.encrypt,
                         schema:'dbo', 
                         workflow_instance_id : props.selected_row.WORKFLOW_INSTANCE_ID
                     }                    
