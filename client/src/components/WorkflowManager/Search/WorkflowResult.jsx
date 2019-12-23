@@ -181,7 +181,7 @@ class WorkflowResult extends PureComponent {
                             </Col>                                                        
                             <Col lg='auto' md='auto' className='ml-auto justify-content-left'>                            
                                 <div className="custom-control custom-switch" align='ef'>
-                                    <input type="checkbox" className="custom-control-input" id={'monitor_' + index} style={{cursor : 'pointer'}} defaultChecked={workflowBeingMonitored} onClick={(e)=>this.toggleMonitor(e,{server_name :  workflow.SERVER_NAME, metastore_name : workflow.METASTORE_NAME, wf_id : workflow.WORKFLOW_ID, auth_type : workflow.AUTH_TYPE, sql_un : workflow.SQL_UN, encrypt: workflow.ENCRYPT })}/>
+                                    <input type="checkbox" className="custom-control-input" id={'monitor_' + index} style={{cursor : 'pointer'}} defaultChecked={workflowBeingMonitored} onClick={(e)=>this.toggleMonitor(e,{server_name :  workflow.SERVER_NAME, metastore_name : workflow.METASTORE_NAME, wf_id : workflow.WORKFLOW_ID, auth_type : workflow.AUTH_TYPE, sql_un : workflow.SQL_UN, encrypt: (workflow.ENCRYPT)?workflow.ENCRYPT:0 })}/>
                                     <label className="custom-control-label" htmlFor={'monitor_' + index} style={{cursor : 'pointer'}} ><div>{((workflowBeingMonitored)?'Monitoring':'Monitor     ').replace(/ /g,'\u00a0')}</div></label>
                                 </div>                              
                             </Col>

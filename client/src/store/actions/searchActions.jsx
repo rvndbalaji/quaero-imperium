@@ -68,7 +68,6 @@ const performSearch = (dispatch,getState)=>
    let auth_type = getState().host.hosts[host_key].auth_type
    let encrypt = getState().host.hosts[host_key].encrypt
 
-
     //Search col
    let srch_col = getState().search.options.selectedWorkflowColumn.trim()
     //Order by
@@ -133,8 +132,8 @@ const performSearch = (dispatch,getState)=>
                         element.METASTORE_NAME = metastore_name;
                         element.AUTH_TYPE = auth_type;                        
                         element.SQL_UN = sql_un ;     
-                        element.ENCRYPT = encrypt;                   
-                    });                        
+                        element.ENCRYPT = (encrypt)?encrypt:0;                   
+                    });     
                     end_time = performance.now();            
                     let timeTaken = (end_time-start_time)
                     
