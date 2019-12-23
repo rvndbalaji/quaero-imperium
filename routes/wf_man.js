@@ -2267,7 +2267,10 @@ var generateConfig = async function(req,decodedToken)
           encrypt = req.body.encrypt;
         }
 
-    
+    if(!encrypt)
+    {
+      encrypt = 0
+    }
     //First check if the user is present and a password is available,
     let fetchFromFirestore =  false;
     
@@ -2432,7 +2435,7 @@ var prepareConfigUsingDetails = async function(username,enc_pass,servername,data
     options: 
         {
           trustedConnection: (auth_type==0)?true:false,
-          encrypt : (encryption==0)?false:true
+          encrypt : (encryption==1)?true:false
         }
     }     
   return config         

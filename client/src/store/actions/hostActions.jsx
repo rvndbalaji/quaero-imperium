@@ -52,6 +52,7 @@ export const setHostListener = () =>
                 for(var key in configured_hosts)
                 {
                     configured_hosts[key].sql_pw = undefined
+                    configured_hosts[key].encrypt = (configured_hosts[key].encrypt)?configured_hosts[key].encrypt:0
                 }
                 dispatch({type : 'SET_HOSTS',host_list :configured_hosts})                
                 dispatch(getJobStats())
