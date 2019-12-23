@@ -151,7 +151,12 @@ export const testHost = (host_details) =>
                     .then(res=>{
                         if(res.err===1)
                         {
-                            dispatch(setAlert(res.data.info,'danger'))
+                            let msg = res.data.info
+                            if(res.data.code && res.data.code==='ELOGIN')
+                            {
+                                msg  = msg + "|If your password has changed, please log out of Imperium and login again"
+                            }
+                            dispatch(setAlert(msg,'danger'))
                         }
                         else{                                                         
                             dispatch(saveHost(host_details))

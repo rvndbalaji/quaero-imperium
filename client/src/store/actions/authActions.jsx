@@ -33,7 +33,13 @@ export const performLoginWithUser =()=>
     return ( dispatch,getState)=> {        
         firebase.auth().onAuthStateChanged(user => 
         {       
-            if (user) {                                         
+            let lastSignInTime = new Date(user.metadata.lastSignInTime)
+            let currentTime = new Date()
+            let diff = currentTime.getTime() - lastSignInTime.getTime();
+            let diffDays = diff/ (1000 * 3600 * 24)
+
+            //Check if the user's session is older than 1 day. If yes, then kick him out, and log off
+            if (diffDays < 1 && user) {                                         
                 //Save the user to the redux store                
                 dispatch({
                     type : 'UPDATE_AUTH_STATE',                

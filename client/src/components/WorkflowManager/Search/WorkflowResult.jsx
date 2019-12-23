@@ -83,8 +83,14 @@ class WorkflowResult extends PureComponent {
             //Check if an error object was received or if a workflow was received
             if(workflow.type && workflow.type==='err')
             {
+                let err_msg = workflow.msg.split('|')
+                let alert_item =  <Alert variant='danger' key={uuid()}>{err_msg[0] || 'Something went wrong : WF_RES'}</Alert>
+                if(err_msg[1])
+                {
+                    alert_item = <Alert variant='danger' key={uuid()}>{err_msg[0]}<br /><br /><b>{err_msg[1]}</b></Alert>
+                }     
                 return (
-                    <Alert variant='danger' key={uuid()}>{workflow.msg || 'Something went wrong : WF_RES'}</Alert>                       
+                    {alert_item}
                 )
             }          
 

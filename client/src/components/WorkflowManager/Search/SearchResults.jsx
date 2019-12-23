@@ -14,10 +14,20 @@ class SearchResults extends Component {
             {
                 msg = 'Something\'s fishy :\\ Please contact admin. ERR : ALERT_EMPTY'
             }
+            let err_msg = this.props.alert.msg.split('|')
+            let alert_item;
+            if(err_msg[1])
+            {
+                alert_item = <Alert variant={this.props.alert.color}>{err_msg[0]}<br /><br /><b>{err_msg[1]}</b></Alert>    
+            } 
+            else
+            {
+                alert_item = <Alert variant={this.props.alert.color}>{err_msg[0]}</Alert>
+            }      
             return ( 
                 <Animated animationIn="fadeIn" animationInDuration={500} isVisible={true}>
                     <div className='mt-5'> 
-                        <Alert variant={this.props.alert.color}>{msg}</Alert>
+                        {alert_item}
                     </div>                                       
                 </Animated>
             )            

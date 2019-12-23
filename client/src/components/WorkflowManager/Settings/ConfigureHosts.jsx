@@ -160,7 +160,15 @@ export default function ConfigureHosts() {
     {         
         if(store.alertHost!=='closeModal')        
         {
-            alert_item = <Alert variant={store.alertHost.color}>{store.alertHost.msg}</Alert>                       
+            let err_msg = store.alertHost.msg.split('|')
+            if(err_msg[1])
+            {
+                alert_item = <Alert variant={store.alertHost.color}>{err_msg[0]}<br /><br /><b>{err_msg[1]}</b></Alert>    
+            }                   
+            else
+            {
+                alert_item = <Alert variant={store.alertHost.color}>{err_msg[0]}</Alert>    
+            }
         }
         else{
             //Close modal            

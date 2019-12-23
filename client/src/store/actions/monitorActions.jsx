@@ -183,9 +183,25 @@ const processResponses = async (respArray,dispatch,getState)=>
                     msg = res.data.info;                        
                 }  
                 
+                
                 //Prepare Error object            
                 msg = {type : 'err', msg }                     
                 full_results.push(msg);
+                
+                 //Check if its a login error, if it is, we must remove this monitor, otherwise, it'll make calls repeatedly
+                 if(res.data.code && res.data.code==='ELOGIN')
+                 {
+                    let nameAsKey_1 = resp.config.params.server.replace(/\./g,'_') 
+                    let nameAsKey_2 = (resp.config.params.auth_type!==1)?authUser.uid:resp.config.params.sql_un          
+                    let prim_key = (nameAsKey_1 + '|' + nameAsKey_2)
+
+                    fire.doc("users").collection(authUser.uid).doc('monitors').set({  
+                        [prim_key] : firebase.firestore.FieldValue.delete()
+                    }, { merge: true })
+                    .then(()=>{           
+                    })
+
+                 }
             }
             else{
 

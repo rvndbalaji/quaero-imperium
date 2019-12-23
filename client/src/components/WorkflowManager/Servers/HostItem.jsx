@@ -218,9 +218,10 @@ class HostItem extends Component {
                 <Container fluid >
                     <Row>
                         <Col lg={3} sm={3} md={3}>
-                            <b>{host.nickname}</b> - <span class='gray_text'>{host.host}</span>
+                            <b>{host.nickname}</b> - <span className='gray_text'>{host.host}</span>
                         </Col>                                                                     
-                    </Row>    
+                    </Row>   
+                     
                     <Row className='mt-2 justify-content-start'>                        
                         <Col lg={4} sm={4} md={4}>
                             {ProgressIndicator} 

@@ -28,6 +28,8 @@ export const clearServerRefresh = () =>
 {
     return(dispatch,getState) =>
     {
+        cancellers.cancelStats && cancellers.cancelStats()
+        cancellers.canceMemCheck && cancellers.canceMemCheck()
         clearTimeout(refreshTimeout)                        
     }
 }
@@ -35,7 +37,7 @@ export const clearServerRefresh = () =>
 
 const scheduleNextRefresh=(dispatch)=>
 {
-    clearTimeout(refreshTimeout)   
+    clearTimeout(refreshTimeout)
     refreshTimeout = setTimeout(()=>
     {                   
         dispatch(getJobStats())
@@ -69,25 +71,39 @@ const raiseJobStatusRequest = (dispatch,getState,host_details)=>
             
             if(res.err===1)
             {
-                let msg = res.data.info;
-                let inner_msg = msg;                
-                try
+                if(res.data.code && res.data.code==='ELOGIN')
                 {
-                    inner_msg = JSON.parse(msg)                        
-                    if(inner_msg.originalError && inner_msg.originalError.info && inner_msg.originalError.info.message)
+
+                    dispatch({
+                        type : 'SET_SERVER_JOBS',
+                        serverName : server_name,
+                        serverJobs : []
+                    })  
+                    dispatch(clearServerRefresh())
+                }
+               else
+               {
+                    let msg = res.data.info;
+                    let inner_msg = msg;                
+                    try
                     {
-                        msg = inner_msg.originalError.info.message;
+                        inner_msg = JSON.parse(msg)                        
+                        if(inner_msg.originalError && inner_msg.originalError.info && inner_msg.originalError.info.message)
+                        {
+                            msg = inner_msg.originalError.info.message;
+                        }
                     }
-                }
-                catch(err)
-                {
-                    msg = res.data.info;                        
-                }
-                dispatch({
-                    type : 'SET_SERVER_JOBS',
-                    serverName : server_name,
-                    serverJobs : []
-                })                                
+                    catch(err)
+                    {
+                        msg = res.data.info;                        
+                    }
+                    dispatch({
+                        type : 'SET_SERVER_JOBS',
+                        serverName : server_name,
+                        serverJobs : []
+                    })            
+               }
+                                    
             }
             else{                   
                 dispatch({
@@ -107,7 +123,8 @@ const raiseJobStatusRequest = (dispatch,getState,host_details)=>
                         serverName : server_name,
                         serverJobs : []
                     })                    
-                }                        
+                }   
+                     
             });;
 
     }).catch(err=>
@@ -148,25 +165,39 @@ const raiseServerMemUsageRequest = (dispatch,getState,host_details)=>
             
             if(res.err===1)
             {
-                let msg = res.data.info;
-                let inner_msg = msg;                
-                try
+                if(res.data.code && res.data.code==='ELOGIN')
                 {
-                    inner_msg = JSON.parse(msg)                        
-                    if(inner_msg.originalError && inner_msg.originalError.info && inner_msg.originalError.info.message)
+
+                    dispatch({
+                        type : 'SET_SERVER_MEM_USAGE',
+                        serverName : server_name,
+                        serverMemory : undefined
+                    })     
+                    dispatch(clearServerRefresh())
+                }
+                else
+                {
+                    let msg = res.data.info;
+                    let inner_msg = msg;                
+                    try
                     {
-                        msg = inner_msg.originalError.info.message;
+                        inner_msg = JSON.parse(msg)                        
+                        if(inner_msg.originalError && inner_msg.originalError.info && inner_msg.originalError.info.message)
+                        {
+                            msg = inner_msg.originalError.info.message;
+                        }
                     }
+                    catch(err)
+                    {
+                        msg = res.data.info;                        
+                    }
+                    dispatch({
+                        type : 'SET_SERVER_MEM_USAGE',
+                        serverName : server_name,
+                        serverMemory : undefined
+                    })                             
                 }
-                catch(err)
-                {
-                    msg = res.data.info;                        
-                }
-                dispatch({
-                    type : 'SET_SERVER_MEM_USAGE',
-                    serverName : server_name,
-                    serverMemory : undefined
-                })                                
+                   
             }
             else{                                   
                 dispatch({

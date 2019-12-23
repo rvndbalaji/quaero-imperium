@@ -103,7 +103,7 @@ const performSearch = (dispatch,getState)=>
         })
         .then(response=> response.data)
         .then(res=>{
-            
+           
             if(res.err===1)
             {
                 let msg = res.data.info;
@@ -120,7 +120,13 @@ const performSearch = (dispatch,getState)=>
                 {
                     msg = res.data.info;                        
                 }
+                if(res.data.code && res.data.code==='ELOGIN')
+                {
+                    msg  = msg + "|If your password has changed, please log out of Imperium and login again"
+                }
+               
                 dispatch(setAlert(msg,'danger'))
+    
             }
             else{                   
                 if(res.data.info.length>=1)
@@ -186,10 +192,19 @@ const serverChanged = (new_host_name,dispatch,getState)=> {
                 })
                 .then(response=> response.data)
                 .then(res=>{
-                    //console.log(store.getState())                    
+                    //console.log(store.getState()) 
+                                 
                     if(res.err===1)
                     {                        
-                        dispatch(setAlert(res.data.info,'danger'))
+                        let msg = res.data.info
+                        if(res.data.code && res.data.code==='ELOGIN')
+                        {
+                            msg  = msg + "|If your password has changed, please log out of Imperium and login again"
+                        }
+                        
+
+                        dispatch(setAlert(msg,'danger'))
+                        
                     }
                     else{                        
                         let metastoreList = []            
