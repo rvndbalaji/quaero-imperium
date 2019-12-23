@@ -262,10 +262,12 @@ export const queryMonitorWorkflows = () =>
                                 let auth_type = monitored_hosts[host_key]['auth_type']                                
                                 let server_name = monitored_hosts[host_key]['host']                                
                                 let sql_un = monitored_hosts[host_key]['sql_un']
+                                let encrypt = (monitored_hosts[host_key]['encrypt'])?monitored_hosts[host_key]['encrypt']:0
                                 let req_data = {
                                      server : server_name,
                                      auth_type, where_key : 'WORKFLOW_ID',
                                      sql_un,
+                                     encrypt,
                                      where_val : wf_id_string,
                                      where_is_list : 'true' ,
                                      order_by: 'WORKFLOW_ID', order_type: 'asc', 

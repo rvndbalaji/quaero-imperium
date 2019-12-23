@@ -53,6 +53,8 @@ class HostItem extends Component {
         let auth_type = host.auth_type
         let sql_un = host.sql_un
         let sql_pw = host.host_sql_pw
+        let encrypt = host.encrypt
+
         
         this.setState({
             ...this.state,
@@ -66,6 +68,7 @@ class HostItem extends Component {
                     server : host_name,
                     auth_type,                    
                     sql_un,
+                    encrypt,
                     sql_pw,
                     db : 'msdb', 
                     schema:'dbo', 
