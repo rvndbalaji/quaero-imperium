@@ -2447,7 +2447,6 @@ var connectSQL = async function (decodedToken,req)
     err : 1,
     data : {}
   }
-
   return new Promise((resolve,reject) => {
     
     generateConfig(req,decodedToken).then(config=>{    

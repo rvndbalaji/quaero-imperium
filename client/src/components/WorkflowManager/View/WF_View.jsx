@@ -91,10 +91,16 @@ refreshTimeout;
             {
                 msg = 'Something\'s fishy :\\ Please contact admin. ERR : ALERT_EMPTY'
             }
+            let alert_item;
+            let err_msg = this.props.alert.msg.split('|')
+            if(err_msg[1])
+            {
+                alert_item = <Alert variant={this.props.alert.color}>{err_msg[0]}<br /><br /><b>{err_msg[1]}</b></Alert>    
+            }       
             LoadStatus = (                 
                 <div> 
                     {MyToolbar}
-                    <Alert variant={this.props.alert.color}>{msg}</Alert>
+                    {alert_item}
                 </div>                                       
             )           
             return LoadStatus 

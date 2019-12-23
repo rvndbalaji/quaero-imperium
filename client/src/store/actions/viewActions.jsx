@@ -73,7 +73,6 @@ const scheduleNextRefresh=(dispatch,getState)=>
 {
     refreshTimeout = setTimeout(()=>
     {           
-        
         dispatch(setViewMonitor(wf_details))
     },getState().view.refreshInterval * 1000)
 }
@@ -109,9 +108,10 @@ const fetchWFDetails = (dispatch,getState)=>
         })
         .then(response=> response.data)
         .then(res=>{
-            
+           
             if(res.err===1)
             {
+                
                 let msg = res.data.info;
                 let inner_msg = msg;                
                 try
@@ -125,6 +125,10 @@ const fetchWFDetails = (dispatch,getState)=>
                 catch(err)
                 {
                     msg = res.data.info;                        
+                }
+                if(res.data.code && res.data.code==='ELOGIN')
+                {
+                    msg  = msg + "|If your password has changed, please log out of Imperium and login again"
                 }
                 dispatch(setAlert(msg,'danger'))                
             }
@@ -240,6 +244,10 @@ const fetchSourceEntity = (dispatch,getState)=>
                 {
                     msg = res.data.info;                        
                 }
+                if(res.data.code && res.data.code==='ELOGIN')
+                {
+                    msg  = msg + "|If your password has changed, please log out of Imperium and login again"
+                }
                 dispatch(setAlert(msg,'danger'))
             }
             else{                   
@@ -324,6 +332,11 @@ const fetchDispatchWindow = (dispatch,getState)=>
                 {
                     msg = res.data.info;                        
                 }
+                if(res.data.code && res.data.code==='ELOGIN')
+                {
+                    msg  = msg + "|If your password has changed, please log out of Imperium and login again"
+                    dispatch(setAlert(msg,'danger'))
+                }
                 
             }
             else{                   
@@ -396,6 +409,10 @@ const fetchStageInfo = (dispatch,getState)=>
                 catch(err)
                 {
                     msg = res.data.info;                        
+                }
+                if(res.data.code && res.data.code==='ELOGIN')
+                {
+                    msg  = msg + "|If your password has changed, please log out of Imperium and login again"
                 }
                 dispatch(setAlert(msg,'danger'))
             }
@@ -482,6 +499,10 @@ const fetchSourceSystem = (dispatch,getState)=>
                 {
                     msg = res.data.info;                        
                 }
+                if(res.data.code && res.data.code==='ELOGIN')
+                {
+                    msg  = msg + "|If your password has changed, please log out of Imperium and login again"
+                }
                 dispatch(setAlert(msg,'danger'))
             }
             else{                   
@@ -543,7 +564,7 @@ const fetchBlockInfo = (dispatch,getState)=>
         })
         .then(response=> response.data)
         .then(res=>{
-            
+           
             if(res.err===1)
             {
                 let msg = res.data.info;
@@ -559,6 +580,10 @@ const fetchBlockInfo = (dispatch,getState)=>
                 catch(err)
                 {
                     msg = res.data.info;                        
+                }
+                if(res.data.code && res.data.code==='ELOGIN')
+                {
+                    msg  = msg + "|If your password has changed, please log out of Imperium and login again"
                 }
                 //Since theres an error, reset the block info
                 dispatch({
@@ -642,6 +667,10 @@ const fetchWFParams = (dispatch,getState)=>
                 {
                     msg = res.data.info;                        
                 }
+                if(res.data.code && res.data.code==='ELOGIN')
+                {
+                    msg  = msg + "|If your password has changed, please log out of Imperium and login again"
+                }
                 dispatch(setAlert(msg,'danger'))
             }
             else{                   
@@ -718,6 +747,10 @@ const fetchDatasets = (dispatch,getState)=>
                 catch(err)
                 {
                     msg = res.data.info;                        
+                }
+                if(res.data.code && res.data.code==='ELOGIN')
+                {
+                    msg  = msg + "|If your password has changed, please log out of Imperium and login again"
                 }
                 dispatch(setAlert(msg,'danger'))
             }
