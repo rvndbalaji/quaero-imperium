@@ -105,13 +105,13 @@ export const deleteHost = (host_id) =>
     {        
         authUser = getState().auth.authUser;            
         
-        dispatch(setAlert('Removing host... ' + host_id+'....','danger'))     
+        dispatch(setAlert('Removing host... ' + host_id.replace('|','-')+'....','danger'))     
         
         fire.doc("users").collection(authUser.uid).doc('hosts').set({ 
             [host_id]: firebase.firestore.FieldValue.delete()
         }, { merge: true })
         .then(function() {                  
-            dispatch(setAlert('Removing monitors for host ' + host_id +'....','danger'))               
+            dispatch(setAlert('Removing monitors for host ' + host_id.replace('|','-') +'....','danger'))               
             //Firestore keys should not contain DOT [.] operator. So we delete using set function
             
             fire.doc("users").collection(authUser.uid).doc('monitors').set({  
