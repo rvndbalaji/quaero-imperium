@@ -797,6 +797,7 @@ export const toggleWorkflowMonitor = (togglestate) =>
 {    
     return (dispatch,getState) =>
     {        
+        authUser = getState().auth.authUser;  
         let server_name = wf_details.server
         let metastore_name = wf_details.metastore
         let wfid = wf_details.wf_id
